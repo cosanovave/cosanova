@@ -12,8 +12,8 @@
   --verde:   #25D366;
   --verde-d: #128C7E;
   --magenta: #E91E63;
-  --blanco:  #FAFAFA;
-  --gris:    #F3F4F6;
+  --blanco:  #FAF7F0;
+  --gris:    #F0EBE1;
   --texto:   #1F2937;
   --texto-s: #6B7280;
 }
@@ -61,11 +61,11 @@ body {
   gap: 20px;
 }
 .nav-logo {
-  height: 80px;
+  height: 120px;
   filter: drop-shadow(0 2px 12px rgba(240,165,0,0.25));
   transition: height 0.3s;
 }
-.nav-logo.scrolled { height: 56px; }
+.nav-logo.scrolled { height: 80px; }
 .nav-links { display: flex; gap: 28px; }
 .nav-links a {
   color: rgba(255,255,255,0.75);
