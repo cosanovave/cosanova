@@ -20,6 +20,32 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── BANDA DE ANUNCIOS ────────────────────────────── */
+#anuncio-bar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1100;
+  background: var(--azul);
+  height: 36px;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(240,165,0,0.3);
+}
+.anuncio-track {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  white-space: nowrap;
+  animation: tickerScroll 30s linear infinite;
+  height: 36px;
+  padding-left: 100%;
+}
+.anuncio-track span { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85); }
+.anuncio-sep { color: var(--dorado) !important; font-weight: 900 !important; }
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
 html { scroll-behavior: smooth; }
 
 body {
@@ -45,7 +71,7 @@ body {
 /* ── NAV ──────────────────────────────────────────── */
 #navbar {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 36px; left: 0; right: 0;
   z-index: 1000;
   background: transparent;
   border-bottom: none;
@@ -552,6 +578,79 @@ section { padding: 80px 0; }
   letter-spacing: 1px;
   white-space: nowrap;
 }
+
+/* ── HERO PREVIEW ────────────────────────────────── */
+.hero-preview {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 40px;
+  width: 100%;
+  max-width: 860px;
+}
+.hero-prev-card {
+  background: rgba(255,255,255,0.85);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 220px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  backdrop-filter: blur(8px);
+}
+.hero-prev-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.13); }
+.hero-prev-img {
+  width: 52px; height: 52px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--gris);
+  flex-shrink: 0;
+}
+.hero-prev-img-placeholder {
+  width: 52px; height: 52px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--azul), var(--azul-m));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.hero-prev-info { flex: 1; min-width: 0; }
+.hero-prev-nom { font-size: 13px; font-weight: 700; color: var(--azul); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hero-prev-precio { font-size: 15px; font-weight: 900; color: var(--dorado); margin-top: 2px; }
+
+/* ── TESTIMONIOS ─────────────────────────────────── */
+#testimonios { background: white; }
+.testimonios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-top: 16px;
+}
+.testi-card {
+  background: var(--gris);
+  border-radius: 16px;
+  padding: 28px;
+  position: relative;
+}
+.testi-stars { color: var(--dorado); font-size: 18px; margin-bottom: 14px; letter-spacing: 2px; }
+.testi-texto { font-size: 14px; color: #444; line-height: 1.7; margin-bottom: 20px; font-style: italic; }
+.testi-autor { display: flex; align-items: center; gap: 12px; }
+.testi-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--azul);
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.testi-autor strong { display: block; font-size: 14px; color: var(--azul); }
+.testi-autor span { font-size: 12px; color: var(--texto-s); }
 
 /* ── CONFIANZA ────────────────────────────────────── */
 #confianza { background: var(--gris); }
