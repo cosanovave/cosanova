@@ -9,7 +9,7 @@ const GAS_URL   = 'https://script.google.com/macros/s/AKfycby8oGOKP9nkwjZZ6-Ilaz
 
 // Google Sheets para productos (Stock)
 const SS_ID     = '1Laqj4byH_qPxkR7z7eog-bGkIhm_dt4FxTVE99ArM9Q';
-const SHEET_STOCK = `https://docs.google.com/spreadsheets/d/${SS_ID}/gviz/tq?tqx=out:csv&sheet=Stock`;
+const SHEET_STOCK = `https://docs.google.com/spreadsheets/d/${1Laqj4byH_qPxkR7z7eog-bGkIhm_dt4FxTVE99ArM9Q}/gviz/tq?tqx=out:csv&sheet=Stock`;
 
 const WA_NUM    = '573001885210';
 const MARGEN    = 30;   // % margen
