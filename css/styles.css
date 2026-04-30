@@ -182,13 +182,47 @@ body {
   to   { transform: translate(-280px,180px); }
 }
 
+/* ── HERO LAYOUT 3 COLUMNAS ── */
+.hero-layout {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 1fr;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  max-width: 1300px;
+  padding: 140px 40px 80px;
+  animation: contentIn 1s ease forwards;
+}
+.hero-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.hero-side-left { align-items: flex-start; }
+.hero-side-right { align-items: flex-start; }
+.hero-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 12px;
+  padding: 12px 14px;
+  backdrop-filter: blur(8px);
+  width: 100%;
+}
+.hero-badge-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+.hero-badge strong { display: block; font-size: 13px; font-weight: 700; color: var(--azul); }
+.hero-badge span { font-size: 11px; color: var(--texto-s); line-height: 1.4; }
+.hero-side-titulo { font-size: 13px; font-weight: 700; color: var(--azul); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+
 /* ── HERO CONTENT ── */
 .hero-content {
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: 120px 24px 80px;
-  max-width: 720px;
+  padding: 0;
   width: 100%;
   animation: contentIn 1s ease forwards;
 }
@@ -582,12 +616,9 @@ section { padding: 80px 0; }
 /* ── HERO PREVIEW ────────────────────────────────── */
 .hero-preview {
   display: flex;
-  gap: 16px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 40px;
+  flex-direction: column;
+  gap: 12px;
   width: 100%;
-  max-width: 860px;
 }
 .hero-prev-card {
   background: rgba(255,255,255,0.85);
@@ -787,6 +818,9 @@ footer {
   .nav-links { display: none; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .modal-legal-box { padding: 24px; }
+  .hero-layout { grid-template-columns: 1fr; padding: 120px 20px 60px; }
+  .hero-side { display: none; }
+  .hero-content { text-align: center; }
   .paso-arrow { transform: rotate(90deg); }
   .pasos { flex-direction: column; align-items: center; }
   .cta-box { padding: 40px 20px; }
