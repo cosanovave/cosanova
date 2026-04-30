@@ -139,7 +139,7 @@ function renderHeroPreview(lista) {
   if (!cont || !lista || lista.length === 0) return;
   const top3 = lista.slice(0, 3);
   cont.innerHTML = top3.map(p => {
-    const pvp = calcPrecio(p);
+    const pvp = calcPrecio(p.inv_cop);
     const imgHTML = p.imagen
       ? `<img src="assets/products/${p.imagen}" class="hero-prev-img" onerror="this.outerHTML='<div class=\\'hero-prev-img-placeholder\\'>${iconoCategoria(p.categoria)}</div>'">`
       : `<div class="hero-prev-img-placeholder">${iconoCategoria(p.categoria)}</div>`;
