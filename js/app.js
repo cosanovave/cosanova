@@ -60,6 +60,7 @@ async function cargarDatos() {
 
   mostrarTasasBar();
   renderProductos(productos);
+  renderHeroPreview(productos);
 }
 
 // ─── PARSEAR CSV DE TASAS ─────────────────────────────
@@ -130,6 +131,26 @@ function fmt(n, dec = 2) {
     minimumFractionDigits: dec,
     maximumFractionDigits: dec
   });
+}
+
+// ─── HERO PREVIEW ─────────────────────────────────────
+function renderHeroPreview(lista) {
+  const cont = document.getElementById('hero-preview');
+  if (!cont || !lista || lista.length === 0) return;
+  const top3 = lista.slice(0, 3);
+  cont.innerHTML = top3.map(p => {
+    const pvp = calcPrecio(p);
+    const imgHTML = p.imagen
+      ? `<img src="assets/products/${p.imagen}" class="hero-prev-img" onerror="this.outerHTML='<div class=\\'hero-prev-img-placeholder\\'>${iconoCategoria(p.categoria)}</div>'">`
+      : `<div class="hero-prev-img-placeholder">${iconoCategoria(p.categoria)}</div>`;
+    return `<div class="hero-prev-card" onclick="document.getElementById('catalogo').scrollIntoView({behavior:'smooth'})">
+      ${imgHTML}
+      <div class="hero-prev-info">
+        <div class="hero-prev-nom">${p.nom}</div>
+        <div class="hero-prev-precio">$ ${fmt(pvp.pvp_usd)} USD</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ─── BARRA DE TASAS ───────────────────────────────────
