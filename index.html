@@ -350,30 +350,104 @@
         <div class="footer-brand">
           <img src="assets/logo_sin_fondo.png" alt="Cosa Nova" class="footer-logo">
           <p>Todo en un solo lugar.<br>Colombia → Venezuela</p>
+          <p class="footer-fiscal">RIF: <strong>J-50399963-2</strong><br>Bogotá, Colombia</p>
         </div>
         <div class="footer-col">
           <h4>Contacto</h4>
           <a href="https://wa.me/573001885210" target="_blank">+57 300 1885210</a>
           <a href="mailto:cosanova.ve@gmail.com">cosanova.ve@gmail.com</a>
+          <a href="https://wa.me/573001885210" target="_blank">WhatsApp</a>
         </div>
         <div class="footer-col">
           <h4>Categorías</h4>
           <a href="#catalogo" onclick="filtrar('Perfumes')">Perfumes</a>
           <a href="#catalogo" onclick="filtrar('Belleza')">Belleza</a>
           <a href="#catalogo" onclick="filtrar('Ropa')">Ropa</a>
+          <a href="#catalogo" onclick="filtrar('General')">General</a>
         </div>
         <div class="footer-col">
-          <h4>Info</h4>
+          <h4>Información</h4>
           <a href="#como-funciona">Cómo funciona</a>
           <a href="#pagos">Métodos de pago</a>
           <a href="#confianza">Garantías</a>
         </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <a href="#" onclick="abrirModal('modal-terminos')">Términos y Condiciones</a>
+          <a href="#" onclick="abrirModal('modal-devoluciones')">Política de Devoluciones</a>
+          <a href="#" onclick="abrirModal('modal-privacidad')">Privacidad de Datos</a>
+        </div>
       </div>
       <div class="footer-bottom">
-        <p>© 2026 Cosa Nova · RIF J50399963-2 · Bogotá, Colombia</p>
+        <p>© 2026 Cosa Nova · RIF J-50399963-2 · Bogotá, Colombia · cosanova.ve@gmail.com</p>
+        <p class="footer-legal-note">Precios incluyen IVA. Sujeto a disponibilidad de stock. Tiempos de entrega estimados, no garantizados.</p>
       </div>
     </div>
   </footer>
+
+  <!-- ══ MODAL TÉRMINOS ══════════════════════════════════ -->
+  <div id="modal-terminos" class="modal-legal" onclick="if(event.target===this)cerrarModal('modal-terminos')">
+    <div class="modal-legal-box">
+      <button class="modal-legal-close" onclick="cerrarModal('modal-terminos')">×</button>
+      <h2>Términos y Condiciones</h2>
+      <p class="modal-fecha">Vigente desde: enero 2026</p>
+      <h3>1. Identificación</h3>
+      <p>Cosa Nova (RIF J-50399963-2), con sede en Bogotá, Colombia, opera como intermediario comercial para la venta y envío de productos desde Colombia hacia Venezuela.</p>
+      <h3>2. Proceso de compra</h3>
+      <p>El cliente selecciona productos, completa sus datos y realiza el pago mediante los métodos disponibles (USDT, Pago Móvil BDV). El pedido se confirma una vez verificado el comprobante de pago.</p>
+      <h3>3. Precios</h3>
+      <p>Los precios están expresados en USD y su equivalente en Bolívares (Bs.) calculado con la tasa BCV del día. Incluyen todos los impuestos aplicables. Cosa Nova se reserva el derecho de modificar precios sin previo aviso.</p>
+      <h3>4. Envíos</h3>
+      <p>El tiempo estimado de entrega es de <strong>7 días hábiles</strong> desde la confirmación del pago. Los envíos se realizan a través de operadores verificados Colombia–Venezuela. El tiempo puede variar por factores externos.</p>
+      <h3>5. Responsabilidad</h3>
+      <p>Cosa Nova no se responsabiliza por retrasos causados por aduanas, condiciones climáticas u otros factores fuera de su control. Una vez entregado el paquete al operador logístico, el riesgo de pérdida se transfiere al transportista.</p>
+      <h3>6. Contacto</h3>
+      <p>Para cualquier consulta: cosanova.ve@gmail.com · WhatsApp +57 300 1885210</p>
+    </div>
+  </div>
+
+  <!-- ══ MODAL DEVOLUCIONES ══════════════════════════════ -->
+  <div id="modal-devoluciones" class="modal-legal" onclick="if(event.target===this)cerrarModal('modal-devoluciones')">
+    <div class="modal-legal-box">
+      <button class="modal-legal-close" onclick="cerrarModal('modal-devoluciones')">×</button>
+      <h2>Política de Devoluciones y Garantías</h2>
+      <p class="modal-fecha">Vigente desde: enero 2026</p>
+      <h3>1. Devoluciones</h3>
+      <p>Se aceptan devoluciones dentro de los <strong>3 días hábiles</strong> siguientes a la recepción del producto, siempre que:</p>
+      <ul>
+        <li>El producto esté sin usar y en su empaque original.</li>
+        <li>Se presente evidencia fotográfica o en video del estado del producto.</li>
+        <li>El motivo sea defecto de fabricación o error en el pedido.</li>
+      </ul>
+      <h3>2. Productos no retornables</h3>
+      <p>No se aceptan devoluciones en: perfumes abiertos, productos de belleza usados, ni artículos en oferta o liquidación.</p>
+      <h3>3. Proceso de devolución</h3>
+      <p>El cliente debe contactar por WhatsApp (+57 300 1885210) o email (cosanova.ve@gmail.com) adjuntando fotos del producto y número de orden. Cosa Nova evaluará el caso en un plazo de 48 horas hábiles.</p>
+      <h3>4. Reembolsos</h3>
+      <p>Los reembolsos aprobados se realizarán por el mismo método de pago utilizado en un plazo de <strong>5 días hábiles</strong>.</p>
+      <h3>5. Garantía</h3>
+      <p>Todos los productos son originales y cuentan con garantía del fabricante. Cosa Nova actúa como intermediario y no es fabricante de los productos comercializados.</p>
+    </div>
+  </div>
+
+  <!-- ══ MODAL PRIVACIDAD ════════════════════════════════ -->
+  <div id="modal-privacidad" class="modal-legal" onclick="if(event.target===this)cerrarModal('modal-privacidad')">
+    <div class="modal-legal-box">
+      <button class="modal-legal-close" onclick="cerrarModal('modal-privacidad')">×</button>
+      <h2>Política de Privacidad de Datos</h2>
+      <p class="modal-fecha">Vigente desde: enero 2026</p>
+      <h3>1. Datos recopilados</h3>
+      <p>Recopilamos: nombre completo, email, teléfono, ciudad y dirección de entrega, necesarios para procesar su pedido.</p>
+      <h3>2. Uso de los datos</h3>
+      <p>Sus datos se utilizan exclusivamente para: procesar y entregar su pedido, enviar confirmaciones de compra y notificaciones de estado del pedido.</p>
+      <h3>3. Almacenamiento</h3>
+      <p>Los datos se almacenan en Google Sheets con acceso restringido al equipo de Cosa Nova. No se comparten con terceros salvo el operador logístico para gestionar el envío.</p>
+      <h3>4. Derechos del usuario</h3>
+      <p>Puede solicitar la eliminación de sus datos en cualquier momento escribiendo a cosanova.ve@gmail.com.</p>
+      <h3>5. Seguridad</h3>
+      <p>El sitio opera bajo protocolo HTTPS. Los comprobantes de pago se almacenan en Google Drive con acceso privado.</p>
+    </div>
+  </div>
 
   <!-- ══ WA FLOTANTE ════════════════════════════════════ -->
   <a href="https://wa.me/573001885210" target="_blank" class="wa-float" title="Escríbenos por WhatsApp">
@@ -381,5 +455,20 @@
   </a>
 
   <script src="js/app.js"></script>
+  <script>
+    function abrirModal(id) {
+      document.getElementById(id).classList.add('activo');
+      document.body.style.overflow = 'hidden';
+    }
+    function cerrarModal(id) {
+      document.getElementById(id).classList.remove('activo');
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        ['modal-terminos','modal-devoluciones','modal-privacidad'].forEach(cerrarModal);
+      }
+    });
+  </script>
 </body>
 </html>
