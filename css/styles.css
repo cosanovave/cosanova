@@ -61,7 +61,7 @@ body {
   gap: 20px;
 }
 .nav-logo {
-  height: 150px;
+  height: 240px;
   filter: drop-shadow(0 2px 12px rgba(240,165,0,0.25));
   transition: height 0.3s;
 }
@@ -70,7 +70,7 @@ body {
 .nav-links a {
   color: var(--azul);
   text-decoration: none;
-  font-size: 13px;
+  font-size: 17px;
   font-weight: 600;
   transition: color 0.2s;
   letter-spacing: 0.3px;
