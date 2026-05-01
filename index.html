@@ -194,6 +194,28 @@
   <!-- Toast notificación -->
   <div id="toast" class="toast"></div>
 
+  <!-- ══ MODAL DETALLE PRODUCTO ════════════════════════ -->
+  <div id="modal-producto" class="modal-producto" onclick="if(event.target===this)cerrarProducto()">
+    <div class="modal-producto-box">
+      <button class="modal-producto-close" onclick="cerrarProducto()">×</button>
+      <div class="mp-layout">
+        <div class="mp-img-wrap">
+          <img id="mp-img" src="" alt="" class="mp-img">
+          <div id="mp-img-placeholder" class="mp-img-placeholder" style="display:none"></div>
+        </div>
+        <div class="mp-info">
+          <span id="mp-cat" class="producto-cat"></span>
+          <h2 id="mp-nom" class="mp-nom"></h2>
+          <p id="mp-desc" class="mp-desc"></p>
+          <div class="mp-precios">
+            <div class="precio-usd"><span>$ </span><span id="mp-usd"></span> <span>USD</span></div>
+            <div class="precio-bs">Equivalente: <strong id="mp-bs"></strong></div>
+          </div>
+          <button class="btn-carrito" id="mp-btn-carrito">🛒 Agregar al carrito</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ══ HERO ═══════════════════════════════════════════ -->
   <section id="hero">
@@ -584,6 +606,7 @@
       if (e.key === 'Escape') {
         ['modal-terminos','modal-devoluciones','modal-privacidad'].forEach(cerrarModal);
         cerrarMobileMenu();
+        cerrarProducto();
       }
     });
 
