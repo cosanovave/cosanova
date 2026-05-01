@@ -467,6 +467,50 @@
     </div>
   </section>
 
+  <!-- ══ DEJAR RESEÑA ══════════════════════════════════ -->
+  <section id="resenas">
+    <div class="container">
+      <h2 class="section-title reveal">¿Ya compraste con nosotros?</h2>
+      <p class="section-sub reveal">Tu opinión ayuda a otros venezolanos a decidir</p>
+      <div class="resena-wrap reveal">
+
+        <div class="resena-stars-row">
+          <span class="resena-stars-label">Tu calificación:</span>
+          <div class="star-selector" id="star-selector">
+            <span class="star" data-val="1">★</span>
+            <span class="star" data-val="2">★</span>
+            <span class="star" data-val="3">★</span>
+            <span class="star" data-val="4">★</span>
+            <span class="star" data-val="5">★</span>
+          </div>
+        </div>
+
+        <div class="form-co">
+          <div class="form-field">
+            <label>Tu nombre *</label>
+            <input type="text" id="rs-nom" placeholder="María G.">
+          </div>
+          <div class="form-field">
+            <label>Ciudad</label>
+            <input type="text" id="rs-ciudad" placeholder="Caracas, D.C.">
+          </div>
+          <div class="form-field form-full">
+            <label>Tu experiencia *</label>
+            <textarea id="rs-texto" rows="4" placeholder="Cuéntanos cómo fue tu compra..."></textarea>
+          </div>
+        </div>
+
+        <button class="btn-co" id="btn-resena" onclick="enviarResena()">Enviar reseña →</button>
+
+        <div id="resena-ok" class="resena-ok" style="display:none">
+          <span>🎉</span>
+          <p>¡Gracias por tu reseña! La publicaremos pronto.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- ══ CTA FINAL ══════════════════════════════════════ -->
   <section id="cta-final">
     <div class="container">
