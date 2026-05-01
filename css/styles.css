@@ -1013,9 +1013,9 @@ footer {
 /* Botón en nav */
 .cart-btn {
   position: relative;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
+  background: rgba(240,165,0,0.12);
+  border: 1px solid rgba(240,165,0,0.35);
+  color: var(--dorado);
   width: 44px; height: 44px;
   border-radius: 50%;
   cursor: pointer;
