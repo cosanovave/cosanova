@@ -852,6 +852,72 @@ section { padding: 80px 0; }
 .conf-item h4 { font-size: 16px; font-weight: 700; color: var(--azul); margin-bottom: 8px; }
 .conf-item p { font-size: 13px; color: var(--texto-s); line-height: 1.6; }
 
+/* ── RESEÑAS ──────────────────────────────────────── */
+#resenas { background: var(--gris); }
+
+.resena-wrap {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 680px;
+  margin: 0 auto;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+
+.resena-stars-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.resena-stars-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--azul);
+}
+.star-selector {
+  display: flex;
+  gap: 4px;
+  cursor: pointer;
+}
+.star {
+  font-size: 36px;
+  color: #ddd;
+  transition: color 0.15s, transform 0.15s;
+  line-height: 1;
+  user-select: none;
+}
+.star.activa, .star.hover { color: var(--dorado); transform: scale(1.15); }
+
+.form-field textarea {
+  padding: 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: vertical;
+  width: 100%;
+}
+.form-field textarea:focus { border-color: var(--azul); }
+
+.resena-ok {
+  text-align: center;
+  padding: 20px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.resena-ok span { font-size: 28px; }
+.resena-ok p { font-size: 15px; font-weight: 700; color: var(--azul); margin: 0; }
+
+@media (max-width: 480px) {
+  .resena-wrap { padding: 24px 16px; }
+  .resena-stars-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+
 /* ── CTA FINAL ────────────────────────────────────── */
 #cta-final { background: white; padding: 60px 0; }
 .cta-box {
