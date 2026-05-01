@@ -208,7 +208,6 @@ function cardHTML(p) {
       <div class="producto-body">
         <span class="producto-cat">${p.categoria}</span>
         <h3 class="producto-nom producto-nom-link" onclick="abrirProducto('${nomEsc}')">${p.nom}</h3>
-        ${p.descripcion ? `<p class="producto-desc">${p.descripcion}</p>` : '<p class="producto-desc"></p>'}
         <div class="producto-precios">
           <div class="precio-usd"><span>$ </span>${usdStr} <span>USD</span></div>
           <div class="precio-bs">Equivalente: <strong>Bs ${bsStr}</strong></div>
