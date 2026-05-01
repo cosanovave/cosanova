@@ -537,12 +537,12 @@ function initNavbar() {
       nav.style.background     = 'rgba(250,244,232,0.97)';
       nav.style.backdropFilter = 'blur(14px)';
       nav.style.borderBottom   = '1px solid rgba(240,165,0,0.3)';
-      if (logo) logo.style.height = '100px';
+      logo?.classList.add('scrolled');
     } else {
       nav.style.background     = 'transparent';
       nav.style.backdropFilter = 'none';
       nav.style.borderBottom   = 'none';
-      if (logo) logo.style.height = '240px';
+      logo?.classList.remove('scrolled');
     }
   });
 }
