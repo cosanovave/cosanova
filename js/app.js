@@ -210,7 +210,7 @@ function cardHTML(p) {
         <h3 class="producto-nom producto-nom-link" onclick="abrirProducto('${nomEsc}')">${p.nom}</h3>
         <div class="producto-precios">
           <div class="precio-usd"><span>$ </span>${usdStr} <span>USD</span></div>
-          <div class="precio-bs">Equivalente: <strong>Bs ${bsStr}</strong></div>
+          <div class="precio-bs">BCV: <strong>Bs ${bsStr}</strong></div>
         </div>
         <button class="btn-carrito" onclick="agregarAlCarrito('${nomEsc}', ${pvp_usd.toFixed(2)}, '${p.categoria}')">
           🛒 Agregar al carrito
