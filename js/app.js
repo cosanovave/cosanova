@@ -201,10 +201,13 @@ function cardHTML(p) {
 
   return `
     <div class="producto-card reveal">
-      ${imgHTML}
+      <div class="producto-img-wrap" onclick="abrirProducto('${nomEsc}')">
+        ${imgHTML}
+        <div class="producto-img-overlay"><span>🔍 Ver detalles</span></div>
+      </div>
       <div class="producto-body">
         <span class="producto-cat">${p.categoria}</span>
-        <h3 class="producto-nom">${p.nom}</h3>
+        <h3 class="producto-nom producto-nom-link" onclick="abrirProducto('${nomEsc}')">${p.nom}</h3>
         ${p.descripcion ? `<p class="producto-desc">${p.descripcion}</p>` : '<p class="producto-desc"></p>'}
         <div class="producto-precios">
           <div class="precio-usd"><span>$ </span>${usdStr} <span>USD</span></div>
@@ -215,6 +218,47 @@ function cardHTML(p) {
         </button>
       </div>
     </div>`;
+}
+
+// ─── MODAL DETALLE DE PRODUCTO ────────────────────────
+function abrirProducto(nom) {
+  const p = productos.find(x => x.nom === nom);
+  if (!p) return;
+
+  const { pvp_usd, pvp_bs } = calcPrecio(p.inv_cop);
+
+  document.getElementById('mp-cat').textContent  = p.categoria;
+  document.getElementById('mp-nom').textContent  = p.nom;
+  document.getElementById('mp-desc').textContent = p.descripcion || 'Sin descripción disponible.';
+  document.getElementById('mp-usd').textContent  = fmt(pvp_usd);
+  document.getElementById('mp-bs').textContent   = 'Bs ' + fmt(pvp_bs, 0);
+
+  const img  = document.getElementById('mp-img');
+  const phld = document.getElementById('mp-img-placeholder');
+  if (p.imagen) {
+    img.src          = `assets/products/${p.imagen}`;
+    img.alt          = p.nom;
+    img.style.display  = 'block';
+    phld.style.display = 'none';
+  } else {
+    img.style.display  = 'none';
+    phld.textContent   = iconoCategoria(p.categoria);
+    phld.style.display = 'flex';
+  }
+
+  const nomEsc = p.nom.replace(/'/g, "\\'");
+  document.getElementById('mp-btn-carrito').onclick = () => {
+    agregarAlCarrito(nomEsc, pvp_usd.toFixed(2), p.categoria);
+    cerrarProducto();
+  };
+
+  document.getElementById('modal-producto').classList.add('activo');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarProducto() {
+  document.getElementById('modal-producto').classList.remove('activo');
+  document.body.style.overflow = '';
 }
 
 function iconoCategoria(cat) {
