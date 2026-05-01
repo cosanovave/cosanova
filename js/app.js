@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initParticulas();
   initReveal();
   initNavbar();
+  initStars();
   actualizarCarritoUI();
   cargarDatos();
 });
@@ -568,6 +569,51 @@ function initParticulas() {
     requestAnimationFrame(draw);
   }
   draw();
+}
+
+// ─── RESEÑAS ──────────────────────────────────────────
+let estrellasResena = 0;
+
+function initStars() {
+  const stars = document.querySelectorAll('.star-selector .star');
+  stars.forEach(star => {
+    star.addEventListener('mouseenter', () => {
+      const val = +star.dataset.val;
+      stars.forEach(s => s.classList.toggle('hover', +s.dataset.val <= val));
+    });
+    star.addEventListener('mouseleave', () => {
+      stars.forEach(s => s.classList.remove('hover'));
+    });
+    star.addEventListener('click', () => {
+      estrellasResena = +star.dataset.val;
+      stars.forEach(s => s.classList.toggle('activa', +s.dataset.val <= estrellasResena));
+    });
+  });
+}
+
+async function enviarResena() {
+  const nom    = document.getElementById('rs-nom').value.trim();
+  const ciudad = document.getElementById('rs-ciudad').value.trim();
+  const texto  = document.getElementById('rs-texto').value.trim();
+
+  if (!nom)            return mostrarToast('⚠️ Escribe tu nombre');
+  if (!estrellasResena) return mostrarToast('⚠️ Selecciona una calificación');
+  if (!texto)          return mostrarToast('⚠️ Escribe tu experiencia');
+
+  const btn = document.getElementById('btn-resena');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'resena', nom, ciudad, estrellas: estrellasResena, texto })
+    });
+  } catch(e) { /* continuar aunque falle el fetch */ }
+
+  btn.style.display = 'none';
+  document.getElementById('resena-ok').style.display = 'flex';
 }
 
 // ─── NAVBAR SCROLL ────────────────────────────────────
