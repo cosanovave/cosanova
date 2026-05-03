@@ -443,10 +443,11 @@ async function enviarPedido() {
   const nom    = document.getElementById('co-nom')?.value.trim();
   const email  = document.getElementById('co-email')?.value.trim();
   const tel    = document.getElementById('co-tel')?.value.trim();
+  const cedula = document.getElementById('co-cedula')?.value.trim();
   const ciudad = document.getElementById('co-ciudad')?.value.trim();
   const dir    = document.getElementById('co-dir')?.value.trim();
 
-  if (!nom || !email || !tel || !ciudad || !dir)
+  if (!nom || !email || !tel || !cedula || !ciudad || !dir)
     return mostrarToast('Completa todos los datos del cliente');
   if (!capturaB64)
     return mostrarToast('Sube la captura del comprobante');
@@ -459,7 +460,7 @@ async function enviarPedido() {
   if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
 
   const payload = {
-    nombre: nom, email, telefono: tel, ciudad, direccion: dir,
+    nombre: nom, email, telefono: tel, cedula, ciudad, direccion: dir,
     productos: prods, total_usd: fmt(total), total_bs: fmt(totalBs, 0),
     metodo_pago: metodoSeleccionado === 'usdt' ? 'USDT (Binance Pay)' : 'Pago Móvil BDV',
     captura: capturaB64,
