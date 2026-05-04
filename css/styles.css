@@ -1,16 +1,22 @@
-/* --- ESTILOS BASE --- */
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+/* --- ESTILOS GENERALES --- */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f4f7f6;
+    margin: 0;
+}
 
+/* --- CONTENEDOR DE CATEGORÍAS (Recupera el diseño horizontal) --- */
 .category-container {
     display: flex;
     gap: 12px;
     justify-content: center;
-    padding: 20px;
+    padding: 30px 15px;
     flex-wrap: wrap;
     position: relative;
     z-index: 100;
 }
 
+/* --- BOTONES ESTILO PILL (Como en tu imagen original) --- */
 .cat-btn {
     padding: 10px 25px;
     border: 2px solid #001a33;
@@ -19,7 +25,7 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; 
     border-radius: 50px;
     font-weight: 700;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -28,26 +34,32 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; 
 .cat-btn.active, .cat-btn:hover {
     background-color: #0d1b2a !important;
     color: #ffffff !important;
+    border-color: #0d1b2a;
 }
 
-/* --- MENÚ DESPLEGABLE (CLIC) --- */
-.dropdown-container { position: relative; display: inline-block; }
+/* --- LÓGICA DE MENÚS DESPLEGABLES --- */
+.dropdown-container {
+    position: relative;
+    display: inline-block;
+}
 
 .dropdown-content {
-    display: none; 
+    display: none; /* Se activa con JS al hacer clic */
     position: absolute;
-    top: 110%;
+    top: 115%;
     left: 0;
     background: #ffffff;
     min-width: 200px;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    border: 1px solid #e0e0e0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border: 1px solid #eee;
     padding: 10px 0;
-    z-index: 999;
+    z-index: 1000;
 }
 
-.dropdown-content.show { display: block !important; }
+.dropdown-content.show {
+    display: block !important;
+}
 
 .submenu-item {
     position: relative;
@@ -60,23 +72,27 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; 
     align-items: center;
 }
 
-.submenu-item:hover { background: #f8f9fa; }
+.submenu-item:hover {
+    background-color: #f8f9fa;
+    color: #d4af37;
+}
 
-/* --- SUB-SUB MENÚ (Dama / Caballeros) --- */
+/* --- SUBMENÚ LATERAL (Jeans -> Dama/Caballero) --- */
 .submenu-options {
     display: none;
     position: absolute;
-    left: 100%;
+    left: 98%;
     top: 0;
     background: #ffffff;
     min-width: 160px;
-    border-radius: 15px;
-    box-shadow: 10px 10px 30px rgba(0,0,0,0.1);
-    border: 1px solid #e0e0e0;
-    padding: 10px 0;
+    border-radius: 12px;
+    box-shadow: 10px 10px 25px rgba(0,0,0,0.1);
+    border: 1px solid #eee;
 }
 
-.submenu-item:hover .submenu-options { display: block; }
+.submenu-item:hover .submenu-options {
+    display: block;
+}
 
 .sub-cat-btn {
     width: 100%;
@@ -87,9 +103,20 @@ body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; 
     cursor: pointer;
     font-weight: 600;
     color: #001a33;
+    transition: 0.2s;
 }
 
-.sub-cat-btn:hover { background: #0d1b2a; color: #fff; }
+.sub-cat-btn:hover {
+    background-color: #0d1b2a;
+    color: #ffffff;
+}
 
-/* Estilo para los productos */
-.products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px; }
+/* --- GRILLA DE PRODUCTOS --- */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
