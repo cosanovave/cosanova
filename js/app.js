@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const btnRopa = document.getElementById('btn-ropa-parent');
     const menuRopa = document.getElementById('menu-ropa');
-    const allBtns = document.querySelectorAll('.cat-btn, .sub-cat-btn');
+    const todosLosBotones = document.querySelectorAll('.cat-btn, .sub-cat-btn');
 
-    // 1. Abrir/Cerrar menú de Ropa al hacer clic
+    // 1. Control del Menú Desplegable (Clic)
     if (btnRopa) {
         btnRopa.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -11,27 +11,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Cerrar si se hace clic en cualquier otro lado
+    // Cerrar menú si el usuario hace clic en cualquier otra parte de la pantalla
     document.addEventListener('click', () => {
-        menuRopa.classList.remove('show');
+        if (menuRopa) menuRopa.classList.remove('show');
     });
 
     // 2. Lógica de Filtrado
-    allBtns.forEach(button => {
-        button.addEventListener('click', () => {
-            const category = button.getAttribute('data-category');
-            
-            // Si el botón tiene una categoría (no es el padre 'Ropa')
-            if (category) {
-                // Cambiar estado visual del botón activo
-                allBtns.forEach(b => b.classList.remove('active'));
-                button.classList.add('active');
+    todosLosBotones.forEach(boton => {
+        boton.addEventListener('click', () => {
+            const categoriaSeleccionada = boton.getAttribute('data-category');
 
-                // Filtrar productos
-                filtrarProductosPorCategoria(category);
+            // Solo filtramos si el botón tiene una categoría definida (evita filtrar al pulsar el padre 'Ropa')
+            if (categoriaSeleccionada) {
+                // Actualizar estilo visual 'active'
+                todosLosBotones.forEach(b => b.classList.remove('active'));
+                boton.classList.add('active');
 
-                // Si es subcategoría, cerramos el menú
-                if (button.classList.contains('sub-cat-btn')) {
+                // Llamada a la función de filtrado
+                ejecutarFiltrado(categoriaSeleccionada);
+
+                // Cerrar menú si se eligió una subcategoría (Dama/Caballero)
+                if (boton.classList.contains('sub-cat-btn')) {
                     menuRopa.classList.remove('show');
                 }
             }
@@ -40,20 +40,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Función que oculta o muestra productos según la categoría seleccionada.
- * Busca elementos que tengan la clase .producto-item o .product-card
+ * Función que conecta con los productos en pantalla.
+ * Asegúrate de que tus productos en el HTML tengan el atributo 'data-categoria'
  */
-function filtrarProductosPorCategoria(cat) {
-    const items = document.querySelectorAll('.producto-item, .product-card');
+function ejecutarFiltrado(categoria) {
+    const productos = document.querySelectorAll('.product-card, .producto-item');
     
-    items.forEach(item => {
-        // Obtenemos la categoría que viene de tu Google Sheets (data-categoria)
-        const itemCat = item.getAttribute('data-categoria') || item.getAttribute('data-product-category');
-        
-        if (cat === 'all' || itemCat === cat) {
-            item.style.display = 'block';
+    productos.forEach(producto => {
+        const catProducto = producto.getAttribute('data-categoria') || producto.getAttribute('data-product-category');
+
+        if (categoria === 'all' || catProducto === categoria) {
+            producto.style.display = 'block';
         } else {
-            item.style.display = 'none';
+            producto.style.display = 'none';
         }
     });
 }
