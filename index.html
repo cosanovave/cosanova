@@ -1,22 +1,56 @@
-<!-- Sección de Categorías con Menú Desplegable Real -->
-<div class="category-container" id="main-filters">
-    <button class="cat-btn" data-category="all">Todos</button>
-    <button class="cat-btn" data-category="Perfumes 1.1">Perfumes 1.1</button>
-    <button class="cat-btn" data-category="Belleza">Belleza</button>
-    
-    <!-- Categoría Ropa con Menú -->
-    <div class="dropdown-container">
-        <button class="cat-btn" id="btn-ropa-parent">Ropa <i class="fas fa-chevron-down"></i></button>
-        <div class="dropdown-content" id="menu-ropa">
-            <div class="submenu-item">
-                <span class="submenu-trigger">Jeans <i class="fas fa-chevron-right"></i></span>
-                <div class="submenu-options">
-                    <button class="sub-cat-btn" data-category="Jeans Dama">Dama</button>
-                    <button class="sub-cat-btn" data-category="Jeans Caballero">Caballeros</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosa Nova - Todo en un solo lugar</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Librería para las flechas del menú -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
 
-    <button class="cat-btn active" data-category="General">General</button>
-</div>
+    <!-- Tu Header original se mantiene aquí -->
+    <header>
+        <div class="logo-container">
+            <img src="assets/logo.png" alt="Cosa Nova Logo" class="logo">
+        </div>
+    </header>
+
+    <main>
+        <!-- SECCIÓN DE FILTROS ACTUALIZADA -->
+        <section class="filters-section">
+            <div class="category-container" id="main-filters">
+                <button class="cat-btn" data-category="all">Todos</button>
+                <button class="cat-btn" data-category="Perfumes 1.1">Perfumes 1.1</button>
+                <button class="cat-btn" data-category="Belleza">Belleza</button>
+                
+                <!-- Menú Desplegable de Ropa -->
+                <div class="dropdown-container">
+                    <button class="cat-btn" id="btn-ropa-parent" type="button">
+                        Ropa <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown-content" id="menu-ropa">
+                        <div class="submenu-item">
+                            <span class="submenu-trigger">Jeans <i class="fas fa-chevron-right"></i></span>
+                            <div class="submenu-options">
+                                <button class="sub-cat-btn" data-category="Jeans Dama">Dama</button>
+                                <button class="sub-cat-btn" data-category="Jeans Caballero">Caballeros</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="cat-btn active" data-category="General">General</button>
+            </div>
+        </section>
+
+        <!-- Contenedor donde se cargan tus productos de Google Sheets -->
+        <div id="productos-container" class="products-grid">
+            <!-- Los productos se inyectan aquí vía app.js -->
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
