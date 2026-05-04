@@ -1,4 +1,6 @@
-/* --- RESET Y POSICIONAMIENTO --- */
+/* --- ESTILOS BASE --- */
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+
 .category-container {
     display: flex;
     gap: 12px;
@@ -6,10 +8,9 @@
     padding: 20px;
     flex-wrap: wrap;
     position: relative;
-    z-index: 100; /* Asegura que esté sobre los productos */
+    z-index: 100;
 }
 
-/* Estilo base de botones (Fiel a tu imagen) */
 .cat-btn {
     padding: 10px 25px;
     border: 2px solid #001a33;
@@ -19,6 +20,9 @@
     font-weight: 700;
     cursor: pointer;
     transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .cat-btn.active, .cat-btn:hover {
@@ -26,14 +30,11 @@
     color: #ffffff !important;
 }
 
-/* --- LÓGICA DEL MENÚ DESPLEGABLE (CLIC) --- */
-.dropdown-container {
-    position: relative;
-    display: inline-block;
-}
+/* --- MENÚ DESPLEGABLE (CLIC) --- */
+.dropdown-container { position: relative; display: inline-block; }
 
 .dropdown-content {
-    display: none; /* Se activa con JS */
+    display: none; 
     position: absolute;
     top: 110%;
     left: 0;
@@ -46,14 +47,11 @@
     z-index: 999;
 }
 
-/* Mostrar cuando tiene la clase .show */
-.dropdown-content.show {
-    display: block !important;
-}
+.dropdown-content.show { display: block !important; }
 
 .submenu-item {
     position: relative;
-    padding: 10px 20px;
+    padding: 12px 20px;
     cursor: pointer;
     font-weight: 600;
     color: #001a33;
@@ -62,9 +60,7 @@
     align-items: center;
 }
 
-.submenu-item:hover {
-    background: #f8f9fa;
-}
+.submenu-item:hover { background: #f8f9fa; }
 
 /* --- SUB-SUB MENÚ (Dama / Caballeros) --- */
 .submenu-options {
@@ -73,15 +69,14 @@
     left: 100%;
     top: 0;
     background: #ffffff;
-    min-width: 150px;
+    min-width: 160px;
     border-radius: 15px;
     box-shadow: 10px 10px 30px rgba(0,0,0,0.1);
     border: 1px solid #e0e0e0;
+    padding: 10px 0;
 }
 
-.submenu-item:hover .submenu-options {
-    display: block;
-}
+.submenu-item:hover .submenu-options { display: block; }
 
 .sub-cat-btn {
     width: 100%;
@@ -90,11 +85,11 @@
     background: none;
     text-align: left;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
     color: #001a33;
 }
 
-.sub-cat-btn:hover {
-    background: #0d1b2a;
-    color: #fff;
-}
+.sub-cat-btn:hover { background: #0d1b2a; color: #fff; }
+
+/* Estilo para los productos */
+.products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px; }
