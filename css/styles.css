@@ -462,6 +462,49 @@ section { padding: 80px 0; }
 }
 .cat-btn.activa { border-color: var(--azul); }
 
+/* Submenús jerárquicos de Ropa */
+.subcat-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  margin-bottom: 0;
+  transition: max-height 0.35s ease, opacity 0.3s ease, margin-bottom 0.3s ease;
+}
+.subcat-row.visible {
+  max-height: 60px;
+  opacity: 1;
+  margin-bottom: 16px;
+}
+.subcat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-s);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.subcat-btn {
+  padding: 6px 18px;
+  border-radius: 20px;
+  border: 1.5px solid var(--azul-m);
+  background: white;
+  color: var(--azul);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.subcat-btn:hover, .subcat-btn.activa {
+  background: var(--azul-m);
+  color: white;
+  border-color: var(--azul-m);
+}
+
 .productos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
