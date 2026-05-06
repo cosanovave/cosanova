@@ -361,8 +361,21 @@
         <button class="cat-btn activa" onclick="filtrar('todas')">Todos</button>
         <button class="cat-btn" onclick="filtrar('Perfumes')">Perfumes 1.1</button>
         <button class="cat-btn" onclick="filtrar('Belleza')">Belleza</button>
-        <button class="cat-btn" onclick="filtrar('Ropa')">Ropa</button>
+        <button class="cat-btn" id="btn-ropa" onclick="filtrar('Ropa')">Ropa</button>
         <button class="cat-btn" onclick="filtrar('General')">General</button>
+      </div>
+
+      <!-- Submenú género (visible sólo cuando Ropa está activo) -->
+      <div class="subcat-row" id="subcat-genero">
+        <span class="subcat-label">Género:</span>
+        <button class="subcat-btn" onclick="filtrarGenero('Hombre', this)">Hombre</button>
+        <button class="subcat-btn" onclick="filtrarGenero('Mujer', this)">Mujer</button>
+      </div>
+
+      <!-- Submenú tipo (visible sólo cuando un género está seleccionado) -->
+      <div class="subcat-row" id="subcat-tipo">
+        <span class="subcat-label">Tipo:</span>
+        <button class="subcat-btn" onclick="filtrarTipo('Jeans', this)">Jeans</button>
       </div>
 
       <div id="productos-grid" class="productos-grid">
