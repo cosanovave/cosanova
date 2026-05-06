@@ -515,7 +515,7 @@ function filtrar(cat) {
   const rowGenero = document.getElementById('subcat-genero');
   const rowTipo   = document.getElementById('subcat-tipo');
 
-  if (cat === 'Ropa') {
+  if (cat === 'Ropa' || cat === 'Perfumes') {
     rowGenero.classList.add('visible');
   } else {
     rowGenero.classList.remove('visible');
@@ -534,7 +534,11 @@ function filtrarGenero(genero, btn) {
   btn.classList.add('activa');
   document.querySelectorAll('#subcat-tipo .subcat-btn').forEach(b => b.classList.remove('activa'));
 
-  document.getElementById('subcat-tipo').classList.add('visible');
+  if (categoriaActual === 'Ropa') {
+    document.getElementById('subcat-tipo').classList.add('visible');
+  } else {
+    document.getElementById('subcat-tipo').classList.remove('visible');
+  }
 
   renderProductos(productos);
 }
