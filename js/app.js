@@ -19,6 +19,8 @@ const FEE       = 2;    // % fee de pago
 let tasas          = { trm: 4200, bcv: 50, binance: 65 };
 let productos      = [];
 let categoriaActual = 'todas';
+let generoActual    = '';
+let subtipoActual   = '';
 let carrito        = JSON.parse(localStorage.getItem('cn-carrito') || '[]');
 let metodoSeleccionado = '';
 let capturaB64     = '';
@@ -91,7 +93,9 @@ function parsearStock(csv) {
       categoria:  f[2]  || 'General',
       peso_gr:    parseFloat(f[3]) || 0,
       descripcion: f[4] || '',
-      imagen:     f[6]  || ''   // columna G
+      imagen:     f[6]  || '',   // columna G
+      genero:     (f[7]  || '').trim(),  // columna H
+      subtipo:    (f[8]  || '').trim()   // columna I
     }));
 }
 
@@ -168,9 +172,12 @@ function renderProductos(lista) {
   const sinProd = document.getElementById('sin-productos');
   if (!grid) return;
 
-  const filtrados = categoriaActual === 'todas'
+  let filtrados = categoriaActual === 'todas'
     ? lista
     : lista.filter(p => p.categoria === categoriaActual);
+
+  if (generoActual)  filtrados = filtrados.filter(p => p.genero  === generoActual);
+  if (subtipoActual) filtrados = filtrados.filter(p => p.subtipo === subtipoActual);
 
   if (filtrados.length === 0) {
     grid.innerHTML = '';
@@ -498,12 +505,47 @@ function mostrarToast(msg) {
 // ─── FILTRO DE CATEGORÍAS ─────────────────────────────
 function filtrar(cat) {
   categoriaActual = cat;
+  generoActual    = '';
+  subtipoActual   = '';
+
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('activa'));
   event.target.classList.add('activa');
-  renderProductos(productos);
+  document.querySelectorAll('.subcat-btn').forEach(b => b.classList.remove('activa'));
 
-  // Scroll suave al catálogo
+  const rowGenero = document.getElementById('subcat-genero');
+  const rowTipo   = document.getElementById('subcat-tipo');
+
+  if (cat === 'Ropa') {
+    rowGenero.classList.add('visible');
+  } else {
+    rowGenero.classList.remove('visible');
+    rowTipo.classList.remove('visible');
+  }
+
+  renderProductos(productos);
   document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function filtrarGenero(genero, btn) {
+  generoActual  = genero;
+  subtipoActual = '';
+
+  document.querySelectorAll('#subcat-genero .subcat-btn').forEach(b => b.classList.remove('activa'));
+  btn.classList.add('activa');
+  document.querySelectorAll('#subcat-tipo .subcat-btn').forEach(b => b.classList.remove('activa'));
+
+  document.getElementById('subcat-tipo').classList.add('visible');
+
+  renderProductos(productos);
+}
+
+function filtrarTipo(tipo, btn) {
+  subtipoActual = tipo;
+
+  document.querySelectorAll('#subcat-tipo .subcat-btn').forEach(b => b.classList.remove('activa'));
+  btn.classList.add('activa');
+
+  renderProductos(productos);
 }
 
 // ─── CANVAS PARTÍCULAS ────────────────────────────────
