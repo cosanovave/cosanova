@@ -365,11 +365,13 @@
         <button class="cat-btn" onclick="filtrar('General')">General</button>
       </div>
 
-      <!-- Submenú género (visible sólo cuando Ropa está activo) -->
+      <!-- Submenú género (visible cuando Perfumes o Ropa están activos) -->
       <div class="subcat-row" id="subcat-genero">
         <span class="subcat-label">Género:</span>
         <button class="subcat-btn" onclick="filtrarGenero('Hombre', this)">Hombre</button>
         <button class="subcat-btn" onclick="filtrarGenero('Mujer', this)">Mujer</button>
+        <button class="subcat-btn" onclick="filtrarGenero('Niños', this)">Niños</button>
+        <button class="subcat-btn" onclick="filtrarGenero('Niñas', this)">Niñas</button>
       </div>
 
       <!-- Submenú tipo (visible sólo cuando un género está seleccionado) -->
