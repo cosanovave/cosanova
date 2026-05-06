@@ -1,682 +1,1843 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Cosa Nova — Todo en un solo lugar. Compra desde Colombia con envío a Venezuela. Perfumes, belleza, ropa y más.">
-  <title>Cosa Nova — Todo en un solo lugar</title>
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOVA TECH by COSA NOVA — Desarrollo Web & Marketing Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --purple: #a855f7;
+  --blue: #3b82f6;
+  --pink: #ec4899;
+  --dark: #080818;
+  --dark2: #0d0d2b;
+  --dark3: #111135;
+  --text: #e2e8f0;
+  --muted: #cbd5e1;
+  --grad: linear-gradient(135deg, #a855f7, #3b82f6, #ec4899);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--dark);
+  color: var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--dark); }
+::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 2px; }
+
+/* ===== CANVAS ===== */
+#particles-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== NAVBAR ===== */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  padding: 0 5%;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(8,8,24,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(168,85,247,0.15);
+  transition: background 0.3s;
+}
+
+.nav-logo {
+  cursor: pointer;
+  z-index: 201;
+  display: flex;
+  align-items: center;
+}
+
+.nav-logo img {
+  height: 110px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 12px rgba(168,85,247,0.6));
+  transition: filter 0.3s, transform 0.3s;
+}
+
+@media (hover: hover) {
+  .nav-logo img:hover {
+    filter: drop-shadow(0 0 20px rgba(168,85,247,0.9));
+    transform: scale(1.05);
+  }
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  align-items: center;
+}
+
+.nav-links a {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: color 0.3s;
+  white-space: nowrap;
+}
+
+.nav-links a:hover { color: var(--purple); }
+
+.nav-cta {
+  background: linear-gradient(135deg, var(--purple), var(--blue));
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  padding: 9px 22px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Hamburger */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 8px;
+  z-index: 201;
+  background: none;
+  border: none;
+}
+
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--purple);
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+
+.hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* Mobile menu overlay */
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 120px; left: 0; right: 0; bottom: 0;
+  background: rgba(8,8,24,0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: 199;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  border-top: 1px solid rgba(168,85,247,0.15);
+  padding: 40px 20px;
+}
+
+.mobile-menu.open { display: flex; }
+
+.mobile-menu a {
+  color: var(--text);
+  text-decoration: none;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 16px 32px;
+  border: 1px solid rgba(168,85,247,0.2);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 300px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.mobile-menu a:hover,
+.mobile-menu a:active { background: rgba(168,85,247,0.12); border-color: var(--purple); }
+
+.mobile-menu .m-cta {
+  background: linear-gradient(135deg, var(--purple), var(--blue));
+  border-color: transparent;
+  color: white;
+}
+
+/* ===== HERO ===== */
+#hero {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 140px 6% 80px;
+  z-index: 1;
+}
+
+.hero-glow {
+  position: absolute;
+  top: 30%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-content { position: relative; z-index: 2; max-width: 860px; width: 100%; }
+
+.hero-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  border: 1px solid rgba(168,85,247,0.7);
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #d8b4fe;
+  margin-bottom: 24px;
+  background: rgba(168,85,247,0.18);
+}
+
+.hero-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.8rem, 6vw, 4rem);
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.hero-title .grad-text {
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  color: #e2e8f0;
+  line-height: 1.7;
+  max-width: 600px;
+  margin: 0 auto 36px;
+  font-weight: 600;
+}
+
+.hero-btns {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  padding: 14px 32px;
+  background: linear-gradient(135deg, var(--purple), var(--blue));
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 0 30px rgba(168,85,247,0.3);
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-primary:active { transform: scale(0.97); }
+
+.btn-outline {
+  padding: 14px 32px;
+  background: transparent;
+  color: var(--purple);
+  border: 1px solid rgba(168,85,247,0.5);
+  border-radius: 8px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.3s;
+  min-height: 48px;
+}
+
+.btn-outline:active { background: rgba(168,85,247,0.1); }
+
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.65rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  animation: bounce 2s infinite;
+}
+
+.scroll-line { width: 1px; height: 32px; background: linear-gradient(to bottom, var(--purple), transparent); }
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(8px); }
+}
+
+/* ===== HERO FLOATING NOTIFS ===== */
+.hero-notifs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.h-notif {
+  position: absolute;
+  background: rgba(13,13,43,0.9);
+  border: 1px solid rgba(168,85,247,0.28);
+  border-radius: 14px;
+  padding: 12px 16px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  box-shadow: 0 8px 36px rgba(0,0,0,0.45), 0 0 0 1px rgba(168,85,247,0.07);
+  animation: notifIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+
+.h-notif.n1 { top: 18%; left: 3%;   animation: notifIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards 0.9s, floatN1 4s ease-in-out infinite 1.6s; }
+.h-notif.n2 { top: 32%; right: 3%;  animation: notifIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards 1.5s, floatN2 5s ease-in-out infinite 2.2s; }
+.h-notif.n3 { bottom: 26%; left: 4%; animation: notifIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards 2.0s, floatN3 3.5s ease-in-out infinite 2.7s; }
+.h-notif.n4 { bottom: 20%; right: 3%; animation: notifIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards 2.5s, floatN4 4.5s ease-in-out infinite 3.2s; }
+.h-notif.n5 { top: 60%; left: 2%;   animation: notifIn 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards 3.0s, floatN5 3.8s ease-in-out infinite 3.7s; }
+
+@keyframes notifIn {
+  0%   { opacity: 0; transform: translateY(22px) scale(0.88); }
+  100% { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+@keyframes floatN1 {
+  0%,100% { transform: translate(0px,   0px)   rotate(0deg);   }
+  25%     { transform: translate(18px, -38px)  rotate(3deg);   }
+  50%     { transform: translate(-10px,-52px)  rotate(-2deg);  }
+  75%     { transform: translate(22px, -24px)  rotate(2deg);   }
+}
+@keyframes floatN2 {
+  0%,100% { transform: translate(0px,   0px)   rotate(0deg);   }
+  30%     { transform: translate(-22px, 44px)  rotate(-3deg);  }
+  65%     { transform: translate(14px,  58px)  rotate(2deg);   }
+}
+@keyframes floatN3 {
+  0%,100% { transform: translate(0px,   0px)   rotate(0deg);   }
+  35%     { transform: translate(30px, -28px)  rotate(3.5deg); }
+  70%     { transform: translate(-14px, 42px)  rotate(-2.5deg);}
+}
+@keyframes floatN4 {
+  0%,100% { transform: translate(0px,   0px)   rotate(0deg);   }
+  25%     { transform: translate(-28px,-42px)  rotate(-3deg);  }
+  50%     { transform: translate(-46px,-16px)  rotate(2deg);   }
+  75%     { transform: translate(-20px,-56px)  rotate(-2deg);  }
+}
+@keyframes floatN5 {
+  0%,100% { transform: translate(0px,   0px)   rotate(0deg);   }
+  40%     { transform: translate(36px, -48px)  rotate(4deg);   }
+  80%     { transform: translate(16px, -22px)  rotate(-2deg);  }
+}
+
+.notif-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+.notif-icon.ni-green  { background: rgba(34,197,94,0.18);  border: 1px solid rgba(34,197,94,0.3);  }
+.notif-icon.ni-purple { background: rgba(168,85,247,0.18); border: 1px solid rgba(168,85,247,0.3); }
+.notif-icon.ni-blue   { background: rgba(59,130,246,0.18); border: 1px solid rgba(59,130,246,0.3); }
+.notif-icon.ni-pink   { background: rgba(236,72,153,0.18); border: 1px solid rgba(236,72,153,0.3); }
+.notif-icon.ni-yellow { background: rgba(234,179,8,0.18);  border: 1px solid rgba(234,179,8,0.3);  }
+
+.notif-text .n-label { font-size: 0.58rem; color: #64748b; letter-spacing: 1.5px; text-transform: uppercase; }
+.notif-text .n-val   { font-family: 'Orbitron', sans-serif; font-size: 0.75rem; font-weight: 700; color: white; margin-top: 3px; }
+.notif-text .n-val .pos  { color: #4ade80; }
+.notif-text .n-val .hi   { color: #c4b5fd; }
+.notif-text .n-val .yel  { color: #fbbf24; }
+
+.n-pulse {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
+  animation: pulseDot 1.8s ease-in-out infinite;
+}
+@keyframes pulseDot {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(74,222,128,0.6); }
+  50%       { box-shadow: 0 0 0 6px rgba(74,222,128,0);   }
+}
+
+/* ===== TICKER ===== */
+.ticker-wrap {
+  position: relative; z-index: 1;
+  background: rgba(168,85,247,0.035);
+  border-top: 1px solid rgba(168,85,247,0.1);
+  border-bottom: 1px solid rgba(168,85,247,0.1);
+  padding: 10px 0;
+  overflow: hidden;
+}
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: tickerScroll 40s linear infinite;
+}
+.ticker-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 30px;
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  color: #94a3b8;
+  white-space: nowrap;
+  border-right: 1px solid rgba(168,85,247,0.1);
+}
+.t-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.t-dot.tg { background: #4ade80; }
+.t-dot.tp { background: var(--purple); }
+.t-dot.tb { background: var(--blue); }
+.t-dot.tk { background: var(--pink); }
+.t-dot.ty { background: #fbbf24; }
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ===== STATS ===== */
+#stats {
+  position: relative;
+  z-index: 1;
+  padding: 48px 6%;
+  background: linear-gradient(90deg, rgba(168,85,247,0.05), rgba(59,130,246,0.05), rgba(236,72,153,0.05));
+  border-top: 1px solid rgba(168,85,247,0.1);
+  border-bottom: 1px solid rgba(168,85,247,0.1);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.stat-number {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-weight: 900;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 4px;
+  line-height: 1.3;
+}
+
+/* ===== SECTIONS COMMON ===== */
+section {
+  position: relative;
+  z-index: 1;
+  padding: 80px 6%;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+
+.section-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--purple);
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
+  font-weight: 700;
+  color: white;
+  margin-bottom: 14px;
+  line-height: 1.25;
+}
+
+.section-sub {
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  color: var(--muted);
+  max-width: 540px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+/* ===== WEB SERVICES ===== */
+#web-services { background: var(--dark2); }
+
+.web-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.web-card {
+  background: linear-gradient(160deg, rgba(168,85,247,0.07), rgba(59,130,246,0.04));
+  border: 1px solid rgba(168,85,247,0.2);
+  border-radius: 16px;
+  padding: 32px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.4s, border-color 0.4s, box-shadow 0.4s;
+}
+
+.web-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--grad);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s;
+}
+
+@media (hover: hover) {
+  .web-card:hover::before { transform: scaleX(1); }
+  .web-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(168,85,247,0.5);
+    box-shadow: 0 20px 50px rgba(168,85,247,0.15);
+  }
+  .mkt-card:hover {
+    border-color: rgba(168,85,247,0.4);
+    background: rgba(168,85,247,0.06);
+    transform: translateX(4px);
+  }
+}
+
+.card-icon-wrap {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(59,130,246,0.2));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 18px;
+  border: 1px solid rgba(168,85,247,0.2);
+}
+
+.web-card h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #c4b5fd;
+  margin-bottom: 10px;
+}
+
+.web-card p {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.card-features {
+  list-style: none;
+  margin-top: 14px;
+}
+
+.card-features li {
+  font-size: 0.85rem;
+  color: var(--muted);
+  padding: 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-features li::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  background: var(--purple);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ===== MARKETING ===== */
+#marketing { background: var(--dark); }
+
+.mkt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.mkt-card {
+  background: rgba(13,13,43,0.6);
+  border: 1px solid rgba(168,85,247,0.15);
+  border-radius: 12px;
+  padding: 24px 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  transition: all 0.4s;
+}
+
+.mkt-icon {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  background: linear-gradient(135deg, rgba(168,85,247,0.25), rgba(236,72,153,0.15));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  border: 1px solid rgba(168,85,247,0.2);
+}
+
+.mkt-info h3 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #c4b5fd;
+  margin-bottom: 6px;
+}
+
+.mkt-info p {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.mkt-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.tag {
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  background: rgba(168,85,247,0.12);
+  border: 1px solid rgba(168,85,247,0.2);
+  color: #a78bfa;
+}
+
+/* ===== WHY US ===== */
+#why-us { background: var(--dark2); }
+
+.why-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 70px;
+  align-items: center;
+}
+
+.why-text .section-header { text-align: left; margin-bottom: 36px; }
+
+.why-items { display: flex; flex-direction: column; gap: 22px; }
+
+.why-item { display: flex; gap: 14px; align-items: flex-start; }
+
+.why-num {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 900;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  flex-shrink: 0;
+  min-width: 48px;
+}
+
+.why-item h4 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 1px;
+  color: white;
+  margin-bottom: 5px;
+}
+
+.why-item p {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.why-visual {
+  position: relative;
+  height: 380px;
+}
+
+.float-card {
+  position: absolute;
+  background: linear-gradient(160deg, rgba(168,85,247,0.12), rgba(59,130,246,0.06));
+  border: 1px solid rgba(168,85,247,0.25);
+  border-radius: 14px;
+  padding: 18px 22px;
+  backdrop-filter: blur(10px);
+}
+
+.float-card.c1 { top: 0; left: 5%; width: 78%; animation: float1 6s ease-in-out infinite; }
+.float-card.c2 { top: 38%; right: 0; width: 62%; animation: float2 7s ease-in-out infinite; }
+.float-card.c3 { bottom: 0; left: 5%; width: 56%; animation: float1 5s ease-in-out infinite 1s; }
+
+@keyframes float1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes float2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(10px)} }
+
+.fc-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.6rem;
+  color: var(--purple);
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.fc-value {
+  font-size: 1.7rem;
+  font-weight: 700;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.fc-sub { font-size: 0.73rem; color: var(--muted); margin-top: 2px; }
+
+/* ===== PROCESS ===== */
+#process { background: var(--dark); }
+
+.process-steps {
+  display: flex;
+  gap: 0;
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.process-steps::before {
+  content: '';
+  position: absolute;
+  top: 31px; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--purple), var(--blue), var(--pink), transparent);
+}
+
+.step { flex: 1; text-align: center; padding: 0 14px; position: relative; }
+
+.step-num {
+  width: 62px; height: 62px;
+  background: linear-gradient(135deg, var(--purple), var(--blue));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+  color: white;
+  margin: 0 auto 18px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 28px rgba(168,85,247,0.4);
+}
+
+.step h4 {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  color: #c4b5fd;
+  margin-bottom: 8px;
+}
+
+.step p { font-size: 0.83rem; color: var(--muted); line-height: 1.5; }
+
+/* ===== CONTACT ===== */
+#contacto { background: var(--dark2); }
+
+.contact-inner { max-width: 660px; margin: 0 auto; }
+
+.contact-cta-wrap {
+  text-align: center;
+  padding: 56px 40px;
+  background: linear-gradient(160deg, rgba(168,85,247,0.06), rgba(59,130,246,0.03));
+  border: 1px solid rgba(168,85,247,0.2);
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.contact-cta-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--grad);
+}
+
+.btn-cta-form {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 48px;
+  background: linear-gradient(135deg, var(--purple), var(--blue));
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  box-shadow: 0 0 50px rgba(168,85,247,0.4);
+  transition: transform 0.3s, box-shadow 0.3s;
+  min-height: 56px;
+}
+
+@media (hover: hover) {
+  .btn-cta-form:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 70px rgba(168,85,247,0.55);
+  }
+}
+
+.btn-cta-form:active { transform: scale(0.97); }
+
+.cta-note {
+  margin-top: 18px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.contact-alt {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.contact-alt a { color: var(--purple); text-decoration: none; transition: color 0.3s; }
+.contact-alt a:hover { color: var(--pink); }
+
+/* ===== FOOTER ===== */
+footer {
+  position: relative;
+  z-index: 1;
+  background: #050510;
+  border-top: 1px solid rgba(168,85,247,0.15);
+  padding: 56px 6% 32px;
+  text-align: center;
+}
+
+.footer-inner { max-width: 700px; margin: 0 auto; }
+
+.footer-logo-wrap {
+  margin-bottom: 28px;
+}
+
+.footer-logo-img {
+  height: 110px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 18px rgba(168,85,247,0.4));
+}
+
+.footer-divider {
+  width: 60px;
+  height: 1px;
+  background: var(--grad);
+  margin: 0 auto 24px;
+  opacity: 0.6;
+}
+
+.footer-contact {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.footer-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.88rem;
+  letter-spacing: 0.5px;
+  transition: color 0.3s;
+}
+
+.footer-contact-item:hover { color: var(--purple); }
+
+.fc-ico {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: rgba(168,85,247,0.12);
+  border: 1px solid rgba(168,85,247,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.footer-copy {
+  font-size: 0.68rem;
+  color: #2d3748;
+  letter-spacing: 1px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(168,85,247,0.07);
+}
+
+/* ===== PRIVACY MODAL ===== */
+.priv-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(5,5,16,0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.priv-modal-overlay.open { display: flex; }
+.priv-modal {
+  background: #0d0d2b;
+  border: 1px solid rgba(168,85,247,0.25);
+  border-radius: 16px;
+  max-width: 720px;
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 44px 48px;
+  position: relative;
+  color: var(--text);
+  box-shadow: 0 0 60px rgba(168,85,247,0.15);
+  scrollbar-width: thin;
+  scrollbar-color: var(--purple) #0d0d2b;
+}
+.priv-modal::-webkit-scrollbar { width: 4px; }
+.priv-modal::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 2px; }
+.priv-modal-close {
+  position: absolute;
+  top: 16px; right: 20px;
+  background: rgba(168,85,247,0.1);
+  border: 1px solid rgba(168,85,247,0.2);
+  color: var(--muted);
+  font-size: 1.3rem;
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  line-height: 1;
+}
+.priv-modal-close:hover { background: rgba(168,85,247,0.25); color: #fff; }
+.priv-modal h2 {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 4px;
+  padding-right: 40px;
+}
+.priv-modal .priv-subtitle {
+  font-size: 0.78rem;
+  color: rgba(168,85,247,0.65);
+  letter-spacing: 0.05em;
+  margin-bottom: 20px;
+}
+.priv-modal hr {
+  border: none;
+  border-top: 1px solid rgba(168,85,247,0.15);
+  margin: 18px 0;
+}
+.priv-modal h3 {
+  font-family: 'Orbitron', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--purple);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 22px 0 8px;
+}
+.priv-modal p, .priv-modal li {
+  font-size: 0.88rem;
+  color: var(--muted);
+  line-height: 1.75;
+}
+.priv-modal ul, .priv-modal ol {
+  padding-left: 18px;
+  margin: 6px 0;
+}
+.priv-modal li { margin-bottom: 5px; }
+.priv-modal a { color: var(--purple); text-decoration: underline; }
+.priv-modal strong { color: var(--text); }
+.priv-scope-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 18px;
+}
+.priv-scope-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(168,85,247,0.35);
+  color: var(--purple);
+  background: rgba(168,85,247,0.08);
+}
+@media (max-width: 640px) {
+  .priv-modal { padding: 28px 20px; }
+  .priv-modal h2 { font-size: 0.9rem; }
+}
+
+/* ===== SCROLL ANIMATIONS ===== */
+.reveal {
+  opacity: 0;
+  transform: translateY(36px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-36px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(36px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+.stagger-1 { transition-delay: 0.08s; }
+.stagger-2 { transition-delay: 0.16s; }
+.stagger-3 { transition-delay: 0.24s; }
+.stagger-4 { transition-delay: 0.32s; }
+.stagger-5 { transition-delay: 0.40s; }
+.stagger-6 { transition-delay: 0.48s; }
+
+
+/* Notifs flotantes solo en pantallas anchas */
+@media (max-width: 1100px) {
+  .h-notif.n1, .h-notif.n5 { left: 0.5%; }
+  .h-notif.n2, .h-notif.n4 { right: 0.5%; }
+}
+
+/* ===========================
+   RESPONSIVE — TABLET
+=========================== */
+@media (max-width: 900px) {
+  .why-inner { grid-template-columns: 1fr; gap: 48px; }
+  .why-visual { height: 300px; }
+  .why-text .section-header { text-align: center; }
+  .why-text .section-sub { margin: 0 auto; }
+}
+
+/* ===========================
+   RESPONSIVE — MOBILE
+=========================== */
+@media (max-width: 640px) {
+
+  /* Navbar */
+  .nav-links { display: none; }
+  .hamburger { display: flex; }
+
+  /* Hero */
+  #hero { padding: 80px 5% 70px; }
+  .hero-badge { font-size: 0.62rem; letter-spacing: 1.5px; padding: 5px 12px; }
+  .hero-btns { flex-direction: column; align-items: center; }
+  .btn-primary, .btn-outline { width: 100%; max-width: 300px; justify-content: center; }
+
+  /* Stats — 2×2 grid */
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+
+  /* Sections */
+  section { padding: 64px 5%; }
+  .section-header { margin-bottom: 40px; }
+
+  /* Web grid — single column */
+  .web-grid { grid-template-columns: 1fr; }
+
+  /* Marketing grid — single column */
+  .mkt-grid { grid-template-columns: 1fr; }
+
+  /* Why us visual — hidden on mobile, content is enough */
+  .why-visual { display: none; }
+  .why-text .section-header { text-align: left; }
+
+  /* Process — vertical */
+  .process-steps { flex-direction: column; gap: 32px; align-items: center; }
+  .process-steps::before { display: none; }
+  .step { max-width: 320px; width: 100%; }
+
+  /* Contact CTA */
+  .contact-cta-wrap { padding: 40px 20px; }
+  .btn-cta-form { width: 100%; max-width: 320px; padding: 16px 24px; font-size: 0.72rem; }
+
+  /* Notifs flotantes — ocultas en mobile */
+  .hero-notifs { display: none; }
+
+  /* Hide scroll hint on short screens */
+  .hero-scroll-hint { display: none; }
+}
+
+/* Extra small screens */
+@media (max-width: 380px) {
+  .nav-logo { font-size: 0.9rem; }
+  .hero-title { font-size: 1.6rem; }
+}
+</style>
 </head>
 <body>
 
-  <!-- ══ BANDA DE ANUNCIOS ═════════════════════════════ -->
-  <div id="anuncio-bar">
-    <div class="anuncio-track">
-      <span>🚚 Envío Colombia → Venezuela en 7 días hábiles</span>
-      <span class="anuncio-sep">·</span>
-      <span>💳 Paga en USDT, Bolívares o Zelle</span>
-      <span class="anuncio-sep">·</span>
-      <span>🛡️ Mercancía 100% asegurada</span>
-      <span class="anuncio-sep">·</span>
-      <span>📦 Tracking en tiempo real</span>
-      <span class="anuncio-sep">·</span>
-      <span>🚚 Envío Colombia → Venezuela en 7 días hábiles</span>
-      <span class="anuncio-sep">·</span>
-      <span>💳 Paga en USDT, Bolívares o Zelle</span>
-      <span class="anuncio-sep">·</span>
-      <span>🛡️ Mercancía 100% asegurada</span>
-      <span class="anuncio-sep">·</span>
-      <span>📦 Tracking en tiempo real</span>
+<canvas id="particles-canvas"></canvas>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="nav-logo" onclick="scrollTo({top:0,behavior:'smooth'})">
+    <img src="assets/LOGO_sin_novatech.png" alt="NOVA TECH by COSA NOVA">
+  </div>
+  <ul class="nav-links">
+    <li><a href="#web-services">Web</a></li>
+    <li><a href="#marketing">Marketing</a></li>
+    <li><a href="#why-us">Nosotros</a></li>
+    <li><a href="#process">Proceso</a></li>
+    <li><a href="#contacto" class="nav-cta">Cotizar</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Menú">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#web-services" class="m-link">Web</a>
+  <a href="#marketing" class="m-link">Marketing</a>
+  <a href="#why-us" class="m-link">Nosotros</a>
+  <a href="#process" class="m-link">Proceso</a>
+  <a href="#contacto" class="m-cta">Cotizar Ahora</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-glow"></div>
+
+  <!-- Notificaciones flotantes de métricas -->
+  <div class="hero-notifs" aria-hidden="true">
+
+    <div class="h-notif n1">
+      <div class="notif-icon ni-green">📈</div>
+      <div class="notif-text">
+        <div class="n-label">Auditoría SEO</div>
+        <div class="n-val"><span class="pos">98</span>/100 — Óptimo</div>
+      </div>
+      <div class="n-pulse"></div>
     </div>
+
+    <div class="h-notif n2">
+      <div class="notif-icon ni-purple">🎯</div>
+      <div class="notif-text">
+        <div class="n-label">Conversión Ads</div>
+        <div class="n-val"><span class="pos">+247%</span> este mes</div>
+      </div>
+    </div>
+
+    <div class="h-notif n3">
+      <div class="notif-icon ni-blue">🌐</div>
+      <div class="notif-text">
+        <div class="n-label">Web entregada</div>
+        <div class="n-val">E-commerce <span class="hi">✓ activo</span></div>
+      </div>
+    </div>
+
+    <div class="h-notif n4">
+      <div class="notif-icon ni-pink">💰</div>
+      <div class="notif-text">
+        <div class="n-label">ROI Campaña</div>
+        <div class="n-val"><span class="pos">4.2×</span> retorno</div>
+      </div>
+    </div>
+
+    <div class="h-notif n5">
+      <div class="notif-icon ni-yellow">⚡</div>
+      <div class="notif-text">
+        <div class="n-label">Velocidad Web</div>
+        <div class="n-val">Carga <span class="yel">0.8s</span> — A+</div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- ══ NAV ════════════════════════════════════════════ -->
-  <nav id="navbar">
-    <div class="nav-inner">
-      <img src="assets/logo_sin_fondo.png" alt="Cosa Nova" class="nav-logo">
-      <div class="nav-links">
-        <a href="#catalogo">Productos</a>
-        <a href="#como-funciona">Cómo funciona</a>
-        <a href="#pagos">Pagos</a>
-        <a href="#contacto">Contacto</a>
-        <a href="#resenas">Reseñas</a>
-      </div>
-      <button class="cart-btn" onclick="toggleCart()">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        <span id="cart-badge" class="cart-badge" style="display:none">0</span>
-      </button>
-      <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menú">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+  <div class="hero-content">
+    <div class="hero-badge reveal">Desarrollo Web & Marketing Digital</div>
+    <h1 class="hero-title reveal stagger-1">
+      Tu presencia digital<br>
+      <span class="grad-text">al siguiente nivel</span>
+    </h1>
+    <p class="hero-sub reveal stagger-2">
+      Creamos webs y estrategias de marketing a tu medida que hacen crecer tu negocio. Tecnología de vanguardia, resultados reales.
+    </p>
+    <div class="hero-btns reveal stagger-3">
+      <a href="#contacto" class="btn-primary">Solicitar Cotización</a>
+      <a href="#web-services" class="btn-outline">Ver Servicios</a>
     </div>
-  </nav>
+  </div>
+  <div class="hero-scroll-hint">
+    <div class="scroll-line"></div>
+    scroll
+  </div>
+</section>
 
-  <!-- ══ MENÚ MÓVIL ════════════════════════════════════ -->
-  <div id="mobile-menu-overlay" class="mobile-menu-overlay" onclick="cerrarMobileMenu()"></div>
-  <div id="mobile-menu" class="mobile-menu" role="navigation">
-    <button class="mobile-menu-close" onclick="cerrarMobileMenu()" aria-label="Cerrar menú">×</button>
-    <a href="#catalogo" onclick="cerrarMobileMenu()">🛍️ Productos</a>
-    <a href="#como-funciona" onclick="cerrarMobileMenu()">❓ Cómo funciona</a>
-    <a href="#pagos" onclick="cerrarMobileMenu()">💳 Métodos de pago</a>
-    <a href="#confianza" onclick="cerrarMobileMenu()">🛡️ Garantías</a>
-    <a href="#contacto" onclick="cerrarMobileMenu()">📍 Contacto</a>
-    <div class="mobile-menu-footer">
-      <a href="https://wa.me/573001885210?text=Hola%20Cosa%20Nova!%20Quiero%20información%20🛍️" target="_blank" class="mobile-menu-wa" onclick="cerrarMobileMenu()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        Escribir por WhatsApp
+<!-- TICKER DE ACTIVIDAD -->
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker-track">
+    <div class="ticker-item"><span class="t-dot tg"></span> Web corporativa entregada · Estudio Creativo</div>
+    <div class="ticker-item"><span class="t-dot tp"></span> Auditoría SEO completada · Score 98/100</div>
+    <div class="ticker-item"><span class="t-dot tb"></span> Campaña Meta Ads activa · +312% alcance</div>
+    <div class="ticker-item"><span class="t-dot tk"></span> E-commerce lanzado · 48 pedidos primer día</div>
+    <div class="ticker-item"><span class="t-dot ty"></span> Velocidad web optimizada · 0.8s carga</div>
+    <div class="ticker-item"><span class="t-dot tg"></span> Email marketing · 44% tasa de apertura</div>
+    <div class="ticker-item"><span class="t-dot tp"></span> Landing Page · Conversión +180%</div>
+    <div class="ticker-item"><span class="t-dot tb"></span> Google Ads · ROI 4.8× en 30 días</div>
+    <div class="ticker-item"><span class="t-dot tk"></span> Nuevo cliente · Branding & Estrategia 360°</div>
+    <div class="ticker-item"><span class="t-dot ty"></span> Portafolio premium · Entregado en 5 días</div>
+    <!-- duplicado para loop continuo -->
+    <div class="ticker-item"><span class="t-dot tg"></span> Web corporativa entregada · Estudio Creativo</div>
+    <div class="ticker-item"><span class="t-dot tp"></span> Auditoría SEO completada · Score 98/100</div>
+    <div class="ticker-item"><span class="t-dot tb"></span> Campaña Meta Ads activa · +312% alcance</div>
+    <div class="ticker-item"><span class="t-dot tk"></span> E-commerce lanzado · 48 pedidos primer día</div>
+    <div class="ticker-item"><span class="t-dot ty"></span> Velocidad web optimizada · 0.8s carga</div>
+    <div class="ticker-item"><span class="t-dot tg"></span> Email marketing · 44% tasa de apertura</div>
+    <div class="ticker-item"><span class="t-dot tp"></span> Landing Page · Conversión +180%</div>
+    <div class="ticker-item"><span class="t-dot tb"></span> Google Ads · ROI 4.8× en 30 días</div>
+    <div class="ticker-item"><span class="t-dot tk"></span> Nuevo cliente · Branding & Estrategia 360°</div>
+    <div class="ticker-item"><span class="t-dot ty"></span> Portafolio premium · Entregado en 5 días</div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div id="stats">
+  <div class="stats-grid">
+    <div class="stat-item reveal stagger-1">
+      <div class="stat-number" data-target="100">0</div>
+      <div class="stat-label">% Compromiso</div>
+    </div>
+    <div class="stat-item reveal stagger-2">
+      <div class="stat-number" data-target="10">0</div>
+      <div class="stat-label">Servicios</div>
+    </div>
+    <div class="stat-item reveal stagger-3">
+      <div class="stat-number" data-target="4">0</div>
+      <div class="stat-label">Tipos de Web</div>
+    </div>
+    <div class="stat-item reveal stagger-4">
+      <div class="stat-number" data-target="24">0</div>
+      <div class="stat-label">Hrs Soporte</div>
+    </div>
+  </div>
+</div>
+
+<!-- WEB SERVICES -->
+<section id="web-services">
+  <div class="section-header">
+    <div class="section-tag reveal">— Desarrollo Web —</div>
+    <h2 class="section-title reveal stagger-1">Webs que generan resultados</h2>
+    <p class="section-sub reveal stagger-2">Diseñamos y desarrollamos sitios web optimizados para conversión, velocidad y posicionamiento.</p>
+  </div>
+  <div class="web-grid">
+
+    <div class="web-card reveal stagger-1">
+      <div class="card-icon-wrap">🚀</div>
+      <h3>Landing Page</h3>
+      <p>Páginas de aterrizaje de alto impacto, diseñadas para convertir visitantes en clientes.</p>
+      <ul class="card-features">
+        <li>Diseño personalizado</li>
+        <li>Optimizada para conversión</li>
+        <li>Formulario de contacto</li>
+        <li>SEO básico incluido</li>
+        <li>100% responsiva</li>
+      </ul>
+    </div>
+
+    <div class="web-card reveal stagger-2">
+      <div class="card-icon-wrap">🏢</div>
+      <h3>Web Corporativa</h3>
+      <p>Sitio institucional completo que transmite confianza y profesionalismo a tus clientes.</p>
+      <ul class="card-features">
+        <li>Múltiples secciones</li>
+        <li>Blog integrado</li>
+        <li>Formularios avanzados</li>
+        <li>Panel de administración</li>
+        <li>Optimizada para SEO</li>
+      </ul>
+    </div>
+
+    <div class="web-card reveal stagger-3">
+      <div class="card-icon-wrap">🎨</div>
+      <h3>Portafolio</h3>
+      <p>Muestra tu trabajo de forma impactante y atrae clientes de calidad con un portafolio que destaca.</p>
+      <ul class="card-features">
+        <li>Galería de proyectos</li>
+        <li>Animaciones premium</li>
+        <li>Página de contacto</li>
+        <li>Carga ultrarrápida</li>
+        <li>Diseño único</li>
+      </ul>
+    </div>
+
+    <div class="web-card reveal stagger-4">
+      <div class="card-icon-wrap">🛒</div>
+      <h3>E-commerce</h3>
+      <p>Tienda online completa para vender tus productos las 24 horas, los 7 días de la semana.</p>
+      <ul class="card-features">
+        <li>Catálogo de productos</li>
+        <li>Carrito de compras</li>
+        <li>Pasarela de pago</li>
+        <li>Panel de pedidos</li>
+        <li>Gestión de inventario</li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- MARKETING -->
+<section id="marketing">
+  <div class="section-header">
+    <div class="section-tag reveal">— Marketing Digital —</div>
+    <h2 class="section-title reveal stagger-1">Estrategias que hacen crecer tu negocio</h2>
+    <p class="section-sub reveal stagger-2">Llevamos tu marca al público correcto con las herramientas digitales más efectivas del mercado.</p>
+  </div>
+  <div class="mkt-grid">
+
+    <div class="mkt-card reveal stagger-1">
+      <div class="mkt-icon">📱</div>
+      <div class="mkt-info">
+        <h3>Redes Sociales</h3>
+        <p>Gestión profesional de tus perfiles con contenido estratégico que conecta con tu audiencia.</p>
+        <div class="mkt-tags">
+          <span class="tag">Instagram</span>
+          <span class="tag">Facebook</span>
+          <span class="tag">TikTok</span>
+          <span class="tag">LinkedIn</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mkt-card reveal stagger-2">
+      <div class="mkt-icon">💰</div>
+      <div class="mkt-info">
+        <h3>Publicidad Pagada</h3>
+        <p>Campañas de ads optimizadas para maximizar tu retorno de inversión y atraer clientes calificados.</p>
+        <div class="mkt-tags">
+          <span class="tag">Meta Ads</span>
+          <span class="tag">Google Ads</span>
+          <span class="tag">TikTok Ads</span>
+          <span class="tag">Remarketing</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mkt-card reveal stagger-3">
+      <div class="mkt-icon">🔍</div>
+      <div class="mkt-info">
+        <h3>SEO</h3>
+        <p>Posicionamiento orgánico en Google para que tus clientes te encuentren cuando te buscan.</p>
+        <div class="mkt-tags">
+          <span class="tag">On-page</span>
+          <span class="tag">Técnico</span>
+          <span class="tag">Link Building</span>
+          <span class="tag">Auditoría</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mkt-card reveal stagger-4">
+      <div class="mkt-icon">📧</div>
+      <div class="mkt-info">
+        <h3>Email Marketing</h3>
+        <p>Campañas de correo que convierten, funnels automatizados y newsletters que fidelizan.</p>
+        <div class="mkt-tags">
+          <span class="tag">Campañas</span>
+          <span class="tag">Automatizaciones</span>
+          <span class="tag">Newsletters</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mkt-card reveal stagger-5">
+      <div class="mkt-icon">💎</div>
+      <div class="mkt-info">
+        <h3>Branding & Estrategia</h3>
+        <p>Construimos y fortalecemos tu identidad de marca con estrategias basadas en datos.</p>
+        <div class="mkt-tags">
+          <span class="tag">Identidad</span>
+          <span class="tag">Estrategia</span>
+          <span class="tag">Reportes</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mkt-card reveal stagger-6">
+      <div class="mkt-icon">✍️</div>
+      <div class="mkt-info">
+        <h3>Copywriting</h3>
+        <p>Textos persuasivos para web, anuncios, redes sociales y guiones de video que venden.</p>
+        <div class="mkt-tags">
+          <span class="tag">Webs</span>
+          <span class="tag">Ads</span>
+          <span class="tag">Redes</span>
+          <span class="tag">Guiones</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- WHY US -->
+<section id="why-us">
+  <div class="why-inner">
+    <div class="why-text">
+      <div class="section-header">
+        <div class="section-tag reveal">— Por qué elegirnos —</div>
+        <h2 class="section-title reveal stagger-1">Tecnología + Estrategia = Resultados</h2>
+        <p class="section-sub reveal stagger-2">No somos una agencia más. Somos tu equipo de crecimiento digital.</p>
+      </div>
+      <div class="why-items">
+        <div class="why-item reveal stagger-1">
+          <div class="why-num">01</div>
+          <div>
+            <h4>Soluciones a Medida</h4>
+            <p>Cada proyecto es único. Diseñamos estrategias personalizadas según tus objetivos y presupuesto.</p>
+          </div>
+        </div>
+        <div class="why-item reveal stagger-2">
+          <div class="why-num">02</div>
+          <div>
+            <h4>Tecnología de Vanguardia</h4>
+            <p>Usamos las últimas herramientas y tendencias para que tu negocio esté siempre un paso adelante.</p>
+          </div>
+        </div>
+        <div class="why-item reveal stagger-3">
+          <div class="why-num">03</div>
+          <div>
+            <h4>Resultados Medibles</h4>
+            <p>Reportes claros y métricas reales. Sabrás exactamente cómo está creciendo tu negocio.</p>
+          </div>
+        </div>
+        <div class="why-item reveal stagger-4">
+          <div class="why-num">04</div>
+          <div>
+            <h4>Soporte Continuo</h4>
+            <p>Te acompañamos en cada etapa. No desaparecemos después de entregar el proyecto.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="why-visual reveal-right">
+      <div class="float-card c1">
+        <div class="fc-title">PROYECTOS WEB</div>
+        <div class="fc-value">Premium</div>
+        <div class="fc-sub">Diseño + Desarrollo + SEO</div>
+      </div>
+      <div class="float-card c2">
+        <div class="fc-title">MARKETING DIGITAL</div>
+        <div class="fc-value">360°</div>
+        <div class="fc-sub">Redes · Ads · SEO · Email</div>
+      </div>
+      <div class="float-card c3">
+        <div class="fc-title">SOPORTE</div>
+        <div class="fc-value">24/7</div>
+        <div class="fc-sub">Siempre disponibles para ti</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="section-header">
+    <div class="section-tag reveal">— Cómo trabajamos —</div>
+    <h2 class="section-title reveal stagger-1">Tu proyecto en 4 pasos</h2>
+    <p class="section-sub reveal stagger-2">Un proceso claro y transparente para que siempre sepas en qué etapa estamos.</p>
+  </div>
+  <div class="process-steps">
+    <div class="step reveal stagger-1">
+      <div class="step-num">01</div>
+      <h4>Consulta</h4>
+      <p>Hablamos de tu negocio, objetivos y presupuesto para diseñar la estrategia ideal.</p>
+    </div>
+    <div class="step reveal stagger-2">
+      <div class="step-num">02</div>
+      <h4>Propuesta</h4>
+      <p>Te enviamos una cotización detallada y personalizada sin compromiso.</p>
+    </div>
+    <div class="step reveal stagger-3">
+      <div class="step-num">03</div>
+      <h4>Desarrollo</h4>
+      <p>Ejecutamos el proyecto con actualizaciones constantes y tu aprobación en cada etapa.</p>
+    </div>
+    <div class="step reveal stagger-4">
+      <div class="step-num">04</div>
+      <h4>Lanzamiento</h4>
+      <p>Entregamos tu proyecto listo y te brindamos soporte continuo post-lanzamiento.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contacto">
+  <div class="section-header">
+    <div class="section-tag reveal">— Contacto —</div>
+    <h2 class="section-title reveal stagger-1">¿Listo para crecer?</h2>
+    <p class="section-sub reveal stagger-2">Cuéntanos sobre tu proyecto y te enviamos una cotización personalizada sin costo.</p>
+  </div>
+  <div class="contact-inner">
+    <div class="contact-cta-wrap reveal">
+      <a href="https://forms.gle/HocKEWAMzb8uhS7y8" target="_blank" rel="noopener noreferrer" class="btn-cta-form">
+        Solicitar Cotización Gratis
+      </a>
+      <p class="cta-note">Completa el formulario y te respondemos en menos de 24 horas.</p>
+    </div>
+    <div class="contact-alt">
+      También puedes escribirnos a <a href="mailto:novatech.cosanova@gmail.com">novatech.cosanova@gmail.com</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+
+    <div class="footer-logo-wrap">
+      <img src="assets/LOGO_sin_novatech.png" alt="NOVA TECH by COSA NOVA" class="footer-logo-img">
+    </div>
+
+    <div class="footer-divider"></div>
+
+    <div class="footer-contact">
+      <a href="mailto:novatech.cosanova@gmail.com" class="footer-contact-item">
+        <div class="fc-ico">✉️</div>
+        novatech.cosanova@gmail.com
+      </a>
+      <a href="tel:+573001885210" class="footer-contact-item">
+        <div class="fc-ico">📞</div>
+        +57 300 188 5210
       </a>
     </div>
-  </div>
 
-  <!-- ══ CARRITO DRAWER ═════════════════════════════════ -->
-  <div id="cart-overlay" class="cart-overlay" onclick="toggleCart()"></div>
-  <div id="cart-drawer" class="cart-drawer">
-    <div class="cart-header">
-      <h3>Tu Carrito</h3>
-      <button class="cart-close" onclick="toggleCart()">×</button>
-    </div>
-    <div id="cart-items" class="cart-items-list"></div>
-    <div class="cart-footer">
-      <div class="cart-totales">
-        <div>Total: <strong id="ct-usd">$0.00 USD</strong></div>
-        <div class="ct-bs-row">BCV: <strong id="ct-bs">Bs 0</strong></div>
-      </div>
-      <button class="btn-pagar" onclick="abrirCheckout()">Proceder al Pago →</button>
+    <div class="footer-copy">
+      © 2026 NOVA TECH by COSA NOVA · Todos los derechos reservados
+      &nbsp;·&nbsp;
+      <button onclick="document.getElementById('privModal').classList.add('open')" style="background:none;border:none;color:#4a3f6b;font-size:0.68rem;letter-spacing:1px;cursor:pointer;font-family:'Rajdhani',sans-serif;text-decoration:underline;transition:color 0.2s;" onmouseover="this.style.color='#a855f7'" onmouseout="this.style.color='#4a3f6b'">Política de Privacidad</button>
     </div>
   </div>
+</footer>
 
-  <!-- ══ CHECKOUT MODAL ════════════════════════════════ -->
-  <div id="checkout-modal" class="checkout-modal">
-    <div class="checkout-box">
 
-      <div class="checkout-top">
-        <div class="checkout-steps-bar">
-          <div class="cs-dot activo" id="cs1">1</div>
-          <div class="cs-line" id="cl1"></div>
-          <div class="cs-dot" id="cs2">2</div>
-          <div class="cs-line" id="cl2"></div>
-          <div class="cs-dot" id="cs3">3</div>
-          <div class="cs-line" id="cl3"></div>
-          <div class="cs-dot" id="cs4">✓</div>
-        </div>
-        <button class="checkout-close" onclick="cerrarCheckout()">×</button>
-      </div>
 
-      <!-- PASO 1: Datos del comprador -->
-      <div id="paso-1" class="checkout-paso activo">
-        <h2>¿A quién le enviamos?</h2>
-        <div class="form-co">
-          <div class="form-field">
-            <label>Nombre completo *</label>
-            <input type="text" id="co-nom" placeholder="Tu nombre completo">
-          </div>
-          <div class="form-field">
-            <label>Correo electrónico *</label>
-            <input type="email" id="co-email" placeholder="tu@correo.com">
-          </div>
-          <div class="form-field">
-            <label>Teléfono *</label>
-            <input type="tel" id="co-tel" placeholder="+58 412 0000000">
-          </div>
-          <div class="form-field">
-            <label>Cédula / Pasaporte *</label>
-            <input type="text" id="co-cedula" placeholder="V-12.345.678">
-          </div>
-          <div class="form-field">
-            <label>Ciudad y Estado *</label>
-            <input type="text" id="co-ciudad" placeholder="Maracay, Aragua">
-          </div>
-          <div class="form-field form-full">
-            <label>Dirección de entrega *</label>
-            <input type="text" id="co-dir" placeholder="Urb., Calle, Casa o Apto">
-          </div>
-        </div>
-        <button class="btn-co" onclick="irPaso(2)">Continuar →</button>
-      </div>
+<!-- ===== POLÍTICA DE PRIVACIDAD MODAL ===== -->
+<div class="priv-modal-overlay" id="privModal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="priv-modal">
+    <button class="priv-modal-close" onclick="document.getElementById('privModal').classList.remove('open')">×</button>
+    <h2>Política de Privacidad</h2>
+    <p class="priv-subtitle">NOVA TECH by COMERCIALIZADORA COSA NOVA, C.A. · Última actualización: mayo 2026</p>
 
-      <!-- PASO 2: Método de pago -->
-      <div id="paso-2" class="checkout-paso">
-        <h2>¿Cómo vas a pagar?</h2>
-        <div class="metodos-grid">
-          <div class="metodo-card" id="mc-usdt" onclick="seleccionarMetodo('usdt')">
-            <span class="mc-icon">₿</span>
-            <span class="mc-nom">USDT</span>
-            <span class="mc-desc">Binance Pay</span>
-          </div>
-          <div class="metodo-card metodo-pronto">
-            <span class="mc-icon">$</span>
-            <span class="mc-nom">Zelle</span>
-            <span class="mc-desc">Próximamente</span>
-            <span class="mc-tag">Próximo</span>
-          </div>
-          <div class="metodo-card" id="mc-pm" onclick="seleccionarMetodo('pagomovil')">
-            <span class="mc-icon">Bs</span>
-            <span class="mc-nom">Pago Móvil</span>
-            <span class="mc-desc">BDV · Tasa BCV</span>
-          </div>
-        </div>
-        <button class="btn-co btn-back" onclick="irPaso(1)">← Volver</button>
-      </div>
-
-      <!-- PASO 3: Datos de pago + comprobante -->
-      <div id="paso-3" class="checkout-paso">
-        <h2>Realiza tu pago</h2>
-        <div id="datos-pago-box"></div>
-        <div class="upload-area">
-          <label>Sube tu comprobante de pago *</label>
-          <div class="upload-box" onclick="document.getElementById('file-comp').click()">
-            <div id="upload-preview">
-              <span style="font-size:36px;">📷</span>
-              <p>Toca para subir la captura</p>
-              <p class="upload-hint">JPG, PNG · Máx. 5MB</p>
-            </div>
-          </div>
-          <input type="file" id="file-comp" accept="image/*" style="display:none" onchange="previewCaptura(this)">
-        </div>
-        <button class="btn-co" onclick="enviarPedido()" id="btn-enviar">Enviar Pedido →</button>
-        <button class="btn-co btn-back" onclick="irPaso(2)">← Volver</button>
-      </div>
-
-      <!-- PASO 4: Confirmación -->
-      <div id="paso-4" class="checkout-paso">
-        <div class="checkout-ok">
-          <div class="ok-icon">🎉</div>
-          <h2>¡Pedido enviado!</h2>
-          <p id="ok-num" style="color:#F0A500;font-weight:700;font-size:18px;"></p>
-          <p>Verificaremos tu comprobante y recibirás un correo de confirmación con tu factura adjunta.</p>
-          <p class="ok-tiempo">Entrega estimada: <strong>7 días hábiles</strong></p>
-          <button class="btn-co" onclick="cerrarCheckout()">Cerrar</button>
-        </div>
-      </div>
-
+    <div class="priv-scope-badges">
+      <span class="priv-scope-badge">🌎 Aplicación Global</span>
+      <span class="priv-scope-badge">🇪🇺 RGPD — Unión Europea</span>
+      <span class="priv-scope-badge">🇧🇷 LGPD — Brasil</span>
+      <span class="priv-scope-badge">🇻🇪 Venezuela</span>
+      <span class="priv-scope-badge">🌐 Latinoamérica & Resto del Mundo</span>
     </div>
+
+    <p>En <strong>NOVA TECH by COMERCIALIZADORA COSA NOVA, C.A.</strong> nos comprometemos a proteger la privacidad y los datos personales de todas las personas con quienes interactuamos, independientemente del país donde residan. Esta Política de Privacidad describe qué datos recopilamos, cómo los usamos, con quién los compartimos y cuáles son sus derechos, en cumplimiento de los marcos normativos internacionales aplicables.</p>
+
+    <hr>
+
+    <h3>1. Quiénes somos</h3>
+    <ul>
+      <li><strong>Razón social:</strong> Comercializadora Cosa Nova, C.A.</li>
+      <li><strong>RIF:</strong> J-503999632</li>
+      <li><strong>Nombre comercial:</strong> NOVA TECH by COSA NOVA</li>
+      <li><strong>Actividad:</strong> Desarrollo web, marketing digital y servicios tecnológicos</li>
+      <li><strong>País de constitución:</strong> Venezuela</li>
+      <li><strong>Correo de contacto:</strong> <a href="mailto:novatech.cosanova@gmail.com">novatech.cosanova@gmail.com</a></li>
+      <li><strong>Teléfono:</strong> +57 300 188 5210</li>
+    </ul>
+
+    <h3>2. Datos que recopilamos</h3>
+    <p>Recopilamos datos personales únicamente cuando son necesarios para prestar nuestros servicios. Esto incluye:</p>
+    <ul>
+      <li>Nombre completo y/o razón social del cliente</li>
+      <li>Correo electrónico y número de teléfono</li>
+      <li>Información sobre el proyecto o negocio (sector, objetivos, referencias)</li>
+      <li>Datos de navegación en nuestra página web (a través de cookies técnicas)</li>
+      <li>Cualquier información adicional que el cliente nos proporcione voluntariamente</li>
+    </ul>
+    <p>No recopilamos datos sensibles (salud, religión, orientación sexual, datos biométricos, etc.) salvo que sea estrictamente necesario y con consentimiento explícito.</p>
+
+    <h3>3. Finalidad del tratamiento</h3>
+    <p>Los datos recopilados se utilizan exclusivamente para:</p>
+    <ul>
+      <li>Elaborar y enviar presupuestos y propuestas de servicio</li>
+      <li>Ejecutar los proyectos web y digitales contratados</li>
+      <li>Comunicarnos con el cliente durante y después del proyecto</li>
+      <li>Cumplir obligaciones legales y contractuales</li>
+      <li>Enviar comunicaciones comerciales relacionadas con nuestros servicios, solo con consentimiento previo</li>
+    </ul>
+
+    <h3>4. Base legal del tratamiento</h3>
+    <p>El tratamiento de sus datos se basa en:</p>
+    <ul>
+      <li><strong>Ejecución de un contrato:</strong> Para la prestación de los servicios solicitados</li>
+      <li><strong>Consentimiento:</strong> Para el envío de comunicaciones comerciales y el uso de cookies no esenciales</li>
+      <li><strong>Interés legítimo:</strong> Para el mantenimiento de la relación comercial y la mejora de nuestros servicios</li>
+      <li><strong>Obligación legal:</strong> Para el cumplimiento de normativas aplicables</li>
+    </ul>
+    <p>Para clientes en la <strong>Unión Europea</strong>, el tratamiento se realiza conforme al <strong>Reglamento (UE) 2016/679 (RGPD)</strong>. Para clientes en <strong>Brasil</strong>, conforme a la <strong>Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018)</strong>. Para el resto del mundo, nos regimos por los principios internacionales de privacidad reconocidos (OCDE, APEC Privacy Framework).</p>
+
+    <h3>5. ¿Quién tiene acceso a sus datos?</h3>
+    <p>Con carácter general, únicamente el equipo interno de NOVA TECH que necesite acceso para prestar el servicio tendrá conocimiento de su información. Podemos compartir datos con:</p>
+    <ul>
+      <li><strong>Proveedores de herramientas y plataformas:</strong> Google (Google Forms, Google Workspace), servicios de hosting, herramientas de diseño. Todos bajo sus propias políticas de privacidad y acuerdos de protección de datos.</li>
+      <li><strong>El cliente:</strong> Le informamos en todo momento de los datos que manejamos en su nombre</li>
+      <li><strong>Autoridades competentes:</strong> Solo cuando exista obligación legal</li>
+    </ul>
+    <p>No vendemos, alquilamos ni cedemos datos personales a terceros con fines comerciales.</p>
+
+    <h3>6. Transferencias internacionales de datos</h3>
+    <p>Por la naturaleza de nuestros servicios, los datos pueden ser procesados en servidores ubicados fuera del país del cliente. En todos los casos, aplicamos medidas contractuales y técnicas adecuadas para garantizar un nivel de protección equivalente al exigido por la normativa de origen del cliente. Para clientes europeos, nos comprometemos a utilizar únicamente herramientas que cuenten con las garantías exigidas por el RGPD (cláusulas contractuales tipo, certificaciones, etc.).</p>
+
+    <h3>7. ¿Cuánto tiempo conservamos sus datos?</h3>
+    <p>Conservamos sus datos durante el tiempo necesario para cumplir con la finalidad para la que fueron recogidos y mientras exista una relación comercial activa. Una vez finalizada, los datos serán eliminados o anonimizados, salvo que la ley exija su conservación por un período determinado.</p>
+
+    <h3>8. Sus derechos</h3>
+    <p>Según la normativa aplicable en su país, usted tiene derecho a:</p>
+    <ul>
+      <li><strong>Acceso:</strong> Conocer qué datos tenemos sobre usted</li>
+      <li><strong>Rectificación:</strong> Corregir datos inexactos o incompletos</li>
+      <li><strong>Supresión / Olvido:</strong> Solicitar la eliminación de sus datos</li>
+      <li><strong>Oposición:</strong> Oponerse al tratamiento de sus datos</li>
+      <li><strong>Portabilidad:</strong> Recibir sus datos en formato estructurado</li>
+      <li><strong>Limitación del tratamiento:</strong> Restringir el uso de sus datos en determinadas circunstancias</li>
+      <li><strong>Retirada del consentimiento:</strong> En cualquier momento, sin efecto retroactivo</li>
+    </ul>
+    <p>Para ejercer cualquiera de estos derechos, escríbanos a: <a href="mailto:novatech.cosanova@gmail.com">novatech.cosanova@gmail.com</a></p>
+    <p>Si considera que sus derechos no han sido atendidos, puede acudir a la autoridad de protección de datos de su país (<strong>AEPD</strong> en España, <strong>ANPD</strong> en Brasil, <strong>CNIL</strong> en Francia, etc.).</p>
+
+    <h3>9. Seguridad de los datos</h3>
+    <p>Aplicamos medidas técnicas y organizativas apropiadas para proteger sus datos frente a accesos no autorizados, pérdida, destrucción o alteración accidental. Esto incluye comunicaciones cifradas (HTTPS), acceso restringido a los datos y uso de herramientas con estándares de seguridad reconocidos internacionalmente.</p>
+
+    <h3>10. Cookies</h3>
+    <p>Nuestra página web utiliza únicamente cookies técnicas necesarias para su funcionamiento. No utilizamos cookies de seguimiento ni publicidad comportamental. Si en el futuro incorporáramos otro tipo de cookies, actualizaremos esta política e informaremos previamente al usuario.</p>
+
+    <h3>11. Menores de edad</h3>
+    <p>Nuestros servicios están dirigidos exclusivamente a empresas y profesionales adultos. No recopilamos conscientemente datos de menores de 16 años. Si detectamos que hemos recibido datos de un menor, los eliminaremos de inmediato.</p>
+
+    <h3>12. Actualizaciones de esta política</h3>
+    <p>Esta Política de Privacidad puede ser actualizada periódicamente para reflejar cambios en nuestra práctica o en la normativa aplicable. La versión vigente siempre estará disponible en esta página web. Le recomendamos revisarla regularmente.</p>
+
+    <hr>
+    <p style="font-size:0.78rem;color:#4a3f6b;text-align:center">NOVA TECH by COSA NOVA · <a href="mailto:novatech.cosanova@gmail.com" style="color:#4a3f6b">novatech.cosanova@gmail.com</a> · +57 300 188 5210</p>
   </div>
+</div>
 
-  <!-- Toast notificación -->
-  <div id="toast" class="toast"></div>
+<script>
+// ===== PARTICLES (fewer on mobile for performance) =====
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+const isMobile = window.innerWidth < 640;
+const COUNT = isMobile ? 25 : 55;
 
-  <!-- ══ MODAL DETALLE PRODUCTO ════════════════════════ -->
-  <div id="modal-producto" class="modal-producto" onclick="if(event.target===this)cerrarProducto()">
-    <div class="modal-producto-box">
-      <button class="modal-producto-close" onclick="cerrarProducto()">×</button>
-      <div class="mp-layout">
-        <div class="mp-img-wrap">
-          <img id="mp-img" src="" alt="" class="mp-img">
-          <div id="mp-img-placeholder" class="mp-img-placeholder" style="display:none"></div>
-        </div>
-        <div class="mp-info">
-          <span id="mp-cat" class="producto-cat"></span>
-          <h2 id="mp-nom" class="mp-nom"></h2>
-          <p id="mp-desc" class="mp-desc"></p>
-          <div class="mp-precios">
-            <div class="precio-usd"><span>$ </span><span id="mp-usd"></span> <span>USD</span></div>
-            <div class="precio-bs">BCV: <strong id="mp-bs"></strong></div>
-          </div>
-          <button class="btn-carrito" id="mp-btn-carrito">🛒 Agregar al carrito</button>
-        </div>
-      </div>
-    </div>
-  </div>
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-  <!-- ══ HERO ═══════════════════════════════════════════ -->
-  <section id="hero">
+const particles = Array.from({length: COUNT}, () => ({
+  x: Math.random() * canvas.width,
+  y: Math.random() * canvas.height,
+  r: Math.random() * 1.4 + 0.3,
+  dx: (Math.random() - 0.5) * 0.35,
+  dy: (Math.random() - 0.5) * 0.35,
+  alpha: Math.random() * 0.45 + 0.1,
+  color: ['#a855f7','#3b82f6','#ec4899'][Math.floor(Math.random()*3)]
+}));
 
-    <!-- Canvas de partículas animadas -->
-    <canvas id="canvas-particulas"></canvas>
+const LINE_DIST = isMobile ? 80 : 120;
 
-    <!-- Orbes suaves de fondo -->
-    <div class="hero-bg">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
-    </div>
-
-    <!-- Layout 3 columnas -->
-    <div class="hero-layout">
-
-      <!-- IZQUIERDA: Stats de confianza -->
-      <div class="hero-side hero-side-left">
-        <div class="hero-badge">
-          <span class="hero-badge-icon">🚚</span>
-          <div>
-            <strong>7 días hábiles</strong>
-            <span>Entrega Colombia → Venezuela</span>
-          </div>
-        </div>
-        <div class="hero-badge">
-          <span class="hero-badge-icon">🛡️</span>
-          <div>
-            <strong>100% asegurado</strong>
-            <span>Mercancía protegida en todo momento</span>
-          </div>
-        </div>
-        <div class="hero-badge">
-          <span class="hero-badge-icon">💬</span>
-          <div>
-            <strong>Atención real</strong>
-            <span>WhatsApp · respuesta en minutos</span>
-          </div>
-        </div>
-        <div class="hero-badge">
-          <span class="hero-badge-icon">📦</span>
-          <div>
-            <strong>Tracking en vivo</strong>
-            <span>Sigue tu paquete en tiempo real</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- CENTRO: Texto principal -->
-      <div class="hero-content">
-        <div class="hero-ruta">
-          <span>🇨🇴 Colombia</span>
-          <span class="ruta-flecha">→</span>
-          <span>🇻🇪 Venezuela</span>
-        </div>
-        <h1 class="hero-titulo">
-          Fácil, seguro y al mejor precio.<br>
-          <span class="gold">Así se compra en Cosa Nova.</span>
-        </h1>
-        <p class="hero-sub">
-          Perfumes 1.1 · Belleza · Ropa y más — envío seguro en 7 días hábiles.
-        </p>
-        <a href="https://wa.me/573001885210?text=Hola%20Cosa%20Nova!%20Busco%20un%20producto%20que%20no%20veo%20en%20la%20página%20🛍️" target="_blank" class="hero-pedido-custom">
-          ¿No encuentras lo que buscas? <strong>Pídelo por WhatsApp →</strong>
-        </a>
-        <div class="hero-btns">
-          <a href="#catalogo" class="btn-primary">Ver Productos</a>
-          <a href="https://wa.me/573001885210?text=Hola%20Cosa%20Nova!%20Quiero%20información%20sobre%20sus%20productos%20🛍️" target="_blank" class="btn-wa">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            Escribir por WhatsApp
-          </a>
-        </div>
-      </div>
-
-      <!-- DERECHA: Productos destacados -->
-      <div class="hero-side hero-side-right">
-        <p class="hero-side-titulo">🔥 Destacados</p>
-        <div id="hero-preview" class="hero-preview"></div>
-      </div>
-
-    </div>
-
-    <div class="scroll-hint">
-      <span>Explorar</span>
-      <div class="scroll-arrow"></div>
-    </div>
-  </section>
-
-  <!-- ══ TASAS EN VIVO ══════════════════════════════════ -->
-  <div class="tasas-bar">
-    <div class="tasas-inner">
-      <span class="tasas-label">Tasa del día:</span>
-      <span id="tasa-binance">Cargando...</span>
-      <span class="tasas-sep">|</span>
-      <span class="tasas-label">BCV:</span>
-      <span id="tasa-bcv">—</span>
-    </div>
-  </div>
-
-  <!-- ══ CÓMO FUNCIONA ══════════════════════════════════ -->
-  <section id="como-funciona">
-    <div class="container">
-      <h2 class="section-title reveal">¿Cómo funciona?</h2>
-      <p class="section-sub reveal">Simple, rápido y sin complicaciones</p>
-      <div class="pasos">
-        <div class="paso reveal">
-          <div class="paso-num">1</div>
-          <div class="paso-icon">🛍️</div>
-          <h3>Elige tu producto</h3>
-          <p>Explora nuestro catálogo y encuentra lo que necesitas. Precios en USD con equivalente en bolívares.</p>
-        </div>
-        <div class="paso-arrow reveal">→</div>
-        <div class="paso reveal">
-          <div class="paso-num">2</div>
-          <div class="paso-icon">💳</div>
-          <h3>Paga a tu manera</h3>
-          <p>USDT, Zelle o transferencia en bolívares. Tú eliges cómo pagar desde Venezuela.</p>
-        </div>
-        <div class="paso-arrow reveal">→</div>
-        <div class="paso reveal">
-          <div class="paso-num">3</div>
-          <div class="paso-icon">📦</div>
-          <h3>Recibe en casa</h3>
-          <p>Enviamos desde Colombia. Tu paquete llega en 7 días hábiles con seguimiento en tiempo real.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ CATÁLOGO ════════════════════════════════════════ -->
-  <section id="catalogo">
-    <div class="container">
-      <h2 class="section-title reveal">Nuestros Productos</h2>
-      <p class="section-sub reveal">Precios actualizados con la tasa Binance del día</p>
-
-      <div class="categorias reveal">
-        <button class="cat-btn activa" onclick="filtrar('todas')">Todos</button>
-        <button class="cat-btn" onclick="filtrar('Perfumes')">Perfumes 1.1</button>
-        <button class="cat-btn" onclick="filtrar('Belleza')">Belleza</button>
-        <button class="cat-btn" onclick="filtrar('Ropa')">Ropa</button>
-        <button class="cat-btn" onclick="filtrar('General')">General</button>
-      </div>
-
-      <div id="productos-grid" class="productos-grid">
-        <div class="loading-productos">
-          <div class="loader-spin"></div>
-          <p>Cargando productos...</p>
-        </div>
-      </div>
-
-      <div id="sin-productos" style="display:none;" class="sin-productos">
-        <p>No hay productos en esta categoría aún.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ PAGOS ══════════════════════════════════════════ -->
-  <section id="pagos">
-    <div class="container">
-      <h2 class="section-title reveal">Métodos de Pago</h2>
-      <p class="section-sub reveal">Flexible para ti, seguro para todos</p>
-      <div class="pagos-grid">
-        <div class="pago-card reveal">
-          <div class="pago-icon">₿</div>
-          <h3>USDT / Cripto</h3>
-          <p>Transferencia directa en USDT. Sin fronteras, sin inflación. El método más rápido.</p>
-          <span class="pago-badge">Recomendado</span>
-        </div>
-        <div class="pago-card reveal">
-          <div class="pago-icon">$</div>
-          <h3>Zelle</h3>
-          <p>Pago desde tu cuenta bancaria en dólares hacia EE.UU. Seguro y confiable.</p>
-        </div>
-        <div class="pago-card reveal">
-          <div class="pago-icon">Bs</div>
-          <h3>Bolívares</h3>
-          <p>Transferencia bancaria venezolana. Pagás en bolívares al equivalente en tasa BCV del día.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ CONFIANZA ══════════════════════════════════════ -->
-  <section id="confianza">
-    <div class="container">
-      <div class="confianza-grid">
-        <div class="conf-item reveal">
-          <span class="conf-icon">🚚</span>
-          <h4>Envío garantizado</h4>
-          <p>Trabajamos con WED Envíos, operador verificado Colombia–Venezuela.</p>
-        </div>
-        <div class="conf-item reveal">
-          <span class="conf-icon">📍</span>
-          <h4>Tracking en tiempo real</h4>
-          <p>Seguimiento de tu paquete desde que sale de Colombia hasta que llega a tu puerta.</p>
-        </div>
-        <div class="conf-item reveal">
-          <span class="conf-icon">🛡️</span>
-          <h4>Mercancía asegurada</h4>
-          <p>Todo envío incluye seguro de mercancía. Tu compra protegida de inicio a fin.</p>
-        </div>
-        <div class="conf-item reveal">
-          <span class="conf-icon">💬</span>
-          <h4>Atención por WhatsApp</h4>
-          <p>Respondemos en minutos. Persona real, trato directo, sin bots.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ TESTIMONIOS ═══════════════════════════════════ -->
-  <section id="testimonios">
-    <div class="container">
-      <h2 class="section-title reveal">Lo que dicen nuestros clientes</h2>
-      <p class="section-sub reveal">Venezolanos que ya compran con nosotros</p>
-      <div class="testimonios-grid">
-        <div class="testi-card reveal">
-          <div class="testi-stars">★★★★★</div>
-          <p class="testi-texto">"Increíble servicio. Pedí un perfume un lunes y el siguiente martes ya lo tenía en casa en Maracay. El precio en USDT fue muy conveniente."</p>
-          <div class="testi-autor">
-            <div class="testi-avatar">MR</div>
-            <div>
-              <strong>María R.</strong>
-              <span>Maracay, Aragua</span>
-            </div>
-          </div>
-        </div>
-        <div class="testi-card reveal">
-          <div class="testi-stars">★★★★★</div>
-          <p class="testi-texto">"Por fin una tienda seria que envía desde Colombia. El seguimiento fue perfecto, me avisaron en cada paso. Definitivamente vuelvo a comprar."</p>
-          <div class="testi-autor">
-            <div class="testi-avatar">CL</div>
-            <div>
-              <strong>Carlos L.</strong>
-              <span>Valencia, Carabobo</span>
-            </div>
-          </div>
-        </div>
-        <div class="testi-card reveal">
-          <div class="testi-stars">★★★★★</div>
-          <p class="testi-texto">"Pagué con Pago Móvil BDV y fue muy fácil. Los productos llegaron exactamente como los vi en la página. Muy recomendado para comprar desde Venezuela."</p>
-          <div class="testi-autor">
-            <div class="testi-avatar">AG</div>
-            <div>
-              <strong>Ana G.</strong>
-              <span>Caracas, D.C.</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ DEJAR RESEÑA ══════════════════════════════════ -->
-  <section id="resenas">
-    <div class="container">
-      <h2 class="section-title reveal">¿Ya compraste con nosotros?</h2>
-      <p class="section-sub reveal">Tu opinión ayuda a otros venezolanos a decidir</p>
-      <div class="resena-wrap reveal">
-
-        <div class="resena-stars-row">
-          <span class="resena-stars-label">Tu calificación:</span>
-          <div class="star-selector" id="star-selector">
-            <span class="star" data-val="1">★</span>
-            <span class="star" data-val="2">★</span>
-            <span class="star" data-val="3">★</span>
-            <span class="star" data-val="4">★</span>
-            <span class="star" data-val="5">★</span>
-          </div>
-        </div>
-
-        <div class="form-co">
-          <div class="form-field">
-            <label>Tu nombre *</label>
-            <input type="text" id="rs-nom" placeholder="María G.">
-          </div>
-          <div class="form-field">
-            <label>Ciudad</label>
-            <input type="text" id="rs-ciudad" placeholder="Caracas, D.C.">
-          </div>
-          <div class="form-field form-full">
-            <label>Tu experiencia *</label>
-            <textarea id="rs-texto" rows="4" placeholder="Cuéntanos cómo fue tu compra..."></textarea>
-          </div>
-        </div>
-
-        <button class="btn-co" id="btn-resena" onclick="enviarResena()">Enviar reseña →</button>
-
-        <div id="resena-ok" class="resena-ok" style="display:none">
-          <span>🎉</span>
-          <p>¡Gracias por tu reseña! La publicaremos pronto.</p>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ CTA FINAL ══════════════════════════════════════ -->
-  <section id="cta-final">
-    <div class="container">
-      <div class="cta-box reveal">
-        <h2>¿No ves lo que estás buscando?</h2>
-        <p>Escríbenos y lo conseguimos para ti.</p>
-        <a href="https://wa.me/573001885210?text=Hola%20Cosa%20Nova!%20Quiero%20hacer%20un%20pedido%20🛒" target="_blank" class="btn-wa btn-wa-lg">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          Escribir a Cosa Nova
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══ FOOTER ══════════════════════════════════════════ -->
-  <footer id="contacto">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <img src="assets/logo_sin_fondo.png" alt="Cosa Nova" class="footer-logo">
-          <p>Todo en un solo lugar.<br>Colombia → Venezuela</p>
-          <p class="footer-fiscal">RIF: <strong>J-50399963-2</strong><br>Aragua, Venezuela</p>
-        </div>
-        <div class="footer-col">
-          <h4>Contacto</h4>
-          <a href="https://wa.me/573001885210" target="_blank">+57 300 1885210</a>
-          <a href="mailto:cosanova.ve@gmail.com">cosanova.ve@gmail.com</a>
-          <a href="https://wa.me/573001885210" target="_blank">WhatsApp</a>
-        </div>
-        <div class="footer-col">
-          <h4>Categorías</h4>
-          <a href="#catalogo" onclick="filtrar('Perfumes')">Perfumes</a>
-          <a href="#catalogo" onclick="filtrar('Belleza')">Belleza</a>
-          <a href="#catalogo" onclick="filtrar('Ropa')">Ropa</a>
-          <a href="#catalogo" onclick="filtrar('General')">General</a>
-        </div>
-        <div class="footer-col">
-          <h4>Información</h4>
-          <a href="#como-funciona">Cómo funciona</a>
-          <a href="#pagos">Métodos de pago</a>
-          <a href="#confianza">Garantías</a>
-        </div>
-        <div class="footer-col">
-          <h4>Legal</h4>
-          <a href="#" onclick="abrirModal('modal-terminos')">Términos y Condiciones</a>
-          <a href="#" onclick="abrirModal('modal-devoluciones')">Política de Devoluciones</a>
-          <a href="#" onclick="abrirModal('modal-privacidad')">Privacidad de Datos</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2026 Cosa Nova · RIF J-50399963-2 · Aragua, Venezuela · cosanova.ve@gmail.com</p>
-        <p class="footer-legal-note">Precios incluyen IVA. Sujeto a disponibilidad de stock. Tiempos de entrega estimados, no garantizados.</p>
-      </div>
-    </div>
-  </footer>
-
-  <!-- ══ MODAL TÉRMINOS ══════════════════════════════════ -->
-  <div id="modal-terminos" class="modal-legal" onclick="if(event.target===this)cerrarModal('modal-terminos')">
-    <div class="modal-legal-box">
-      <button class="modal-legal-close" onclick="cerrarModal('modal-terminos')">×</button>
-      <h2>Términos y Condiciones</h2>
-      <p class="modal-fecha">Vigente desde: enero 2026</p>
-      <h3>1. Identificación</h3>
-      <p>Cosa Nova (RIF J-50399963-2), con sede en Bogotá, Colombia, opera como intermediario comercial para la venta y envío de productos desde Colombia hacia Venezuela.</p>
-      <h3>2. Proceso de compra</h3>
-      <p>El cliente selecciona productos, completa sus datos y realiza el pago mediante los métodos disponibles (USDT, Pago Móvil BDV). El pedido se confirma una vez verificado el comprobante de pago.</p>
-      <h3>3. Precios</h3>
-      <p>Los precios están expresados en USD y su equivalente en Bolívares (Bs.) calculado con la tasa BCV del día. Incluyen todos los impuestos aplicables. Cosa Nova se reserva el derecho de modificar precios sin previo aviso.</p>
-      <h3>4. Envíos</h3>
-      <p>El tiempo estimado de entrega es de <strong>7 días hábiles</strong> desde la confirmación del pago. Los envíos se realizan a través de operadores verificados Colombia–Venezuela. El tiempo puede variar por factores externos.</p>
-      <h3>5. Responsabilidad</h3>
-      <p>Cosa Nova no se responsabiliza por retrasos causados por aduanas, condiciones climáticas u otros factores fuera de su control. Una vez entregado el paquete al operador logístico, el riesgo de pérdida se transfiere al transportista.</p>
-      <h3>6. Contacto</h3>
-      <p>Para cualquier consulta: cosanova.ve@gmail.com · WhatsApp +57 300 1885210</p>
-    </div>
-  </div>
-
-  <!-- ══ MODAL DEVOLUCIONES ══════════════════════════════ -->
-  <div id="modal-devoluciones" class="modal-legal" onclick="if(event.target===this)cerrarModal('modal-devoluciones')">
-    <div class="modal-legal-box">
-      <button class="modal-legal-close" onclick="cerrarModal('modal-devoluciones')">×</button>
-      <h2>Política de Devoluciones y Garantías</h2>
-      <p class="modal-fecha">Vigente desde: enero 2026</p>
-      <h3>1. Devoluciones</h3>
-      <p>Se aceptan devoluciones dentro de los <strong>3 días hábiles</strong> siguientes a la recepción del producto, siempre que:</p>
-      <ul>
-        <li>El producto esté sin usar y en su empaque original.</li>
-        <li>Se presente evidencia fotográfica o en video del estado del producto.</li>
-        <li>El motivo sea defecto de fabricación o error en el pedido.</li>
-      </ul>
-      <h3>2. Productos no retornables</h3>
-      <p>No se aceptan devoluciones en: perfumes abiertos, productos de belleza usados, ni artículos en oferta o liquidación.</p>
-      <h3>3. Proceso de devolución</h3>
-      <p>El cliente debe contactar por WhatsApp (+57 300 1885210) o email (cosanova.ve@gmail.com) adjuntando fotos del producto y número de orden. Cosa Nova evaluará el caso en un plazo de 48 horas hábiles.</p>
-      <h3>4. Reembolsos</h3>
-      <p>Los reembolsos aprobados se realizarán por el mismo método de pago utilizado en un plazo de <strong>5 días hábiles</strong>.</p>
-      <h3>5. Garantía</h3>
-      <p>Todos los productos son originales y cuentan con garantía del fabricante. Cosa Nova actúa como intermediario y no es fabricante de los productos comercializados.</p>
-    </div>
-  </div>
-
-  <!-- ══ MODAL PRIVACIDAD ════════════════════════════════ -->
-  <div id="modal-privacidad" class="modal-legal" onclick="if(event.target===this)cerrarModal('modal-privacidad')">
-    <div class="modal-legal-box">
-      <button class="modal-legal-close" onclick="cerrarModal('modal-privacidad')">×</button>
-      <h2>Política de Privacidad de Datos</h2>
-      <p class="modal-fecha">Vigente desde: enero 2026</p>
-      <h3>1. Datos recopilados</h3>
-      <p>Recopilamos: nombre completo, email, teléfono, ciudad y dirección de entrega, necesarios para procesar su pedido.</p>
-      <h3>2. Uso de los datos</h3>
-      <p>Sus datos se utilizan exclusivamente para: procesar y entregar su pedido, enviar confirmaciones de compra y notificaciones de estado del pedido.</p>
-      <h3>3. Almacenamiento</h3>
-      <p>Los datos se almacenan en Google Sheets con acceso restringido al equipo de Cosa Nova. No se comparten con terceros salvo el operador logístico para gestionar el envío.</p>
-      <h3>4. Derechos del usuario</h3>
-      <p>Puede solicitar la eliminación de sus datos en cualquier momento escribiendo a cosanova.ve@gmail.com.</p>
-      <h3>5. Seguridad</h3>
-      <p>El sitio opera bajo protocolo HTTPS. Los comprobantes de pago se almacenan en Google Drive con acceso privado.</p>
-    </div>
-  </div>
-
-  <!-- ══ WA FLOTANTE ════════════════════════════════════ -->
-  <a href="https://wa.me/573001885210" target="_blank" class="wa-float" title="Escríbenos por WhatsApp">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-  </a>
-
-  <script src="js/app.js"></script>
-  <script>
-    function abrirModal(id) {
-      document.getElementById(id).classList.add('activo');
-      document.body.style.overflow = 'hidden';
-    }
-    function cerrarModal(id) {
-      document.getElementById(id).classList.remove('activo');
-      document.body.style.overflow = '';
-    }
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        ['modal-terminos','modal-devoluciones','modal-privacidad'].forEach(cerrarModal);
-        cerrarMobileMenu();
-        cerrarProducto();
+function drawParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.alpha;
+    ctx.fill();
+    p.x += p.dx;
+    p.y += p.dy;
+    if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+  });
+  ctx.globalAlpha = 1;
+  for (let i = 0; i < particles.length; i++) {
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < LINE_DIST) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = '#a855f7';
+        ctx.globalAlpha = (1 - dist/LINE_DIST) * 0.12;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
       }
-    });
+    }
+  }
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
 
-    function toggleMobileMenu() {
-      var menu    = document.getElementById('mobile-menu');
-      var overlay = document.getElementById('mobile-menu-overlay');
-      var btn     = document.getElementById('nav-hamburger');
-      var open    = menu.classList.toggle('activo');
-      overlay.classList.toggle('activo', open);
-      btn.classList.toggle('activo', open);
-      document.body.style.overflow = open ? 'hidden' : '';
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+// ===== HAMBURGER MENU =====
+const hamburger = document.getElementById('hamburger');
+const mobileMenu = document.getElementById('mobile-menu');
+
+hamburger.addEventListener('click', () => {
+  hamburger.classList.toggle('open');
+  mobileMenu.classList.toggle('open');
+  document.body.style.overflow = mobileMenu.classList.contains('open') ? 'hidden' : '';
+});
+
+mobileMenu.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    hamburger.classList.remove('open');
+    mobileMenu.classList.remove('open');
+    document.body.style.overflow = '';
+  });
+});
+
+// ===== SCROLL REVEAL =====
+const reveals = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+reveals.forEach(el => observer.observe(el));
+
+// ===== COUNTER ANIMATION =====
+const counters = document.querySelectorAll('.stat-number[data-target]');
+const counterObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting && !e.target.dataset.done) {
+      e.target.dataset.done = true;
+      const target = +e.target.dataset.target;
+      const suffix = e.target.dataset.target === '24' ? '/7' : '+';
+      let current = 0;
+      const step = target / 50;
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) { current = target; clearInterval(timer); }
+        e.target.textContent = Math.floor(current) + suffix;
+      }, 20);
     }
-    function cerrarMobileMenu() {
-      document.getElementById('mobile-menu').classList.remove('activo');
-      document.getElementById('mobile-menu-overlay').classList.remove('activo');
-      document.getElementById('nav-hamburger').classList.remove('activo');
-      document.body.style.overflow = '';
-    }
-  </script>
+  });
+}, { threshold: 0.4 });
+counters.forEach(c => counterObs.observe(c));
+
+// ===== NAVBAR SCROLL =====
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').style.background =
+    window.scrollY > 50 ? 'rgba(8,8,24,0.97)' : 'rgba(8,8,24,0.85)';
+}, { passive: true });
+
+</script>
 </body>
 </html>
