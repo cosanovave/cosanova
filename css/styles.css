@@ -505,6 +505,67 @@ section { padding: 80px 0; }
   border-color: var(--azul-m);
 }
 
+/* Selector de tallas en cards y modal */
+.tallas-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 8px;
+}
+.tallas-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-s);
+  white-space: nowrap;
+}
+.tallas-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.talla-btn {
+  min-width: 38px;
+  height: 34px;
+  border-radius: 6px;
+  border: 1.5px solid var(--azul-m);
+  background: white;
+  color: var(--azul);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 8px;
+  transition: all 0.18s;
+}
+.talla-btn:hover { background: var(--gris); }
+.talla-btn.activa {
+  background: var(--azul);
+  color: white;
+  border-color: var(--azul);
+}
+.btn-talla-pendiente {
+  background: var(--gris) !important;
+  color: var(--texto-s) !important;
+  border-color: transparent !important;
+  cursor: not-allowed !important;
+}
+.mp-tallas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: var(--gris);
+  border-radius: 10px;
+  margin: 12px 0;
+}
+.ci-talla {
+  font-size: 11px;
+  color: var(--texto-s);
+  font-weight: 500;
+}
+
 .productos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
