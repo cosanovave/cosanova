@@ -1840,17 +1840,20 @@ footer {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background: #25D366;
+  background: var(--azul);
   color: #fff;
   text-decoration: none;
+  border: none;
+  cursor: pointer;
   padding: 16px;
   border-radius: 14px;
   font-weight: 700;
   font-size: 15px;
   width: 100%;
   transition: background .2s, transform .2s;
+  font-family: inherit;
 }
-.btn-ma-wa:hover { background: #1da851; transform: translateY(-2px); }
+.btn-ma-wa:hover { background: #1a3a5c; transform: translateY(-2px); }
 .ma-nota {
   font-size: 11px;
   color: #bbb;
