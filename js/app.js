@@ -95,7 +95,8 @@ function parsearStock(csv) {
       descripcion: f[4] || '',
       imagen:     f[6]  || '',   // columna G
       genero:     (f[7]  || '').trim(),  // columna H
-      subtipo:    (f[8]  || '').trim()   // columna I
+      subtipo:    (f[8]  || '').trim(),  // columna I
+      tallas:     (f[9]  || '').trim()   // columna J  ej: S|M|L|XL  o  S:80000|M:85000
     }));
 }
 
@@ -198,14 +199,24 @@ function renderProductos(lista) {
 // ─── HTML DE PRODUCTO CARD ────────────────────────────
 function cardHTML(p) {
   const { pvp_usd, pvp_bs } = calcPrecio(p.inv_cop);
-  const usdStr = fmt(pvp_usd);
-  const bsStr  = fmt(pvp_bs, 0);
+  const tallas = parsearTallas(p.tallas, p.inv_cop);
+  const nomEsc = p.nom.replace(/'/g, "\\'");
 
   const imgHTML = p.imagen
     ? `<img src="assets/products/${p.imagen}" alt="${p.nom}" class="producto-img" onerror="this.parentElement.innerHTML='<div class=\\'producto-img-placeholder\\'>${iconoCategoria(p.categoria)}</div>'">`
     : `<div class="producto-img-placeholder">${iconoCategoria(p.categoria)}</div>`;
 
-  const nomEsc = p.nom.replace(/'/g, "\\'");
+  const tallasHTML = tallas.length > 0 ? `
+    <div class="tallas-selector">
+      <span class="tallas-label">Talla:</span>
+      <div class="tallas-btns">
+        ${tallas.map(t => `<button class="talla-btn" onclick="seleccionarTalla(this,'${nomEsc}','${t.talla}',${t.inv_cop})">${t.talla}</button>`).join('')}
+      </div>
+    </div>` : '';
+
+  const btnHTML = tallas.length > 0
+    ? `<button class="btn-carrito btn-talla-pendiente" disabled>Elige una talla</button>`
+    : `<button class="btn-carrito" onclick="agregarAlCarrito('${nomEsc}',${pvp_usd.toFixed(2)},'${p.categoria}','')">🛒 Agregar al carrito</button>`;
 
   return `
     <div class="producto-card reveal">
@@ -217,12 +228,11 @@ function cardHTML(p) {
         <span class="producto-cat">${p.categoria}</span>
         <h3 class="producto-nom producto-nom-link" onclick="abrirProducto('${nomEsc}')">${p.nom}</h3>
         <div class="producto-precios">
-          <div class="precio-usd"><span>$ </span>${usdStr} <span>USD</span></div>
-          <div class="precio-bs">BCV: <strong>Bs ${bsStr}</strong></div>
+          <div class="precio-usd"><span>$ </span>${fmt(pvp_usd)} <span>USD</span></div>
+          <div class="precio-bs">BCV: <strong>Bs ${fmt(pvp_bs, 0)}</strong></div>
         </div>
-        <button class="btn-carrito" onclick="agregarAlCarrito('${nomEsc}', ${pvp_usd.toFixed(2)}, '${p.categoria}')">
-          🛒 Agregar al carrito
-        </button>
+        ${tallasHTML}
+        ${btnHTML}
       </div>
     </div>`;
 }
@@ -243,8 +253,8 @@ function abrirProducto(nom) {
   const img  = document.getElementById('mp-img');
   const phld = document.getElementById('mp-img-placeholder');
   if (p.imagen) {
-    img.src          = `assets/products/${p.imagen}`;
-    img.alt          = p.nom;
+    img.src            = `assets/products/${p.imagen}`;
+    img.alt            = p.nom;
     img.style.display  = 'block';
     phld.style.display = 'none';
   } else {
@@ -253,11 +263,27 @@ function abrirProducto(nom) {
     phld.style.display = 'flex';
   }
 
-  const nomEsc = p.nom.replace(/'/g, "\\'");
-  document.getElementById('mp-btn-carrito').onclick = () => {
-    agregarAlCarrito(nomEsc, pvp_usd.toFixed(2), p.categoria);
-    cerrarProducto();
-  };
+  const nomEsc       = p.nom.replace(/'/g, "\\'");
+  const tallas       = parsearTallas(p.tallas, p.inv_cop);
+  const mpBtn        = document.getElementById('mp-btn-carrito');
+  const mpTallas     = document.getElementById('mp-tallas');
+  const mpTallasBtns = document.getElementById('mp-tallas-btns');
+
+  if (tallas.length > 0) {
+    mpTallas.style.display = 'flex';
+    mpTallasBtns.innerHTML = tallas.map(t =>
+      `<button class="talla-btn" onclick="seleccionarTallaModal(this,'${nomEsc}','${t.talla}',${t.inv_cop})">${t.talla}</button>`
+    ).join('');
+    mpBtn.disabled  = true;
+    mpBtn.innerHTML = 'Elige una talla';
+    mpBtn.onclick   = null;
+  } else {
+    mpTallas.style.display = 'none';
+    mpTallasBtns.innerHTML = '';
+    mpBtn.disabled  = false;
+    mpBtn.innerHTML = '🛒 Agregar al carrito';
+    mpBtn.onclick   = () => { agregarAlCarrito(nomEsc, pvp_usd.toFixed(2), p.categoria, ''); cerrarProducto(); };
+  }
 
   document.getElementById('modal-producto').classList.add('activo');
   document.body.style.overflow = 'hidden';
@@ -268,9 +294,57 @@ function cerrarProducto() {
   document.body.style.overflow = '';
 }
 
+// ─── SELECTOR DE TALLA (card) ─────────────────────────
+function seleccionarTalla(btn, nom, talla, inv_cop) {
+  const card = btn.closest('.producto-card');
+  card.querySelectorAll('.talla-btn').forEach(b => b.classList.remove('activa'));
+  btn.classList.add('activa');
+
+  const { pvp_usd, pvp_bs } = calcPrecio(inv_cop);
+  const precioUsdEl = card.querySelector('.precio-usd');
+  const precioBsEl  = card.querySelector('.precio-bs');
+  if (precioUsdEl) precioUsdEl.innerHTML = `<span>$ </span>${fmt(pvp_usd)} <span>USD</span>`;
+  if (precioBsEl)  precioBsEl.innerHTML  = `BCV: <strong>Bs ${fmt(pvp_bs, 0)}</strong>`;
+
+  const nomEsc = nom.replace(/'/g, "\\'");
+  const btnCarr = card.querySelector('.btn-carrito');
+  if (btnCarr) {
+    btnCarr.disabled  = false;
+    btnCarr.className = 'btn-carrito';
+    btnCarr.innerHTML = '🛒 Agregar al carrito';
+    btnCarr.onclick   = () => agregarAlCarrito(nomEsc, pvp_usd.toFixed(2), 'Ropa', talla);
+  }
+}
+
+// ─── SELECTOR DE TALLA (modal) ────────────────────────
+function seleccionarTallaModal(btn, nom, talla, inv_cop) {
+  document.querySelectorAll('#mp-tallas-btns .talla-btn').forEach(b => b.classList.remove('activa'));
+  btn.classList.add('activa');
+
+  const { pvp_usd, pvp_bs } = calcPrecio(inv_cop);
+  document.getElementById('mp-usd').textContent = fmt(pvp_usd);
+  document.getElementById('mp-bs').textContent  = 'Bs ' + fmt(pvp_bs, 0);
+
+  const nomEsc = nom.replace(/'/g, "\\'");
+  const mpBtn  = document.getElementById('mp-btn-carrito');
+  mpBtn.disabled  = false;
+  mpBtn.innerHTML = '🛒 Agregar al carrito';
+  mpBtn.onclick   = () => { agregarAlCarrito(nomEsc, pvp_usd.toFixed(2), 'Ropa', talla); cerrarProducto(); };
+}
+
 function iconoCategoria(cat) {
   const iconos = { Perfumes: '🌸', Belleza: '💄', Ropa: '👗', General: '📦' };
   return iconos[cat] || '📦';
+}
+
+// ─── PARSEAR TALLAS ───────────────────────────────────
+// Formato columna J: "S|M|L|XL" (mismo precio) o "S:80000|M:85000|L:90000" (precio por talla en COP)
+function parsearTallas(tallaStr, inv_cop_base) {
+  if (!tallaStr || !tallaStr.trim()) return [];
+  return tallaStr.split('|').map(t => {
+    const parts = t.trim().split(':');
+    return { talla: parts[0].trim(), inv_cop: parts[1] ? parseFloat(parts[1]) : inv_cop_base };
+  }).filter(t => t.talla);
 }
 
 // ─── CARRITO ──────────────────────────────────────────
@@ -278,17 +352,19 @@ function guardarCarrito() {
   localStorage.setItem('cn-carrito', JSON.stringify(carrito));
 }
 
-function agregarAlCarrito(nom, pvp_usd, cat) {
-  const idx = carrito.findIndex(x => x.nom === nom);
+function agregarAlCarrito(nom, pvp_usd, cat, talla) {
+  talla = talla || '';
+  const idx = carrito.findIndex(x => x.nom === nom && (x.talla || '') === talla);
   if (idx >= 0) carrito[idx].qty++;
-  else carrito.push({ nom, pvp_usd: parseFloat(pvp_usd), cat, qty: 1 });
+  else carrito.push({ nom, pvp_usd: parseFloat(pvp_usd), cat, talla, qty: 1 });
   guardarCarrito();
   actualizarCarritoUI();
-  mostrarToast('🛒 ' + nom + ' agregado');
+  mostrarToast('🛒 ' + nom + (talla ? ' (' + talla + ')' : '') + ' agregado');
 }
 
-function cambiarQty(nom, delta) {
-  const idx = carrito.findIndex(x => x.nom === nom);
+function cambiarQty(nom, talla, delta) {
+  talla = talla || '';
+  const idx = carrito.findIndex(x => x.nom === nom && (x.talla || '') === talla);
   if (idx < 0) return;
   carrito[idx].qty += delta;
   if (carrito[idx].qty <= 0) carrito.splice(idx, 1);
@@ -321,19 +397,23 @@ function actualizarCarritoUI() {
     lista.innerHTML = '<div class="cart-vacio"><span>🛒</span><p>Tu carrito está vacío</p></div>';
     return;
   }
-  lista.innerHTML = carrito.map(item => `
+  lista.innerHTML = carrito.map(item => {
+    const nomEsc   = item.nom.replace(/'/g, "\\'");
+    const tallaEsc = (item.talla || '').replace(/'/g, "\\'");
+    return `
     <div class="cart-item">
       <div class="ci-info">
-        <div class="ci-nom">${item.nom}</div>
+        <div class="ci-nom">${item.nom}${item.talla ? ' <span class="ci-talla">('+item.talla+')</span>' : ''}</div>
         <div class="ci-precio">$${fmt(item.pvp_usd)} c/u</div>
       </div>
       <div class="ci-controles">
-        <button class="ci-btn" onclick="cambiarQty('${item.nom.replace(/'/g,"\\'")}', -1)">−</button>
+        <button class="ci-btn" onclick="cambiarQty('${nomEsc}','${tallaEsc}',-1)">−</button>
         <span class="ci-qty">${item.qty}</span>
-        <button class="ci-btn" onclick="cambiarQty('${item.nom.replace(/'/g,"\\'")}', 1)">+</button>
+        <button class="ci-btn" onclick="cambiarQty('${nomEsc}','${tallaEsc}',1)">+</button>
       </div>
       <div class="ci-total">$${fmt(item.pvp_usd * item.qty)}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function toggleCart() {
@@ -461,7 +541,7 @@ async function enviarPedido() {
 
   const total   = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
   const totalBs = total * tasas.bcv;
-  const prods   = carrito.map(x => `${x.nom} x${x.qty}`).join(', ');
+  const prods   = carrito.map(x => `${x.nom}${x.talla ? ' ['+x.talla+']' : ''} x${x.qty}`).join(', ');
 
   const btn = document.getElementById('btn-enviar');
   if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
