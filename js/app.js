@@ -24,6 +24,7 @@ let subtipoActual   = '';
 let carrito        = JSON.parse(localStorage.getItem('cn-carrito') || '[]');
 let metodoSeleccionado = '';
 let capturaB64     = '';
+let modoApartado   = false;
 
 // ─── INICIALIZACIÓN ───────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -227,6 +228,7 @@ function cardHTML(p) {
       <div class="producto-body">
         <span class="producto-cat">${p.categoria}</span>
         <h3 class="producto-nom producto-nom-link" onclick="abrirProducto('${nomEsc}')">${p.nom}</h3>
+        <span class="chip-apartado">💰 Apartado disponible</span>
         <div class="producto-precios">
           <div class="precio-usd"><span>$ </span>${fmt(pvp_usd)} <span>USD</span></div>
           <div class="precio-bs">BCV: <strong>Bs ${fmt(pvp_bs, 0)}</strong></div>
@@ -435,6 +437,8 @@ function abrirCheckout() {
   irPaso(1);
   metodoSeleccionado = '';
   capturaB64 = '';
+  modoApartado = false;
+  seleccionarTipoOrden('completo');
 }
 
 function cerrarCheckout() {
@@ -468,14 +472,23 @@ function seleccionarMetodo(metodo) {
 }
 
 function mostrarDatosPago(metodo) {
-  const total    = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
-  const totalBs  = total * tasas.bcv;
-  const box      = document.getElementById('datos-pago-box');
+  const totalCompleto = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
+  const monto   = modoApartado ? totalCompleto * 0.5 : totalCompleto;
+  const montoBs = monto * tasas.bcv;
+  const etiq    = modoApartado ? 'Abono (50%)' : 'Monto exacto';
+  const box     = document.getElementById('datos-pago-box');
   if (!box) return;
+
+  const bannerApartado = modoApartado ? `
+    <div class="dato-pago-row" style="background:rgba(233,30,99,0.07);border-radius:8px;padding:8px 12px;margin-bottom:6px;">
+      <span style="color:#E91E63;font-weight:700;">💰 Pago de Apartado (50%)</span>
+      <strong style="color:#E91E63;">Saldo: $${fmt(totalCompleto * 0.5)} USD en 15 días</strong>
+    </div>` : '';
 
   if (metodo === 'usdt') {
     box.innerHTML = `
       <div class="datos-pago-card">
+        ${bannerApartado}
         <div class="dato-pago-row"><span>Red de pago</span><strong>Binance Pay</strong></div>
         <div class="dato-pago-row">
           <span>ID Binance</span>
@@ -483,13 +496,14 @@ function mostrarDatosPago(metodo) {
           <button class="copy-btn" onclick="copiar('714385801')">Copiar</button>
         </div>
         <div class="dato-pago-row monto">
-          <span>Monto exacto</span>
-          <strong>$${fmt(total)} USDT</strong>
+          <span>${etiq}</span>
+          <strong>$${fmt(monto)} USDT</strong>
         </div>
       </div>`;
   } else if (metodo === 'pagomovil') {
     box.innerHTML = `
       <div class="datos-pago-card">
+        ${bannerApartado}
         <div class="dato-pago-row"><span>Banco</span><strong>Banco de Venezuela (0102)</strong></div>
         <div class="dato-pago-row">
           <span>Cédula</span>
@@ -502,8 +516,8 @@ function mostrarDatosPago(metodo) {
           <button class="copy-btn" onclick="copiar('04243230841')">Copiar</button>
         </div>
         <div class="dato-pago-row monto">
-          <span>Monto (tasa BCV ${fmt(tasas.bcv, 2)})</span>
-          <strong>Bs ${fmt(totalBs, 0)}</strong>
+          <span>${etiq} (BCV ${fmt(tasas.bcv, 2)})</span>
+          <strong>Bs ${fmt(montoBs, 0)}</strong>
         </div>
       </div>`;
   }
@@ -546,10 +560,15 @@ async function enviarPedido() {
   const btn = document.getElementById('btn-enviar');
   if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
 
+  const abono     = modoApartado ? total * 0.5 : total;
+  const saldo     = modoApartado ? total * 0.5 : 0;
   const payload = {
     nombre: nom, email, telefono: tel, cedula, ciudad, direccion: dir,
     productos: prods, total_usd: fmt(total), total_bs: fmt(totalBs, 0),
     metodo_pago: metodoSeleccionado === 'usdt' ? 'USDT (Binance Pay)' : 'Pago Móvil BDV',
+    tipo_orden: modoApartado ? 'Apartado' : 'Completo',
+    abono_usd: modoApartado ? fmt(abono) : null,
+    saldo_usd: modoApartado ? fmt(saldo) : null,
     captura: capturaB64,
     tasa_bcv: tasas.bcv, tasa_binance: tasas.binance
   };
@@ -565,7 +584,16 @@ async function enviarPedido() {
     console.warn('GAS fetch error:', e);
   }
   const orderNum = String(Date.now()).slice(-4);
-  document.getElementById('ok-num').textContent = 'Orden #CN-' + orderNum;
+  document.getElementById('ok-num').textContent = (modoApartado ? 'Apartado #AP-' : 'Orden #CN-') + orderNum;
+  const msgEl    = document.getElementById('ok-msg');
+  const tiempoEl = document.getElementById('ok-tiempo');
+  if (modoApartado) {
+    if (msgEl) msgEl.textContent = 'Verificaremos tu abono y te confirmaremos la reserva por WhatsApp. Tienes 15 días para completar el pago restante.';
+    if (tiempoEl) tiempoEl.innerHTML = 'Tu producto queda reservado por <strong>15 días corridos</strong>.';
+  } else {
+    if (msgEl) msgEl.textContent = 'Verificaremos tu comprobante y recibirás un correo de confirmación con tu factura adjunta.';
+    if (tiempoEl) tiempoEl.innerHTML = 'Entrega estimada: <strong>7 días hábiles</strong>';
+  }
   carrito = [];
   guardarCarrito();
   actualizarCarritoUI();
@@ -777,4 +805,45 @@ function initReveal() {
   }, { threshold: 0.12 });
 
   document.querySelectorAll('.reveal').forEach(el => observerReveal.observe(el));
+}
+
+// ─── TIPO DE ORDEN EN CHECKOUT ────────────────────────
+function seleccionarTipoOrden(tipo) {
+  modoApartado = tipo === 'apartado';
+  const cardCompleto  = document.getElementById('to-completo');
+  const cardApartado  = document.getElementById('to-apartado');
+  const infoBox       = document.getElementById('apartado-info-box');
+  if (cardCompleto)  cardCompleto.classList.toggle('activo', !modoApartado);
+  if (cardApartado) {
+    cardApartado.classList.toggle('activo', modoApartado);
+    cardApartado.classList.toggle('ap', modoApartado);
+  }
+  if (!infoBox) return;
+  if (modoApartado) {
+    const total = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
+    const abono = total * 0.5;
+    infoBox.style.display = 'flex';
+    infoBox.innerHTML = `
+      <div class="ai-row ai-abono">
+        <span>💰 Pagas ahora (50%)</span>
+        <strong>$${fmt(abono)} USD</strong>
+      </div>
+      <div class="ai-row">
+        <span>⏳ Saldo a completar en 15 días</span>
+        <strong>$${fmt(abono)} USD</strong>
+      </div>
+      <p class="ai-nota">⚠️ El abono no es reembolsable si no completas el pago dentro del plazo.</p>`;
+  } else {
+    infoBox.style.display = 'none';
+  }
+}
+
+// ─── MODAL APARTADO ───────────────────────────────────
+function abrirModalApartado() {
+  document.getElementById('modal-apartado').classList.add('activo');
+  document.body.style.overflow = 'hidden';
+}
+function cerrarModalApartado() {
+  document.getElementById('modal-apartado').classList.remove('activo');
+  document.body.style.overflow = '';
 }
