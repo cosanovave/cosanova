@@ -22,6 +22,8 @@
       <span class="anuncio-sep">·</span>
       <span>📦 Tracking en tiempo real</span>
       <span class="anuncio-sep">·</span>
+      <span>💰 ¡NUEVO! Apartado por abono — reserva con el 50%</span>
+      <span class="anuncio-sep">·</span>
       <span>🚚 Envío Colombia → Venezuela en 7 días hábiles</span>
       <span class="anuncio-sep">·</span>
       <span>💳 Paga en USDT, Bolívares o Zelle</span>
@@ -29,6 +31,8 @@
       <span>🛡️ Mercancía 100% asegurada</span>
       <span class="anuncio-sep">·</span>
       <span>📦 Tracking en tiempo real</span>
+      <span class="anuncio-sep">·</span>
+      <span>💰 ¡NUEVO! Apartado por abono — reserva con el 50%</span>
     </div>
   </div>
 
@@ -108,6 +112,24 @@
 
       <!-- PASO 1: Datos del comprador -->
       <div id="paso-1" class="checkout-paso activo">
+        <!-- Selector tipo de orden -->
+        <div class="tipo-orden-selector">
+          <div class="tipo-card activo" id="to-completo" onclick="seleccionarTipoOrden('completo')">
+            <span class="to-ico">✅</span>
+            <div class="to-info">
+              <strong>Pago completo</strong>
+              <span>Pagas el total ahora</span>
+            </div>
+          </div>
+          <div class="tipo-card" id="to-apartado" onclick="seleccionarTipoOrden('apartado')">
+            <span class="to-ico">💰</span>
+            <div class="to-info">
+              <strong>Apartado</strong>
+              <span>Solo el 50% ahora</span>
+            </div>
+          </div>
+        </div>
+        <div id="apartado-info-box" class="apartado-info-box" style="display:none"></div>
         <h2>¿A quién le enviamos?</h2>
         <div class="form-co">
           <div class="form-field">
@@ -187,8 +209,8 @@
           <div class="ok-icon">🎉</div>
           <h2>¡Pedido enviado!</h2>
           <p id="ok-num" style="color:#F0A500;font-weight:700;font-size:18px;"></p>
-          <p>Verificaremos tu comprobante y recibirás un correo de confirmación con tu factura adjunta.</p>
-          <p class="ok-tiempo">Entrega estimada: <strong>7 días hábiles</strong></p>
+          <p id="ok-msg">Verificaremos tu comprobante y recibirás un correo de confirmación con tu factura adjunta.</p>
+          <p class="ok-tiempo" id="ok-tiempo">Entrega estimada: <strong>7 días hábiles</strong></p>
           <button class="btn-co" onclick="cerrarCheckout()">Cerrar</button>
         </div>
       </div>
@@ -351,6 +373,71 @@
           <h3>Recibe en casa</h3>
           <p>Enviamos desde Colombia. Tu paquete llega en 7 días hábiles con seguimiento en tiempo real.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ APARTADO POR ABONO ════════════════════════════ -->
+  <section id="apartado" class="apartado-section">
+    <div class="container">
+      <div class="apartado-inner">
+
+        <!-- Izquierda: texto y condiciones -->
+        <div class="apartado-texto">
+          <span class="apartado-eyebrow">💰 ¡NUEVO!</span>
+          <h2 class="apartado-titulo">¿No tienes todo el dinero ahora?<br><span class="ap-gold">Apártalo y paga en abonos.</span></h2>
+          <p class="apartado-sub">Reserva cualquier producto con solo el <strong>50% del total</strong>. Guardamos tu pedido a tu nombre mientras juntas el resto.</p>
+          <div class="apartado-condiciones">
+            <div class="ap-cond reveal">
+              <span class="ap-cond-ico">✅</span>
+              <div><strong>Abono mínimo del 50%</strong><p>Para reservar tu producto</p></div>
+            </div>
+            <div class="ap-cond reveal">
+              <span class="ap-cond-ico">📅</span>
+              <div><strong>15 días para completar</strong><p>A partir del primer abono</p></div>
+            </div>
+            <div class="ap-cond reveal">
+              <span class="ap-cond-ico">💳</span>
+              <div><strong>Cualquier método de pago</strong><p>USDT, Pago Móvil o Zelle</p></div>
+            </div>
+            <div class="ap-cond ap-cond-warn reveal">
+              <span class="ap-cond-ico">⚠️</span>
+              <div><strong>Abono no reembolsable</strong><p>Si no completas el pago en el plazo acordado</p></div>
+            </div>
+          </div>
+          <button class="btn-ap-cta" onclick="abrirModalApartado()">Ver cómo funciona →</button>
+        </div>
+
+        <!-- Derecha: tarjeta ejemplo visual -->
+        <div class="apartado-ejemplo-wrap reveal">
+          <div class="apartado-ejemplo">
+            <p class="ap-ej-titulo">Ejemplo con un perfume de <strong>$25 USD</strong></p>
+            <div class="ap-ej-rows">
+              <div class="ap-ej-row">
+                <span>Precio total del producto</span>
+                <strong>$25.00 USD</strong>
+              </div>
+              <div class="ap-ej-row ap-ej-abono">
+                <span>💰 Pagas hoy (50%)</span>
+                <strong>$12.50 USD</strong>
+              </div>
+              <div class="ap-ej-divider"></div>
+              <div class="ap-ej-row">
+                <span>⏳ Saldo en 15 días</span>
+                <strong>$12.50 USD</strong>
+              </div>
+              <div class="ap-ej-row ap-ej-ok">
+                <span>📦 Enviamos cuando completas</span>
+                <strong>¡Listo!</strong>
+              </div>
+            </div>
+            <a href="https://wa.me/573001885210?text=Hola%20Cosa%20Nova!%20Quiero%20hacer%20un%20apartado%20por%20abono%20🛍️" target="_blank" class="btn-ap-wa">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Solicitar Apartado por WhatsApp
+            </a>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -662,6 +749,63 @@
   <a href="https://wa.me/573001885210" target="_blank" class="wa-float" title="Escríbenos por WhatsApp">
     <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
   </a>
+
+  <!-- ══ BOTÓN FLOTANTE: APARTADO POR ABONO ═══════════════ -->
+  <div class="apartado-float" id="apartado-float" onclick="abrirModalApartado()" title="Apartado por abono">
+    <div class="af-badge">¡NUEVO!</div>
+    <div class="af-icon">💰</div>
+    <div class="af-texto">
+      <strong>Apartado</strong>
+      <span>Paga en abonos</span>
+    </div>
+  </div>
+
+  <!-- ══ MODAL APARTADO ════════════════════════════════════ -->
+  <div id="modal-apartado" class="modal-apartado" onclick="if(event.target===this)cerrarModalApartado()">
+    <div class="modal-apartado-box">
+      <button class="ma-close" onclick="cerrarModalApartado()">×</button>
+      <div class="ma-header">
+        <div class="ma-emoji">💰</div>
+        <h2>Apartado por Abono</h2>
+        <p>Reserva hoy, paga poco a poco<br>y recibe cuando termines.</p>
+      </div>
+      <div class="ma-pasos">
+        <div class="ma-paso">
+          <span class="ma-paso-n">1</span>
+          <div>
+            <strong>Elige tu producto</strong>
+            <p>Escríbenos el nombre del producto que deseas reservar.</p>
+          </div>
+        </div>
+        <div class="ma-paso">
+          <span class="ma-paso-n">2</span>
+          <div>
+            <strong>Paga el primer abono (mín. 50%)</strong>
+            <p>USDT, Pago Móvil BDV o Zelle — tú eliges.</p>
+          </div>
+        </div>
+        <div class="ma-paso">
+          <span class="ma-paso-n">3</span>
+          <div>
+            <strong>Tu producto queda reservado 15 días</strong>
+            <p>Guardamos el pedido a tu nombre mientras terminas de pagar.</p>
+          </div>
+        </div>
+        <div class="ma-paso">
+          <span class="ma-paso-n">4</span>
+          <div>
+            <strong>Completas el pago → ¡Enviamos!</strong>
+            <p>Llega a tu puerta en 7 días hábiles.</p>
+          </div>
+        </div>
+      </div>
+      <a href="https://wa.me/573001885210?text=Hola%20Cosa%20Nova!%20Quiero%20hacer%20un%20apartado%20por%20abono%20🛍️" target="_blank" class="btn-ma-wa">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Quiero hacer un Apartado →
+      </a>
+      <p class="ma-nota">* Plazo máximo 15 días corridos. El abono no es reembolsable si no se completa el pago.</p>
+    </div>
+  </div>
 
   <script src="js/app.js"></script>
   <script>
