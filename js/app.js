@@ -25,6 +25,7 @@ let carrito        = JSON.parse(localStorage.getItem('cn-carrito') || '[]');
 let metodoSeleccionado = '';
 let capturaB64     = '';
 let modoApartado   = false;
+let abonoApartado  = 0;
 
 // ─── INICIALIZACIÓN ───────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -438,6 +439,7 @@ function abrirCheckout() {
   metodoSeleccionado = '';
   capturaB64 = '';
   modoApartado = false;
+  abonoApartado = 0;
   seleccionarTipoOrden('completo');
 }
 
@@ -473,16 +475,16 @@ function seleccionarMetodo(metodo) {
 
 function mostrarDatosPago(metodo) {
   const totalCompleto = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
-  const monto   = modoApartado ? totalCompleto * 0.5 : totalCompleto;
+  const monto   = modoApartado ? abonoApartado : totalCompleto;
   const montoBs = monto * tasas.bcv;
-  const etiq    = modoApartado ? 'Abono (50%)' : 'Monto exacto';
+  const etiq    = modoApartado ? 'Abono' : 'Monto exacto';
   const box     = document.getElementById('datos-pago-box');
   if (!box) return;
 
   const bannerApartado = modoApartado ? `
     <div class="dato-pago-row" style="background:rgba(233,30,99,0.07);border-radius:8px;padding:8px 12px;margin-bottom:6px;">
-      <span style="color:#E91E63;font-weight:700;">💰 Pago de Apartado (50%)</span>
-      <strong style="color:#E91E63;">Saldo: $${fmt(totalCompleto * 0.5)} USD en 15 días</strong>
+      <span style="color:#E91E63;font-weight:700;">💰 Pago de Apartado</span>
+      <strong style="color:#E91E63;">Saldo: $${fmt(totalCompleto - abonoApartado)} USD en 15 días</strong>
     </div>` : '';
 
   if (metodo === 'usdt') {
@@ -560,8 +562,8 @@ async function enviarPedido() {
   const btn = document.getElementById('btn-enviar');
   if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
 
-  const abono     = modoApartado ? total * 0.5 : total;
-  const saldo     = modoApartado ? total * 0.5 : 0;
+  const abono     = modoApartado ? abonoApartado : total;
+  const saldo     = modoApartado ? total - abonoApartado : 0;
   const payload = {
     nombre: nom, email, telefono: tel, cedula, ciudad, direccion: dir,
     productos: prods, total_usd: fmt(total), total_bs: fmt(totalBs, 0),
@@ -820,22 +822,51 @@ function seleccionarTipoOrden(tipo) {
   }
   if (!infoBox) return;
   if (modoApartado) {
-    const total = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
-    const abono = total * 0.5;
+    const total    = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
+    const minAbono = total * 0.5;
+    abonoApartado  = minAbono;
     infoBox.style.display = 'flex';
     infoBox.innerHTML = `
       <div class="ai-row ai-abono">
-        <span>💰 Pagas ahora (50%)</span>
-        <strong>$${fmt(abono)} USD</strong>
+        <span>💰 Abono mínimo (50%)</span>
+        <strong>$${fmt(minAbono)} USD</strong>
       </div>
+      <div class="ai-row" style="align-items:center;gap:8px;flex-wrap:wrap;">
+        <span>¿Cuánto quieres abonar?</span>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <span style="font-weight:700;">$</span>
+          <input type="number" id="input-abono" min="${minAbono.toFixed(2)}" max="${total.toFixed(2)}" step="0.01"
+            value="${minAbono.toFixed(2)}"
+            style="width:90px;padding:4px 6px;border:1px solid #F0A500;border-radius:6px;font-size:14px;text-align:right;background:#fff;"
+            oninput="actualizarAbono(this)">
+          <span style="font-weight:700;">USD</span>
+        </div>
+      </div>
+      <p id="abono-error" style="color:#E91E63;font-size:12px;margin:2px 0;display:none;">El abono debe ser al menos $${fmt(minAbono)} USD</p>
       <div class="ai-row">
-        <span>⏳ Saldo a completar en 15 días</span>
-        <strong>$${fmt(abono)} USD</strong>
+        <span>💳 Saldo restante</span>
+        <strong id="saldo-display">$${fmt(minAbono)} USD</strong>
       </div>
-      <p class="ai-nota">⚠️ El abono no es reembolsable si no completas el pago dentro del plazo.</p>`;
+      <p class="ai-nota">🚚 El envío sale de inmediato. Pagas el saldo al recibirlo en 7 días hábiles, o hasta los 15 días del plazo total.</p>`;
   } else {
     infoBox.style.display = 'none';
   }
+}
+
+function actualizarAbono(input) {
+  const total    = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
+  const minAbono = total * 0.5;
+  const val      = parseFloat(input.value) || 0;
+  const errorEl  = document.getElementById('abono-error');
+  const saldoEl  = document.getElementById('saldo-display');
+  if (val < minAbono) {
+    if (errorEl) errorEl.style.display = 'block';
+    abonoApartado = minAbono;
+  } else {
+    if (errorEl) errorEl.style.display = 'none';
+    abonoApartado = Math.min(val, total);
+  }
+  if (saldoEl) saldoEl.textContent = '$' + fmt(total - abonoApartado) + ' USD';
 }
 
 // ─── MODAL APARTADO ───────────────────────────────────
