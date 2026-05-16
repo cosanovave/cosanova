@@ -1,0 +1,13 @@
+{
+  "name": "Cosa Nova",
+  "short_name": "Cosa Nova",
+  "description": "Tienda online de perfumes, ropa y accesorios colombianos con envio a Venezuela.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0D2137",
+  "theme_color": "#0D2137",
+  "icons": [
+    { "src": "assets/favicon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
