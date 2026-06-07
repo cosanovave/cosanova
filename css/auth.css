@@ -1,0 +1,397 @@
+/* ══════════════════════════════════════════════════════
+   COSA NOVA — Firebase UI Styles
+   auth modal · user menu · profile · search · wishlist
+   ══════════════════════════════════════════════════════ */
+
+/* ─── BOTÓN USUARIO EN NAVBAR ─────────────────────────── */
+.nav-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid rgba(240,165,0,0.4);
+  border-radius: 20px;
+  padding: 5px 12px 5px 6px;
+  color: var(--color-text, #1a1a2e);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.nav-user-btn:hover { border-color: #F0A500; background: rgba(240,165,0,0.06); }
+.nav-user-avatar {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: #F0A500;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.nav-user-icon { width: 18px; height: 18px; opacity: 0.7; }
+
+/* ─── MODAL AUTH ──────────────────────────────────────── */
+.modal-auth {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(10,15,30,0.65);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-auth.activo { display: flex; }
+
+.auth-box {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 28px 28px;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  animation: authSlideIn 0.3s ease;
+}
+@keyframes authSlideIn {
+  from { opacity:0; transform:translateY(24px) scale(0.97); }
+  to   { opacity:1; transform:none; }
+}
+
+.auth-close {
+  position: absolute;
+  top: 14px; right: 16px;
+  background: none; border: none;
+  font-size: 24px; cursor: pointer;
+  color: #888; line-height: 1;
+  padding: 0 4px;
+}
+.auth-close:hover { color: #333; }
+
+.auth-tabs {
+  display: flex;
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 24px;
+}
+.auth-tab {
+  flex: 1;
+  background: none; border: none;
+  padding: 10px 0;
+  font-size: 14px; font-weight: 600;
+  color: #aaa; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+}
+.auth-tab.activo { color: #F0A500; border-bottom-color: #F0A500; }
+
+.auth-form { display: none; }
+.auth-form.activo { display: block; }
+.auth-form h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin: 0 0 20px; }
+
+.auth-error {
+  background: #FFF0F0;
+  border: 1px solid #ffcdd2;
+  color: #d32f2f;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.btn-google {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #fff;
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 12px;
+}
+.btn-google:hover { border-color: #bbb; background: #f9f9f9; }
+.btn-google svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+  color: #ccc;
+  font-size: 13px;
+}
+.auth-divider::before, .auth-divider::after {
+  content:''; flex:1; height:1px; background:#eee;
+}
+
+.auth-link {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 13px;
+  color: #888;
+  cursor: pointer;
+}
+.auth-link strong { color: #F0A500; }
+.auth-link:hover strong { text-decoration: underline; }
+
+/* ─── MODAL MI CUENTA ─────────────────────────────────── */
+.modal-cuenta {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(10,15,30,0.65);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-cuenta.activo { display: flex; }
+
+.cuenta-box {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  overflow: hidden;
+  animation: authSlideIn 0.3s ease;
+}
+
+.cuenta-close {
+  position: absolute;
+  top: 14px; right: 16px;
+  background: none; border: none;
+  font-size: 24px; cursor: pointer;
+  color: #888; z-index: 10;
+  padding: 0 4px;
+}
+.cuenta-close:hover { color: #333; }
+
+.cuenta-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 24px 24px 18px;
+  border-bottom: 1px solid #f0f0f0;
+  background: linear-gradient(135deg, #0D2137 0%, #1a3a5c 100%);
+  color: #fff;
+}
+.cuenta-avatar-modal {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: #F0A500;
+  color: #fff;
+  font-size: 18px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.cuenta-header h2 { font-size: 17px; font-weight: 700; margin: 0 0 2px; }
+.cuenta-header p  { font-size: 12px; opacity: 0.75; margin: 0; }
+.cuenta-header > .flex-1 { flex: 1; min-width: 0; }
+.cuenta-header > .flex-1 h2,
+.cuenta-header > .flex-1 p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.btn-logout {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff; border-radius: 8px;
+  padding: 7px 14px; font-size: 13px;
+  font-weight: 600; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0;
+  transition: background 0.2s;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.22); }
+
+.cuenta-tabs {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+.cuenta-tab {
+  flex: 1;
+  background: none; border: none;
+  padding: 12px 8px;
+  font-size: 13px; font-weight: 600;
+  color: #aaa; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all 0.2s;
+}
+.cuenta-tab.activo { color: #F0A500; border-bottom-color: #F0A500; }
+
+.cuenta-panel { display: none; overflow-y: auto; flex: 1; padding: 20px; }
+.cuenta-panel.activo { display: block; }
+
+.cp-pedido {
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.cp-ped-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.cp-num   { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+.cp-est   { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: capitalize; }
+.cp-est-pend   { background: #FFF3CD; color: #856404; }
+.cp-est-ok     { background: #D1ECF1; color: #0c5460; }
+.cp-est-env    { background: #D4EDDA; color: #155724; }
+.cp-est-done   { background: #D4EDDA; color: #155724; }
+.cp-est-cancel { background: #F8D7DA; color: #721c24; }
+.cp-prods { font-size: 12px; color: #666; margin: 4px 0 8px; line-height: 1.4; }
+.cp-ped-foot {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: #888;
+}
+.cp-vacio { text-align: center; color: #aaa; padding: 32px 16px; font-size: 14px; }
+
+.loading-mini {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px; gap: 10px; color: #aaa; font-size: 13px;
+}
+.productos-grid.mini { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.producto-card.mini .producto-img-wrap { height: 120px; }
+
+/* ─── PERFIL FORM ─────────────────────────────────────── */
+#cpanel-perfil .form-co { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+#cpanel-perfil .form-field label { font-size: 12px; }
+#cpanel-perfil .btn-co { margin-top: 18px; }
+
+/* ─── BÚSQUEDA + PRECIO ───────────────────────────────── */
+.busqueda-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 16px 0 8px;
+  flex-wrap: wrap;
+}
+
+.busqueda-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 200px;
+  background: #fff;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 8px 14px;
+  transition: border-color 0.2s;
+}
+.busqueda-input-wrap:focus-within { border-color: #F0A500; }
+.busqueda-input-wrap svg { width: 16px; height: 16px; color: #aaa; flex-shrink: 0; }
+.busqueda-input-wrap input {
+  border: none; outline: none;
+  font-size: 14px; width: 100%;
+  background: transparent; color: #1a1a2e;
+}
+.busqueda-input-wrap input::placeholder { color: #bbb; }
+
+.precio-rango {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
+}
+.rango-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 130px;
+}
+.rango-inputs input[type=range] {
+  -webkit-appearance: none;
+  width: 100%; height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px; outline: none;
+  cursor: pointer;
+}
+.rango-inputs input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #F0A500; cursor: pointer;
+}
+#precio-display {
+  font-size: 12px; font-weight: 700;
+  color: #F0A500; white-space: nowrap;
+}
+
+/* ─── WISHLIST HEART ──────────────────────────────────── */
+.wishlist-heart {
+  position: absolute;
+  top: 8px; right: 8px;
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+.wishlist-heart:hover { transform: scale(1.15); }
+.wishlist-heart.activo { background: #fff; }
+
+#mp-heart {
+  background: rgba(255,255,255,0.9);
+  border: none;
+  border-radius: 50%;
+  width: 36px; height: 36px;
+  font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  margin-left: auto;
+}
+#mp-heart:hover { transform: scale(1.15); }
+
+.mp-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+.mp-actions .btn-carrito { flex: 1; margin: 0; }
+
+/* ─── ADMIN LINK EN FOOTER (oculto por defecto) ─────── */
+.admin-link-footer {
+  display: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 11px;
+  text-decoration: none;
+  margin-left: 12px;
+}
+.admin-link-footer:hover { color: rgba(255,255,255,0.7); }
+
+/* ─── RESPONSIVE ──────────────────────────────────────── */
+@media (max-width: 600px) {
+  .auth-box { padding: 24px 18px 20px; }
+  .busqueda-row { gap: 10px; }
+  .precio-rango { display: none; }
+  .cuenta-box { max-height: 95vh; border-radius: 16px 16px 0 0; align-self: flex-end; }
+  .modal-cuenta { align-items: flex-end; padding: 0; }
+  #cpanel-perfil .form-co { grid-template-columns: 1fr; }
+}
