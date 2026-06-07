@@ -46,9 +46,9 @@
 
     <div class="section">
       <h2>1. Importar Productos desde Google Sheets</h2>
-      <label>URL CSV del Google Sheet (hoja Stock)</label>
-      <input type="text" id="csv-url" placeholder="https://docs.google.com/spreadsheets/d/e/...pub?...output=csv"
-        value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTaUKy-WqNwIuPFN6oDkcOQGOA7maXTXhbkCKVUZhrkXzKYifPTI0ULL3urY7bt5lT598SNMeF0xpwu/pub?gid=0&single=true&output=csv">
+      <label>URL del Google Apps Script (endpoint de stock)</label>
+      <input type="text" id="csv-url" placeholder="https://script.google.com/macros/s/..."
+        value="https://script.google.com/macros/s/AKfycby8oGOKP9nkwjZZ6-Ilaz7HNTCxMnhHsWlswbV43-Y_luE8mJpaAl5TPa0gVA-PSBxN/exec">
       <button onclick="importarProductos()" id="btn-importar">Importar productos</button>
       <div class="log" id="log-productos">Esperando...</div>
     </div>
@@ -101,46 +101,29 @@ window.loginAdmin = async () => {
   await signInWithPopup(auth, prov);
 };
 
-// ─── PARSEAR CSV ──────────────────────────────────────
-function parseCSV(csv) {
-  const filas = [];
-  for (const linea of csv.split('\n')) {
-    if (!linea.trim()) continue;
-    const cols = []; let dentro = false, campo = '';
-    for (let i = 0; i < linea.length; i++) {
-      const c = linea[i];
-      if (c === '"') { dentro = !dentro; continue; }
-      if (c === ',' && !dentro) { cols.push(campo.trim()); campo = ''; continue; }
-      campo += c;
-    }
-    cols.push(campo.trim());
-    filas.push(cols);
-  }
-  return filas;
-}
-
 // ─── IMPORTAR PRODUCTOS ───────────────────────────────
+// Se consulta vía GAS (?action=stock) en vez del CSV publicado: el navegador
+// bloquea el fetch directo a Google Sheets por CORS, pero GAS lee la hoja
+// del lado del servidor con SpreadsheetApp y no tiene ese problema.
 window.importarProductos = async () => {
   const url = document.getElementById('csv-url').value.trim();
   const log = document.getElementById('log-productos');
   const btn = document.getElementById('btn-importar');
-  if (!url) { log.textContent = '❌ Ingresa la URL del CSV'; return; }
+  if (!url) { log.textContent = '❌ Ingresa la URL del endpoint de GAS'; return; }
   btn.disabled = true;
-  log.textContent = '⏳ Cargando CSV...\n';
+  log.textContent = '⏳ Consultando stock vía GAS...\n';
 
   try {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('No se pudo cargar el CSV');
-    const csv   = await resp.text();
-    const filas = parseCSV(csv);
-    filas.shift(); // quitar encabezados
+    const resp = await fetch(url + '?action=stock');
+    if (!resp.ok) throw new Error('No se pudo consultar el endpoint de stock');
+    const productos = await resp.json();
 
-    const productosFiltrados = filas.filter(f => f[0] && f[0].trim());
-    log.textContent += `📊 ${productosFiltrados.length} productos encontrados en el CSV\n\n`;
+    const productosFiltrados = productos.filter(p => p.nom && p.nom.trim());
+    log.textContent += `📊 ${productosFiltrados.length} productos encontrados\n\n`;
 
     let creados = 0, omitidos = 0;
-    for (const f of productosFiltrados) {
-      const nom = f[0].trim();
+    for (const p of productosFiltrados) {
+      const nom = p.nom.trim();
       // Usar nombre como ID (normalizado)
       const id  = nom.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 50);
       const docRef = doc(db, 'productos', id);
@@ -154,13 +137,13 @@ window.importarProductos = async () => {
 
       const data = {
         nom,
-        inv_cop:     parseFloat(f[1]) || 0,
-        categoria:   f[2]  || 'General',
-        descripcion: f[4]  || '',
-        imagen:      f[6]  || '',
-        genero:      (f[7] || '').trim(),
-        subtipo:     (f[8] || '').trim(),
-        tallas:      (f[9] || '').trim(),
+        inv_cop:     p.inv_cop || 0,
+        categoria:   p.categoria || 'General',
+        descripcion: p.descripcion || '',
+        imagen:      p.imagen || '',
+        genero:      (p.genero  || '').trim(),
+        subtipo:     (p.subtipo || '').trim(),
+        tallas:      (p.tallas  || '').trim(),
         activo:      true,
         createdAt:   serverTimestamp()
       };
