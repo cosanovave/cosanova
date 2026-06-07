@@ -130,6 +130,7 @@ async function toggleWishlist(productId) {
 }
 
 function actualizarUIAuth(user) {
+  actualizarUIResenas(user);
   const btn    = document.getElementById('nav-user-btn');
   const label  = document.getElementById('nav-user-label');
   const avatar = document.getElementById('nav-user-avatar');
@@ -304,17 +305,25 @@ async function cargarMisPedidos() {
   if (!cont || !usuario) return;
   cont.innerHTML = '<div class="loading-mini"><div class="loader-spin"></div><p>Cargando...</p></div>';
 
-  const q = query(
-    collection(db, 'ordenes'),
-    where('uid', '==', usuario.uid),
-    orderBy('createdAt', 'desc')
-  );
-  const snap = await getDocs(q);
+  // Nota: ordenamos por fecha en el cliente (no en la query) para no requerir
+  // un índice compuesto en Firestore para where('uid')+orderBy('createdAt')
+  const q = query(collection(db, 'ordenes'), where('uid', '==', usuario.uid));
+  let snap;
+  try {
+    snap = await getDocs(q);
+  } catch(e) {
+    console.error('Error cargando pedidos:', e);
+    cont.innerHTML = '<p class="cp-vacio">No se pudieron cargar tus pedidos. Intenta de nuevo.</p>';
+    return;
+  }
   if (snap.empty) {
     cont.innerHTML = '<p class="cp-vacio">No tienes pedidos aún.</p>';
     return;
   }
-  cont.innerHTML = snap.docs.map(d => {
+  const docsOrdenados = snap.docs.sort((a, b) =>
+    (b.data().createdAt?.toMillis?.() || 0) - (a.data().createdAt?.toMillis?.() || 0)
+  );
+  cont.innerHTML = docsOrdenados.map(d => {
     const o = d.data();
     const fecha = o.createdAt?.toDate?.()?.toLocaleDateString('es-VE') || '—';
     const estadoClass = { pendiente:'cp-est-pend', confirmado:'cp-est-ok', enviado:'cp-est-env', entregado:'cp-est-done', cancelado:'cp-est-cancel' }[o.estado] || '';
@@ -743,6 +752,11 @@ function toggleCart() {
 // ─── CHECKOUT ─────────────────────────────────────────
 function abrirCheckout() {
   if (carrito.length === 0) return mostrarToast('Tu carrito está vacío');
+  if (!usuario) {
+    toggleCart();
+    abrirModalAuth();
+    return mostrarToast('Inicia sesión para continuar tu compra');
+  }
   toggleCart();
   const modal = document.getElementById('checkout-modal');
   modal.classList.add('abierto');
@@ -876,7 +890,7 @@ async function enviarPedido() {
 
     // Guardar orden en Firestore
     const ordenData = {
-      uid: usuario?.uid || null,
+      uid: usuario.uid,
       nombre: nom, email, telefono: tel, cedula, ciudad, direccion: dir,
       productos: prods,
       productosDetalle: carrito.map(x => ({ id: x.id||'', nom: x.nom, pvp_usd: x.pvp_usd, qty: x.qty, talla: x.talla||'', cat: x.cat })),
@@ -892,13 +906,11 @@ async function enviarPedido() {
     };
     const ordenRef = await addDoc(collection(db, 'ordenes'), ordenData);
 
-    // Guardar datos de envío en perfil del usuario (si está autenticado)
-    if (usuario) {
-      updateDoc(doc(db, 'usuarios', usuario.uid), {
-        nombre: nom, telefono: tel, cedula, ciudad, direccion: dir
-      }).catch(() => {});
-      perfilUsuario = { ...perfilUsuario, nombre: nom, telefono: tel, cedula, ciudad, direccion: dir };
-    }
+    // Guardar datos de envío en el perfil del usuario
+    updateDoc(doc(db, 'usuarios', usuario.uid), {
+      nombre: nom, telefono: tel, cedula, ciudad, direccion: dir
+    }).catch(() => {});
+    perfilUsuario = { ...perfilUsuario, nombre: nom, telefono: tel, cedula, ciudad, direccion: dir };
 
     // Mostrar confirmación
     const orderNum = ordenRef.id.slice(-6).toUpperCase();
@@ -987,10 +999,13 @@ function initStars() {
 }
 
 async function enviarResena() {
-  const nom    = document.getElementById('rs-nom').value.trim();
+  if (!usuario) {
+    abrirModalAuth();
+    return mostrarToast('Inicia sesión para dejar tu reseña');
+  }
+  const nombreCuenta = perfilUsuario?.nombre || usuario.displayName || '';
   const ciudad = document.getElementById('rs-ciudad').value.trim();
   const texto  = document.getElementById('rs-texto').value.trim();
-  if (!nom)             return mostrarToast('⚠️ Escribe tu nombre');
   if (!estrellasResena) return mostrarToast('⚠️ Selecciona una calificación');
   if (!texto)           return mostrarToast('⚠️ Escribe tu experiencia');
 
@@ -998,8 +1013,8 @@ async function enviarResena() {
   btn.disabled = true; btn.textContent = 'Enviando...';
   try {
     await addDoc(collection(db, 'resenas'), {
-      uid: usuario?.uid || null,
-      nombre: nom, ciudad, estrellas: estrellasResena, texto,
+      uid: usuario.uid,
+      nombre: nombreCuenta, ciudad, estrellas: estrellasResena, texto,
       aprobada: false,
       createdAt: serverTimestamp()
     });
@@ -1008,6 +1023,21 @@ async function enviarResena() {
   } catch(e) {
     mostrarToast('Error al enviar reseña. Intenta de nuevo.');
     btn.disabled = false; btn.textContent = 'Enviar reseña →';
+  }
+}
+
+function actualizarUIResenas(user) {
+  const btn  = document.getElementById('btn-resena');
+  const como = document.getElementById('rs-publicando-como');
+  if (!btn || !como) return;
+  if (user) {
+    const nombreCuenta = perfilUsuario?.nombre || user.displayName || user.email || '';
+    como.querySelector('strong').textContent = nombreCuenta;
+    como.style.display = 'block';
+    btn.textContent = 'Enviar reseña →';
+  } else {
+    como.style.display = 'none';
+    btn.textContent = 'Inicia sesión para reseñar →';
   }
 }
 
