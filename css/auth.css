@@ -7,23 +7,28 @@
 .nav-user-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: none;
-  border: 1px solid rgba(240,165,0,0.4);
-  border-radius: 20px;
-  padding: 5px 12px 5px 6px;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(240,165,0,0.14), rgba(240,165,0,0.04));
+  border: 1.5px solid rgba(240,165,0,0.45);
+  border-radius: 24px;
+  padding: 6px 16px 6px 10px;
   color: var(--color-text, #1a1a2e);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
   white-space: nowrap;
 }
-.nav-user-btn:hover { border-color: #F0A500; background: rgba(240,165,0,0.06); }
+.nav-user-btn:hover {
+  border-color: #F0A500;
+  background: linear-gradient(135deg, rgba(240,165,0,0.24), rgba(240,165,0,0.08));
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(240,165,0,0.25);
+}
 .nav-user-avatar {
-  width: 26px; height: 26px;
+  width: 28px; height: 28px;
   border-radius: 50%;
-  background: #F0A500;
+  background: linear-gradient(135deg, #F0A500, #FBBF24);
   color: #fff;
   font-size: 12px;
   font-weight: 700;
@@ -31,8 +36,9 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(240,165,0,0.35);
 }
-.nav-user-icon { width: 18px; height: 18px; opacity: 0.7; }
+.nav-user-icon { width: 20px; height: 20px; color: #F0A500; opacity: 0.9; }
 
 /* ─── MODAL AUTH ──────────────────────────────────────── */
 .modal-auth {
