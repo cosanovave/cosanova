@@ -237,6 +237,14 @@ async function eliminarProducto(id) {
 }
 
 // ─── TABLA ÓRDENES ────────────────────────────────────
+const WA_MENSAJES = {
+  pendiente:  'Hola {cliente} 👋, hemos recibido tu pedido *{num}* y lo estamos verificando. ¡Gracias por tu compra! 🛍️',
+  confirmado: 'Hola {cliente} 👋, tu pago fue *confirmado* y tu pedido *{num}* ya está en preparación. Te avisamos cuando sea enviado ✨',
+  enviado:    'Hola {cliente} 👋, ¡buenas noticias! Tu pedido *{num}* ha sido *enviado* 🚚. Llegará en aproximadamente 7 días hábiles.',
+  entregado:  'Hola {cliente} 👋, tu pedido *{num}* ha sido *entregado* ✅. ¡Esperamos que lo disfrutes! Gracias por comprar en Cosa Nova 🌟',
+  cancelado:  'Hola {cliente}, lamentamos informarte que tu pedido *{num}* ha sido *cancelado* ❌. Contáctanos para más información.'
+};
+
 function renderTablaOrdenes(lista) {
   const tbody = document.getElementById('tbody-ordenes');
   if (!tbody) return;
@@ -271,6 +279,15 @@ function filtrarOrdenes(estado) {
 }
 
 async function cambiarEstadoOrden(id, estado) {
+  const orden    = todasOrdenes.find(o => o.id === id);
+  const plantilla = WA_MENSAJES[estado];
+  if (orden && orden.telefono && plantilla) {
+    const prefijo  = orden.tipo_orden === 'Apartado' ? 'AP-' : 'CN-';
+    const num      = prefijo + orden.id.slice(-6).toUpperCase();
+    const mensaje  = plantilla.replace('{cliente}', orden.nombre || 'cliente').replace('{num}', num);
+    const telefono = orden.telefono.toString().replace(/\D/g, '');
+    window.open('https://wa.me/' + telefono + '?text=' + encodeURIComponent(mensaje), '_blank');
+  }
   await updateDoc(doc(db, 'ordenes', id), { estado });
   toastAdmin('Estado actualizado → ' + estado);
 }
