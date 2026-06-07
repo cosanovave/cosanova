@@ -68,15 +68,20 @@ function initFirestore() {
   });
 
   // Productos en tiempo real
+  // Nota: ordenamos por 'nom' en el cliente (no en la query) para no requerir
+  // un índice compuesto en Firestore para where('activo')+orderBy('nom')
   const qProd = query(
     collection(db, 'productos'),
-    where('activo', '==', true),
-    orderBy('nom')
+    where('activo', '==', true)
   );
   onSnapshot(qProd, snap => {
-    productos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    productos = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
     renderProductos(productos);
     renderHeroPreview(productos);
+  }, err => {
+    console.error('Error cargando productos desde Firestore:', err);
   });
 }
 
