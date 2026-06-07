@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Cosa Nova</title>
+  <link rel="icon" href="assets/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <div id="admin-loading" class="admin-loading">
+    <div class="loader-spin"></div>
+    <p>Verificando acceso...</p>
+  </div>
+
+  <div id="admin-app" class="admin-app" style="display:none">
+
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-brand">
+        <img src="assets/logo_sin_fondo.png" alt="Cosa Nova" class="sidebar-logo">
+        <span>Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="snav-btn activo" data-panel="productos" onclick="cambiarPanel('productos')">
+          📦 Productos
+        </button>
+        <button class="snav-btn" data-panel="ordenes" onclick="cambiarPanel('ordenes')">
+          🛒 Órdenes
+        </button>
+        <button class="snav-btn" data-panel="resenas" onclick="cambiarPanel('resenas')">
+          ⭐ Reseñas
+        </button>
+        <button class="snav-btn" data-panel="tasas" onclick="cambiarPanel('tasas')">
+          💱 Tasas
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="index.html" class="sidebar-link">← Ver tienda</a>
+        <button class="sidebar-logout" onclick="adminCerrarSesion()">Salir</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="admin-main">
+
+      <!-- PANEL PRODUCTOS -->
+      <div id="panel-productos" class="admin-panel activo">
+        <div class="panel-header">
+          <h1>Productos</h1>
+          <button class="btn-primary-admin" onclick="abrirFormProducto()">+ Nuevo producto</button>
+        </div>
+
+        <div class="admin-filters">
+          <input type="text" id="prod-buscar" placeholder="Buscar producto..." oninput="filtrarTablaProductos(this.value)">
+          <select id="prod-cat" onchange="filtrarTablaProductos(document.getElementById('prod-buscar').value)">
+            <option value="">Todas las categorías</option>
+            <option>Perfumes</option><option>Belleza</option><option>Ropa</option><option>General</option>
+          </select>
+        </div>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="tabla-productos">
+            <thead>
+              <tr>
+                <th>Imagen</th><th>Nombre</th><th>Categoría</th>
+                <th>Precio inv. (COP)</th><th>Estado</th><th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-productos">
+              <tr><td colspan="6" class="loading-cell"><div class="loader-spin"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PANEL ÓRDENES -->
+      <div id="panel-ordenes" class="admin-panel">
+        <div class="panel-header">
+          <h1>Órdenes</h1>
+          <select id="filtro-estado" onchange="filtrarOrdenes(this.value)">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="confirmado">Confirmado</option>
+            <option value="enviado">Enviado</option>
+            <option value="entregado">Entregado</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="tabla-ordenes">
+            <thead>
+              <tr>
+                <th>ID</th><th>Cliente</th><th>Productos</th>
+                <th>Total</th><th>Método</th><th>Estado</th><th>Fecha</th><th>Comprobante</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-ordenes">
+              <tr><td colspan="8" class="loading-cell"><div class="loader-spin"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PANEL RESEÑAS -->
+      <div id="panel-resenas" class="admin-panel">
+        <div class="panel-header"><h1>Reseñas</h1></div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Cliente</th><th>Ciudad</th><th>Estrellas</th><th>Texto</th><th>Estado</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tbody-resenas">
+              <tr><td colspan="6" class="loading-cell"><div class="loader-spin"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PANEL TASAS -->
+      <div id="panel-tasas" class="admin-panel">
+        <div class="panel-header"><h1>Tasas de cambio</h1></div>
+        <div class="tasas-form">
+          <div class="tasa-card">
+            <label>TRM (COP/USD)</label>
+            <input type="number" id="tasa-trm" placeholder="4200" step="10">
+            <span class="tasa-hint">Tasa de cambio peso colombiano → dólar</span>
+          </div>
+          <div class="tasa-card">
+            <label>BCV (Bs/USD)</label>
+            <input type="number" id="tasa-bcv-input" placeholder="50" step="0.1">
+            <span class="tasa-hint">Tasa oficial del Banco Central de Venezuela</span>
+          </div>
+          <div class="tasa-card">
+            <label>Binance (Bs/USDT)</label>
+            <input type="number" id="tasa-binance-input" placeholder="65" step="0.1">
+            <span class="tasa-hint">Tasa de mercado (Binance P2P)</span>
+          </div>
+        </div>
+        <button class="btn-primary-admin" onclick="guardarTasas()">Guardar tasas</button>
+        <p id="tasas-ok" class="tasas-ok" style="display:none">✓ Tasas actualizadas</p>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- MODAL PRODUCTO -->
+  <div id="modal-producto-admin" class="modal-admin-overlay" onclick="if(event.target===this)cerrarFormProducto()">
+    <div class="modal-admin-box">
+      <div class="modal-admin-header">
+        <h2 id="form-prod-titulo">Nuevo producto</h2>
+        <button onclick="cerrarFormProducto()">×</button>
+      </div>
+      <form id="form-producto" onsubmit="guardarProducto(event)">
+        <input type="hidden" id="prod-id">
+        <div class="form-admin-grid">
+          <div class="form-admin-field">
+            <label>Nombre *</label>
+            <input type="text" id="prod-nom" required placeholder="ej: Sauvage Dior 100ml">
+          </div>
+          <div class="form-admin-field">
+            <label>Categoría *</label>
+            <select id="prod-categoria" required>
+              <option value="">Selecciona...</option>
+              <option>Perfumes</option><option>Belleza</option>
+              <option>Ropa</option><option>General</option>
+            </select>
+          </div>
+          <div class="form-admin-field">
+            <label>Precio inventario COP *</label>
+            <input type="number" id="prod-inv" required placeholder="ej: 150000" step="500">
+          </div>
+          <div class="form-admin-field">
+            <label>Género</label>
+            <select id="prod-genero">
+              <option value="">Sin género</option>
+              <option>Hombre</option><option>Mujer</option>
+              <option>Niños</option><option>Niñas</option>
+            </select>
+          </div>
+          <div class="form-admin-field">
+            <label>Subtipo</label>
+            <input type="text" id="prod-subtipo" placeholder="ej: Jeans">
+          </div>
+          <div class="form-admin-field">
+            <label>Tallas (opcional)</label>
+            <input type="text" id="prod-tallas" placeholder="S|M|L|XL  ó  S:80000|M:85000">
+          </div>
+          <div class="form-admin-field form-admin-full">
+            <label>Descripción</label>
+            <textarea id="prod-desc" rows="3" placeholder="Describe el producto..."></textarea>
+          </div>
+          <div class="form-admin-field form-admin-full">
+            <label>Imagen</label>
+            <div class="img-upload-wrap">
+              <div class="img-preview" id="img-preview-admin">
+                <span>Sin imagen</span>
+              </div>
+              <div class="img-upload-actions">
+                <input type="file" id="prod-img-file" accept="image/*" style="display:none" onchange="previewImagenAdmin(this)">
+                <button type="button" class="btn-upload-admin" onclick="document.getElementById('prod-img-file').click()">
+                  📷 Subir imagen
+                </button>
+                <span class="img-hint">O escribe el nombre del archivo local:</span>
+                <input type="text" id="prod-img-nombre" placeholder="sauvage_dior.webp">
+              </div>
+            </div>
+          </div>
+          <div class="form-admin-field">
+            <label>Activo</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="prod-activo" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="form-admin-actions">
+          <button type="button" class="btn-cancel-admin" onclick="cerrarFormProducto()">Cancelar</button>
+          <button type="submit" class="btn-primary-admin" id="btn-guardar-prod">Guardar producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="admin-toast" class="admin-toast"></div>
+
+  <script type="module" src="js/admin.js"></script>
+</body>
+</html>
