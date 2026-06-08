@@ -906,6 +906,27 @@ async function enviarPedido() {
     };
     const ordenRef = await addDoc(collection(db, 'ordenes'), ordenData);
 
+    // Notificar por Telegram (no bloquea el checkout si falla)
+    fetch(GAS_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body:    JSON.stringify({
+        action:      'notificarPedido',
+        num:         ordenRef.id.slice(-6).toUpperCase(),
+        tipo_orden:  ordenData.tipo_orden,
+        nombre:      ordenData.nombre,
+        telefono:    ordenData.telefono,
+        ciudad:      ordenData.ciudad,
+        direccion:   ordenData.direccion,
+        productos:   ordenData.productos,
+        total_usd:   ordenData.total_usd,
+        abono_usd:   ordenData.abono_usd,
+        saldo_usd:   ordenData.saldo_usd,
+        metodo_pago: ordenData.metodo_pago,
+        comprobanteUrl: ordenData.comprobanteUrl
+      })
+    }).catch(() => {});
+
     // Guardar datos de envío en el perfil del usuario
     updateDoc(doc(db, 'usuarios', usuario.uid), {
       nombre: nom, telefono: tel, cedula, ciudad, direccion: dir
