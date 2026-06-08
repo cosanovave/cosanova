@@ -762,7 +762,7 @@ function abrirCheckout() {
   modal.classList.add('abierto');
   modal.style.display = 'flex';
   irPaso(1);
-  metodoSeleccionado = ''; capturaArchivo = null; capturaB64 = '';
+  metodoSeleccionado = ''; resetCaptura();
   modoApartado = false; abonoApartado = 0;
   seleccionarTipoOrden('completo');
 
@@ -837,6 +837,15 @@ function mostrarDatosPago(metodo) {
 
 function copiar(texto) {
   navigator.clipboard.writeText(texto).then(() => mostrarToast('Copiado: ' + texto));
+}
+
+function resetCaptura() {
+  capturaArchivo = null; capturaB64 = '';
+  const input = document.getElementById('file-comp');
+  if (input) input.value = '';
+  const preview = document.getElementById('upload-preview');
+  if (preview) preview.innerHTML =
+    `<span style="font-size:36px;">📷</span><p>Toca para subir la captura</p><p class="upload-hint">JPG, PNG · Máx. 5MB</p>`;
 }
 
 function previewCaptura(input) {
@@ -947,6 +956,7 @@ async function enviarPedido() {
     }
 
     carrito = []; guardarCarrito(); actualizarCarritoUI();
+    resetCaptura();
     irPaso(4);
   } catch(e) {
     console.error('Error al enviar pedido:', e);
