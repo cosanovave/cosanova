@@ -18,7 +18,8 @@ import {
 // ─── CONSTANTES ───────────────────────────────────────
 const WA_NUM      = '573001885210';
 const MARGEN      = 30;
-const FEE         = 2;
+const FEE         = 2;    // % recargo Colombia (plataforma/envío)
+const FEE_VE      = 0.3;  // % comisión banco pago móvil Venezuela
 const ADMIN_EMAIL = 'cosanova.ve@gmail.com';
 const GAS_URL     = 'https://script.google.com/macros/s/AKfycby8oGOKP9nkwjZZ6-Ilaz7HNTCxMnhHsWlswbV43-Y_luE8mJpaAl5TPa0gVA-PSBxN/exec';
 
@@ -402,8 +403,8 @@ function calcPrecio(prodOrInvCop) {
   if (typeof prodOrInvCop === 'object' && prodOrInvCop !== null) {
     const p = prodOrInvCop;
     if (p.origen === 'venezuela') {
-      const pvp_usd = (p.precio_bs || 0) / tasas.binance;
-      return { pvp_usd, pvp_bs: p.precio_bs || 0 };
+      const pvp_usd = ((p.precio_bs || 0) / tasas.binance) * (1 + MARGEN / 100) * (1 + FEE_VE / 100);
+      return { pvp_usd, pvp_bs: pvp_usd * tasas.bcv };
     }
     return calcPrecio(p.inv_cop || 0);
   }
