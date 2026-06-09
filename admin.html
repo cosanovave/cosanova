@@ -66,7 +66,7 @@
             <thead>
               <tr>
                 <th>Imagen</th><th>Nombre</th><th>Categoría</th>
-                <th>Precio inv. (COP)</th><th>Estado</th><th>Acciones</th>
+                <th>Precio</th><th>Estado</th><th>Acciones</th>
               </tr>
             </thead>
             <tbody id="tbody-productos">
@@ -170,8 +170,19 @@
             </select>
           </div>
           <div class="form-admin-field">
+            <label>Origen *</label>
+            <select id="prod-origen" onchange="toggleOrigenAdmin(this.value)">
+              <option value="colombia">🇨🇴 Colombia (COP)</option>
+              <option value="venezuela">🇻🇪 Venezuela (Bs)</option>
+            </select>
+          </div>
+          <div class="form-admin-field" id="campo-inv-cop">
             <label>Precio inventario COP *</label>
-            <input type="number" id="prod-inv" required placeholder="ej: 150000" step="500">
+            <input type="number" id="prod-inv" placeholder="ej: 150000" step="500">
+          </div>
+          <div class="form-admin-field" id="campo-precio-bs" style="display:none">
+            <label>Precio en Bs *</label>
+            <input type="number" id="prod-precio-bs" placeholder="ej: 250" step="1">
           </div>
           <div class="form-admin-field">
             <label>Género</label>
@@ -194,19 +205,13 @@
             <textarea id="prod-desc" rows="3" placeholder="Describe el producto..."></textarea>
           </div>
           <div class="form-admin-field form-admin-full">
-            <label>Imagen</label>
-            <div class="img-upload-wrap">
-              <div class="img-preview" id="img-preview-admin">
-                <span>Sin imagen</span>
+            <label>Imágenes</label>
+            <div class="multi-img-wrap">
+              <div class="multi-img-grid" id="multi-img-grid">
+                <span class="multi-img-empty">Sin imágenes</span>
               </div>
-              <div class="img-upload-actions">
-                <input type="file" id="prod-img-file" accept="image/*" style="display:none" onchange="previewImagenAdmin(this)">
-                <button type="button" class="btn-upload-admin" onclick="document.getElementById('prod-img-file').click()">
-                  📷 Subir imagen
-                </button>
-                <span class="img-hint">O escribe el nombre del archivo local:</span>
-                <input type="text" id="prod-img-nombre" placeholder="sauvage_dior.webp">
-              </div>
+              <button type="button" class="btn-add-img" onclick="document.getElementById('prod-img-file').click()">+ Agregar imágenes</button>
+              <input type="file" id="prod-img-file" accept="image/*" multiple style="display:none" onchange="agregarImagenesAdmin(this)">
             </div>
           </div>
           <div class="form-admin-field">
