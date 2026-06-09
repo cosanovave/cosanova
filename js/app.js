@@ -398,8 +398,16 @@ function mostrarTasasBar() {
 }
 
 // ─── CÁLCULO DE PRECIOS ───────────────────────────────
-function calcPrecio(inv_cop) {
-  const inv_usd = inv_cop / tasas.trm;
+function calcPrecio(prodOrInvCop) {
+  if (typeof prodOrInvCop === 'object' && prodOrInvCop !== null) {
+    const p = prodOrInvCop;
+    if (p.origen === 'venezuela') {
+      const pvp_usd = (p.precio_bs || 0) / tasas.binance;
+      return { pvp_usd, pvp_bs: p.precio_bs || 0 };
+    }
+    return calcPrecio(p.inv_cop || 0);
+  }
+  const inv_usd = prodOrInvCop / tasas.trm;
   const pvp_usd = inv_usd * (1 + MARGEN / 100) * (tasas.binance / tasas.bcv) * (1 + FEE / 100);
   return { pvp_usd, pvp_bs: pvp_usd * tasas.bcv };
 }
@@ -408,6 +416,13 @@ function fmt(n, dec = 2) {
   return parseFloat(n).toLocaleString('es-VE', {
     minimumFractionDigits: dec, maximumFractionDigits: dec
   });
+}
+
+// ─── HELPER IMAGEN ────────────────────────────────────
+function getMainImage(p) {
+  const img = (p.imagenes && p.imagenes.length) ? p.imagenes[0] : (p.imagen || null);
+  if (!img) return null;
+  return img.startsWith('http') ? img : `assets/products/${img}`;
 }
 
 // ─── RENDER PRODUCTOS ─────────────────────────────────
@@ -425,7 +440,7 @@ function renderProductos(lista) {
   );
   if (precioMin > 0 || precioMax < Infinity) {
     filtrados = filtrados.filter(p => {
-      const { pvp_usd } = calcPrecio(p.inv_cop);
+      const { pvp_usd } = calcPrecio(p);
       return pvp_usd >= precioMin && pvp_usd <= precioMax;
     });
   }
@@ -446,13 +461,11 @@ function renderProductos(lista) {
 
 // ─── HTML TARJETA PRODUCTO ────────────────────────────
 function cardHTML(p, mini = false) {
-  const { pvp_usd, pvp_bs } = calcPrecio(p.inv_cop);
+  const { pvp_usd, pvp_bs } = calcPrecio(p);
   const tallas  = parsearTallas(p.tallas, p.inv_cop);
   const nomEsc  = (p.nom || '').replace(/'/g, "\\'");
   const enWish  = wishlist.has(p.id);
-  const imgSrc  = p.imagen
-    ? (p.imagen.startsWith('http') ? p.imagen : `assets/products/${p.imagen}`)
-    : null;
+  const imgSrc  = getMainImage(p);
 
   const imgHTML = imgSrc
     ? `<img src="${imgSrc}" alt="${p.nom}" class="producto-img" onerror="this.parentElement.innerHTML='<div class=\\'producto-img-placeholder\\'>${iconoCategoria(p.categoria)}</div>'">`
@@ -498,10 +511,8 @@ function renderHeroPreview(lista) {
   const cont = document.getElementById('hero-preview');
   if (!cont || !lista.length) return;
   cont.innerHTML = lista.slice(0, 3).map(p => {
-    const pvp   = calcPrecio(p.inv_cop);
-    const imgSrc = p.imagen
-      ? (p.imagen.startsWith('http') ? p.imagen : `assets/products/${p.imagen}`)
-      : null;
+    const pvp    = calcPrecio(p);
+    const imgSrc = getMainImage(p);
     const imgHTML = imgSrc
       ? `<img src="${imgSrc}" class="hero-prev-img" onerror="this.outerHTML='<div class=\\'hero-prev-img-placeholder\\'>${iconoCategoria(p.categoria)}</div>'">`
       : `<div class="hero-prev-img-placeholder">${iconoCategoria(p.categoria)}</div>`;
@@ -520,7 +531,7 @@ function abrirProducto(id) {
   const p = productos.find(x => x.id === id);
   if (!p) return;
 
-  const { pvp_usd, pvp_bs } = calcPrecio(p.inv_cop);
+  const { pvp_usd, pvp_bs } = calcPrecio(p);
 
   document.getElementById('mp-cat').textContent  = p.categoria;
   document.getElementById('mp-nom').textContent  = p.nom;
@@ -530,15 +541,31 @@ function abrirProducto(id) {
 
   const img  = document.getElementById('mp-img');
   const phld = document.getElementById('mp-img-placeholder');
-  const imgSrc = p.imagen
-    ? (p.imagen.startsWith('http') ? p.imagen : `assets/products/${p.imagen}`)
+
+  const imagenes = (p.imagenes && p.imagenes.length) ? p.imagenes : (p.imagen ? [p.imagen] : []);
+  const mainSrc  = imagenes.length
+    ? (imagenes[0].startsWith('http') ? imagenes[0] : `assets/products/${imagenes[0]}`)
     : null;
-  if (imgSrc) {
-    img.src = imgSrc; img.alt = p.nom;
+
+  if (mainSrc) {
+    img.src = mainSrc; img.alt = p.nom;
     img.style.display = 'block'; phld.style.display = 'none';
   } else {
     img.style.display = 'none';
     phld.textContent = iconoCategoria(p.categoria); phld.style.display = 'flex';
+  }
+
+  // Tira de thumbnails (solo si hay más de una imagen)
+  document.getElementById('mp-thumbnails')?.remove();
+  if (imagenes.length > 1) {
+    const strip = document.createElement('div');
+    strip.id = 'mp-thumbnails';
+    strip.className = 'mp-thumbnails';
+    strip.innerHTML = imagenes.map((imgVal, i) => {
+      const src = imgVal.startsWith('http') ? imgVal : `assets/products/${imgVal}`;
+      return `<img src="${src}" class="mp-thumb${i === 0 ? ' activa' : ''}" onclick="cambiarImagenModal('${src}', this)" onerror="this.style.display='none'">`;
+    }).join('');
+    img.closest('.mp-img-wrap')?.appendChild(strip);
   }
 
   // Corazón de wishlist en modal
@@ -574,6 +601,14 @@ function abrirProducto(id) {
 function cerrarProducto() {
   document.getElementById('modal-producto').classList.remove('activo');
   document.body.style.overflow = '';
+  document.getElementById('mp-thumbnails')?.remove();
+}
+
+function cambiarImagenModal(src, thumbEl) {
+  const mpImg = document.getElementById('mp-img');
+  if (mpImg) { mpImg.src = src; mpImg.style.display = 'block'; }
+  document.querySelectorAll('.mp-thumb').forEach(t => t.classList.remove('activa'));
+  if (thumbEl) thumbEl.classList.add('activa');
 }
 
 // ─── TALLAS ───────────────────────────────────────────
@@ -1168,7 +1203,7 @@ Object.assign(window, {
   seleccionarMetodo, copiar, previewCaptura, enviarPedido,
   seleccionarTipoOrden, actualizarAbono,
   // Productos
-  abrirProducto, cerrarProducto,
+  abrirProducto, cerrarProducto, cambiarImagenModal,
   seleccionarTalla, seleccionarTallaModal,
   // Filtros
   filtrar, filtrarGenero, filtrarTipo, filtrarBusqueda, actualizarRangoPrecio,

@@ -15,20 +15,11 @@ import {
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby8oGOKP9nkwjZZ6-Ilaz7HNTCxMnhHsWlswbV43-Y_luE8mJpaAl5TPa0gVA-PSBxN/exec';
 
-function archivoABase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload  = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 // ─── ESTADO ───────────────────────────────────────────
 let todosProductos = [];
 let todasOrdenes   = [];
 let adminUser      = null;
-let imagenArchivo  = null;
+let imagenesState  = []; // [{ tipo: 'url'|'file', src: string }]
 
 // ─── INIT ─────────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
@@ -94,15 +85,18 @@ function renderTablaProductos(lista) {
   if (!tbody) return;
   if (!lista.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-cell">Sin productos</td></tr>'; return; }
   tbody.innerHTML = lista.map(p => {
-    const imgSrc = p.imagen
-      ? (p.imagen.startsWith('http') ? p.imagen : `assets/products/${p.imagen}`)
+    const imgPrincipal = (p.imagenes && p.imagenes.length) ? p.imagenes[0] : (p.imagen || '');
+    const imgSrc = imgPrincipal
+      ? (imgPrincipal.startsWith('http') ? imgPrincipal : `assets/products/${imgPrincipal}`)
       : '';
-    const precioFmt = new Intl.NumberFormat('es-CO').format(p.inv_cop || 0);
+    const precioFmt = p.origen === 'venezuela'
+      ? `Bs ${new Intl.NumberFormat('es-VE').format(p.precio_bs || 0)}`
+      : `$ ${new Intl.NumberFormat('es-CO').format(p.inv_cop || 0)} COP`;
     return `<tr>
       <td>${imgSrc ? `<img src="${imgSrc}" class="tabla-thumb" onerror="this.style.display='none'">` : '<span class="no-img">—</span>'}</td>
       <td class="td-nom">${p.nom}</td>
       <td><span class="badge-cat badge-${(p.categoria||'').toLowerCase()}">${p.categoria}</span></td>
-      <td>$ ${precioFmt}</td>
+      <td>${precioFmt}</td>
       <td><span class="badge-estado ${p.activo ? 'badge-activo' : 'badge-inactivo'}">${p.activo ? 'Activo' : 'Inactivo'}</span></td>
       <td class="td-acciones">
         <button class="btn-edit" onclick="abrirFormProducto('${p.id}')">✏️</button>
@@ -122,53 +116,101 @@ function filtrarTablaProductos(busq) {
 }
 
 // ─── FORM PRODUCTO ────────────────────────────────────
+function toggleOrigenAdmin(origen) {
+  const campoCOP = document.getElementById('campo-inv-cop');
+  const campoBs  = document.getElementById('campo-precio-bs');
+  const inputCOP = document.getElementById('prod-inv');
+  const inputBs  = document.getElementById('prod-precio-bs');
+  if (origen === 'venezuela') {
+    campoCOP.style.display = 'none';
+    campoBs.style.display  = '';
+    inputCOP.required = false;
+    inputBs.required  = true;
+  } else {
+    campoCOP.style.display = '';
+    campoBs.style.display  = 'none';
+    inputCOP.required = true;
+    inputBs.required  = false;
+  }
+}
+
+function renderImagenesAdmin() {
+  const grid = document.getElementById('multi-img-grid');
+  if (!grid) return;
+  if (!imagenesState.length) {
+    grid.innerHTML = '<span class="multi-img-empty">Sin imágenes</span>';
+    return;
+  }
+  grid.innerHTML = imagenesState.map((img, i) => {
+    const src = img.tipo === 'url'
+      ? (img.src.startsWith('http') ? img.src : `assets/products/${img.src}`)
+      : img.src;
+    return `<div class="multi-img-item">
+      <img src="${src}" onerror="this.parentElement.style.background='#f0f0f0'">
+      <button type="button" class="multi-img-del" onclick="eliminarImagenAdmin(${i})">×</button>
+      ${i === 0 ? '<span class="multi-img-principal">Principal</span>' : ''}
+    </div>`;
+  }).join('');
+}
+
+function agregarImagenesAdmin(input) {
+  Array.from(input.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      imagenesState.push({ tipo: 'file', src: e.target.result });
+      renderImagenesAdmin();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function eliminarImagenAdmin(idx) {
+  imagenesState.splice(idx, 1);
+  renderImagenesAdmin();
+}
+
 function abrirFormProducto(id) {
   const modal = document.getElementById('modal-producto-admin');
   modal.classList.add('activo');
-  imagenArchivo = null;
-  document.getElementById('img-preview-admin').innerHTML = '<span>Sin imagen</span>';
+  imagenesState = [];
   document.getElementById('prod-img-file').value = '';
 
   if (id) {
     const p = todosProductos.find(x => x.id === id);
     if (!p) return;
     document.getElementById('form-prod-titulo').textContent = 'Editar producto';
-    document.getElementById('prod-id').value          = id;
-    document.getElementById('prod-nom').value         = p.nom         || '';
-    document.getElementById('prod-categoria').value   = p.categoria   || '';
-    document.getElementById('prod-inv').value         = p.inv_cop     || '';
-    document.getElementById('prod-genero').value      = p.genero      || '';
-    document.getElementById('prod-subtipo').value     = p.subtipo     || '';
-    document.getElementById('prod-tallas').value      = p.tallas      || '';
-    document.getElementById('prod-desc').value        = p.descripcion || '';
-    document.getElementById('prod-img-nombre').value  = p.imagen && !p.imagen.startsWith('http') ? p.imagen : '';
-    document.getElementById('prod-activo').checked    = p.activo !== false;
+    document.getElementById('prod-id').value        = id;
+    document.getElementById('prod-nom').value       = p.nom         || '';
+    document.getElementById('prod-categoria').value = p.categoria   || '';
+    document.getElementById('prod-origen').value    = p.origen      || 'colombia';
+    document.getElementById('prod-inv').value       = p.inv_cop     || '';
+    document.getElementById('prod-precio-bs').value = p.precio_bs   || '';
+    document.getElementById('prod-genero').value    = p.genero      || '';
+    document.getElementById('prod-subtipo').value   = p.subtipo     || '';
+    document.getElementById('prod-tallas').value    = p.tallas      || '';
+    document.getElementById('prod-desc').value      = p.descripcion || '';
+    document.getElementById('prod-activo').checked  = p.activo !== false;
+    toggleOrigenAdmin(p.origen || 'colombia');
 
-    if (p.imagen) {
-      const src = p.imagen.startsWith('http') ? p.imagen : `assets/products/${p.imagen}`;
-      document.getElementById('img-preview-admin').innerHTML = `<img src="${src}" onerror="this.parentElement.innerHTML='<span>Sin imagen</span>'">`;
+    if (p.imagenes && p.imagenes.length) {
+      imagenesState = p.imagenes.map(src => ({ tipo: 'url', src }));
+    } else if (p.imagen) {
+      imagenesState = [{ tipo: 'url', src: p.imagen }];
     }
+    renderImagenesAdmin();
   } else {
     document.getElementById('form-prod-titulo').textContent = 'Nuevo producto';
     document.getElementById('form-producto').reset();
     document.getElementById('prod-id').value = '';
     document.getElementById('prod-activo').checked = true;
+    toggleOrigenAdmin('colombia');
+    renderImagenesAdmin();
   }
 }
 
 function cerrarFormProducto() {
   document.getElementById('modal-producto-admin').classList.remove('activo');
-}
-
-function previewImagenAdmin(input) {
-  const file = input.files[0];
-  if (!file) return;
-  imagenArchivo = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('img-preview-admin').innerHTML = `<img src="${e.target.result}">`;
-  };
-  reader.readAsDataURL(file);
 }
 
 async function guardarProducto(e) {
@@ -177,29 +219,34 @@ async function guardarProducto(e) {
   btn.disabled = true; btn.textContent = 'Guardando...';
 
   try {
-    let imagenVal = document.getElementById('prod-img-nombre').value.trim();
-
-    // Subir imagen nueva a Google Drive (vía GAS) si se seleccionó archivo
-    if (imagenArchivo) {
-      const imgB64 = await archivoABase64(imagenArchivo);
-      const subida = await fetch(GAS_URL, {
-        method:  'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body:    JSON.stringify({ action: 'subirImagen', imagen: imgB64, nombre: 'producto-' + Date.now() })
-      });
-      const json = await subida.json();
-      imagenVal  = json.url || imagenVal;
+    // Subir imágenes nuevas (tipo 'file') a Google Drive vía GAS
+    for (let i = 0; i < imagenesState.length; i++) {
+      if (imagenesState[i].tipo === 'file') {
+        const subida = await fetch(GAS_URL, {
+          method:  'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body:    JSON.stringify({ action: 'subirImagen', imagen: imagenesState[i].src, nombre: 'producto-' + Date.now() + '-' + i })
+        });
+        const json = await subida.json();
+        imagenesState[i] = { tipo: 'url', src: json.url || imagenesState[i].src };
+      }
     }
+    const imagenes = imagenesState.map(img => img.src);
+    const imagen   = imagenes[0] || '';
 
+    const origen = document.getElementById('prod-origen').value;
     const data = {
       nom:        document.getElementById('prod-nom').value.trim(),
       categoria:  document.getElementById('prod-categoria').value,
-      inv_cop:    parseFloat(document.getElementById('prod-inv').value) || 0,
+      origen,
+      inv_cop:    origen === 'colombia' ? (parseFloat(document.getElementById('prod-inv').value) || 0) : null,
+      precio_bs:  origen === 'venezuela' ? (parseFloat(document.getElementById('prod-precio-bs').value) || 0) : null,
       genero:     document.getElementById('prod-genero').value,
       subtipo:    document.getElementById('prod-subtipo').value.trim(),
       tallas:     document.getElementById('prod-tallas').value.trim(),
       descripcion:document.getElementById('prod-desc').value.trim(),
-      imagen:     imagenVal,
+      imagenes,
+      imagen,
       activo:     document.getElementById('prod-activo').checked,
     };
 
@@ -355,8 +402,9 @@ function toastAdmin(msg) {
 // ─── EXPONER AL DOM ───────────────────────────────────
 Object.assign(window, {
   cambiarPanel, abrirFormProducto, cerrarFormProducto,
-  previewImagenAdmin, guardarProducto, toggleProductoActivo,
-  confirmarEliminarProducto, filtrarTablaProductos,
+  agregarImagenesAdmin, eliminarImagenAdmin,
+  guardarProducto, toggleProductoActivo,
+  confirmarEliminarProducto, filtrarTablaProductos, toggleOrigenAdmin,
   filtrarOrdenes, cambiarEstadoOrden,
   aprobarResena, eliminarResena,
   guardarTasas, adminCerrarSesion
