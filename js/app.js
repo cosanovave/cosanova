@@ -403,13 +403,14 @@ function calcPrecio(prodOrInvCop) {
   if (typeof prodOrInvCop === 'object' && prodOrInvCop !== null) {
     const p = prodOrInvCop;
     if (p.origen === 'venezuela') {
-      const pvp_usd = ((p.precio_bs || 0) / tasas.binance) * (1 + MARGEN / 100) * (1 + FEE_VE / 100);
+      const costo_usd = (p.precio_bs || 0) / tasas.binance;
+      const pvp_usd = costo_usd / (1 - MARGEN / 100) * (tasas.binance / tasas.bcv) * (1 + FEE_VE / 100);
       return { pvp_usd, pvp_bs: pvp_usd * tasas.bcv };
     }
     return calcPrecio(p.inv_cop || 0);
   }
   const inv_usd = prodOrInvCop / tasas.trm;
-  const pvp_usd = inv_usd * (1 + MARGEN / 100) * (tasas.binance / tasas.bcv) * (1 + FEE / 100);
+  const pvp_usd = inv_usd / (1 - MARGEN / 100) * (tasas.binance / tasas.bcv) * (1 + FEE / 100);
   return { pvp_usd, pvp_bs: pvp_usd * tasas.bcv };
 }
 

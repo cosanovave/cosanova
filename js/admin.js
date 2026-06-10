@@ -15,11 +15,17 @@ import {
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby8oGOKP9nkwjZZ6-Ilaz7HNTCxMnhHsWlswbV43-Y_luE8mJpaAl5TPa0gVA-PSBxN/exec';
 
+// ─── CONSTANTES DE PRECIO (igual que app.js) ─────────
+const MARGEN = 30;   // % ganancia
+const FEE    = 2;    // % recargo Colombia (plataforma/envío)
+const FEE_VE = 0.3;  // % comisión banco pago móvil Venezuela
+
 // ─── ESTADO ───────────────────────────────────────────
 let todosProductos = [];
 let todasOrdenes   = [];
 let adminUser      = null;
 let imagenesState  = []; // [{ tipo: 'url'|'file', src: string }]
+let tasas          = { trm: 4200, bcv: 50, binance: 65 };
 
 // ─── INIT ─────────────────────────────────────────────
 onAuthStateChanged(auth, async (user) => {
@@ -64,9 +70,13 @@ function iniciarListeners() {
   onSnapshot(doc(db, 'configuracion', 'tasas'), snap => {
     if (snap.exists()) {
       const d = snap.data();
+      if (d.trm)     tasas.trm     = d.trm;
+      if (d.bcv)     tasas.bcv     = d.bcv;
+      if (d.binance) tasas.binance = d.binance;
       document.getElementById('tasa-trm').value         = d.trm     || '';
       document.getElementById('tasa-bcv-input').value   = d.bcv     || '';
       document.getElementById('tasa-binance-input').value = d.binance || '';
+      renderTablaProductos(todosProductos);
     }
   });
 }
@@ -79,24 +89,62 @@ function cambiarPanel(panel) {
   document.querySelector(`.snav-btn[data-panel="${panel}"]`)?.classList.add('activo');
 }
 
+// ─── FINANZAS POR PRODUCTO ────────────────────────────
+function fmt(n, dec = 2) {
+  return parseFloat(n || 0).toLocaleString('es-VE', {
+    minimumFractionDigits: dec, maximumFractionDigits: dec
+  });
+}
+
+function calcFinanzas(p) {
+  const costo_usd = p.origen === 'venezuela'
+    ? (p.precio_bs || 0) / tasas.binance
+    : (p.inv_cop   || 0) / tasas.trm;
+
+  const pvp_usd = p.origen === 'venezuela'
+    ? costo_usd / (1 - MARGEN / 100) * (tasas.binance / tasas.bcv) * (1 + FEE_VE / 100)
+    : costo_usd / (1 - MARGEN / 100) * (tasas.binance / tasas.bcv) * (1 + FEE / 100);
+
+  const pvp_bs       = pvp_usd * tasas.bcv;
+  const utilidad_usd = pvp_usd - costo_usd;
+  const margen_pct   = pvp_usd > 0 ? (utilidad_usd / pvp_usd) * 100 : 0;
+
+  return { costo_usd, pvp_usd, pvp_bs, utilidad_usd, margen_pct };
+}
+
 // ─── TABLA PRODUCTOS ──────────────────────────────────
 function renderTablaProductos(lista) {
   const tbody = document.getElementById('tbody-productos');
   if (!tbody) return;
-  if (!lista.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-cell">Sin productos</td></tr>'; return; }
+  if (!lista.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-cell">Sin productos</td></tr>'; return; }
   tbody.innerHTML = lista.map(p => {
     const imgPrincipal = (p.imagenes && p.imagenes.length) ? p.imagenes[0] : (p.imagen || '');
     const imgSrc = imgPrincipal
       ? (imgPrincipal.startsWith('http') ? imgPrincipal : `assets/products/${imgPrincipal}`)
       : '';
-    const precioFmt = p.origen === 'venezuela'
+    const costoFmt = p.origen === 'venezuela'
       ? `Bs ${new Intl.NumberFormat('es-VE').format(p.precio_bs || 0)}`
       : `$ ${new Intl.NumberFormat('es-CO').format(p.inv_cop || 0)} COP`;
+
+    const { costo_usd, pvp_usd, pvp_bs, utilidad_usd, margen_pct } = calcFinanzas(p);
+    const utilidadClass = utilidad_usd >= 0 ? 'utilidad-pos' : 'utilidad-neg';
+
     return `<tr>
       <td>${imgSrc ? `<img src="${imgSrc}" class="tabla-thumb" onerror="this.style.display='none'">` : '<span class="no-img">—</span>'}</td>
       <td class="td-nom">${p.nom}</td>
       <td><span class="badge-cat badge-${(p.categoria||'').toLowerCase()}">${p.categoria}</span></td>
-      <td>${precioFmt}</td>
+      <td class="td-precio">
+        <strong>${costoFmt}</strong>
+        <span class="precio-sub">≈ $${fmt(costo_usd)} USD</span>
+      </td>
+      <td class="td-precio">
+        <strong>$ ${fmt(pvp_usd)} USD</strong>
+        <span class="precio-sub">Bs ${fmt(pvp_bs, 0)}</span>
+      </td>
+      <td class="td-precio ${utilidadClass}">
+        <strong>${utilidad_usd >= 0 ? '+' : ''}$${fmt(utilidad_usd)}</strong>
+        <span class="precio-sub">${margen_pct >= 0 ? '+' : ''}${fmt(margen_pct, 1)}%</span>
+      </td>
       <td><span class="badge-estado ${p.activo ? 'badge-activo' : 'badge-inactivo'}">${p.activo ? 'Activo' : 'Inactivo'}</span></td>
       <td class="td-acciones">
         <button class="btn-edit" onclick="abrirFormProducto('${p.id}')">✏️</button>
