@@ -19,7 +19,7 @@ import {
 const WA_NUM      = '573001885210';
 const MARGEN      = 30;
 const FEE         = 2;    // % recargo Colombia (plataforma/envío)
-const FEE_VE      = 0.3;  // % comisión banco pago móvil Venezuela
+const FEE_VE      = 0.3;  // % comisión banco al convertir Bs recibidos → USDT
 const ADMIN_EMAIL = 'cosanova.ve@gmail.com';
 const GAS_URL     = 'https://script.google.com/macros/s/AKfycby8oGOKP9nkwjZZ6-Ilaz7HNTCxMnhHsWlswbV43-Y_luE8mJpaAl5TPa0gVA-PSBxN/exec';
 
@@ -399,19 +399,29 @@ function mostrarTasasBar() {
 }
 
 // ─── CÁLCULO DE PRECIOS ───────────────────────────────
+// pvp_usd: precio "real" en USD/USDT (sin inflar por tasas de Bs).
+// pvp_bs : conversión a bolívares SIEMPRE a tasa Binance (no BCV) y
+//          descontando la comisión bancaria (FEE_VE) de convertir Bs→USDT,
+//          así el bolívar recibido siempre equivale a pvp_usd sin importar
+//          cuánto se devalúe el BCV frente a Binance.
 function calcPrecio(prodOrInvCop) {
+  let costo_usd, fee;
   if (typeof prodOrInvCop === 'object' && prodOrInvCop !== null) {
     const p = prodOrInvCop;
     if (p.origen === 'venezuela') {
-      const costo_usd = (p.precio_bs || 0) / tasas.binance;
-      const pvp_usd = costo_usd / (1 - MARGEN / 100) * (tasas.binance / tasas.bcv) * (1 + FEE_VE / 100);
-      return { pvp_usd, pvp_bs: pvp_usd * tasas.bcv };
+      costo_usd = (p.precio_bs || 0) / tasas.binance;
+      fee = 0;
+    } else {
+      costo_usd = (p.inv_cop || 0) / tasas.trm;
+      fee = FEE;
     }
-    return calcPrecio(p.inv_cop || 0);
+  } else {
+    costo_usd = prodOrInvCop / tasas.trm;
+    fee = FEE;
   }
-  const inv_usd = prodOrInvCop / tasas.trm;
-  const pvp_usd = inv_usd / (1 - MARGEN / 100) * (tasas.binance / tasas.bcv) * (1 + FEE / 100);
-  return { pvp_usd, pvp_bs: pvp_usd * tasas.bcv };
+  const pvp_usd = costo_usd / (1 - MARGEN / 100) * (1 + fee / 100);
+  const pvp_bs  = pvp_usd * tasas.binance / (1 - FEE_VE / 100);
+  return { pvp_usd, pvp_bs };
 }
 
 function fmt(n, dec = 2) {
@@ -742,7 +752,7 @@ function cambiarQty(nom, talla, delta) {
 
 function actualizarCarritoUI() {
   const total   = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
-  const totalBs = total * tasas.binance;
+  const totalBs = total * tasas.binance / (1 - FEE_VE / 100);
   const count   = carrito.reduce((a, x) => a + x.qty, 0);
 
   const badge = document.getElementById('cart-badge');
@@ -842,7 +852,7 @@ function seleccionarMetodo(metodo) {
 function mostrarDatosPago(metodo) {
   const totalCompleto = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
   const monto   = modoApartado ? abonoApartado : totalCompleto;
-  const montoBs = monto * tasas.bcv;
+  const montoBs = monto * tasas.binance / (1 - FEE_VE / 100);
   const etiq    = modoApartado ? 'Abono' : 'Monto exacto';
   const box     = document.getElementById('datos-pago-box');
   if (!box) return;
@@ -867,7 +877,7 @@ function mostrarDatosPago(metodo) {
         <button class="copy-btn" onclick="copiar('22290126')">Copiar</button></div>
       <div class="dato-pago-row"><span>Teléfono</span><strong>0424-323-0841</strong>
         <button class="copy-btn" onclick="copiar('04243230841')">Copiar</button></div>
-      <div class="dato-pago-row monto"><span>${etiq} (BCV ${fmt(tasas.bcv, 2)})</span><strong>Bs ${fmt(montoBs, 0)}</strong></div>
+      <div class="dato-pago-row monto"><span>${etiq} (Bs ${fmt(tasas.binance, 2)}/USDT)</span><strong>Bs ${fmt(montoBs, 0)}</strong></div>
     </div>`;
   }
 }
@@ -913,7 +923,7 @@ async function enviarPedido() {
     return mostrarToast('Sube la captura del comprobante');
 
   const total   = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
-  const totalBs = total * tasas.bcv;
+  const totalBs = total * tasas.binance / (1 - FEE_VE / 100);
   const prods   = carrito.map(x => `${x.nom}${x.talla ? ' ['+x.talla+']' : ''} x${x.qty}`).join(', ');
   const abono   = modoApartado ? abonoApartado : total;
   const saldo   = modoApartado ? total - abonoApartado : 0;

@@ -18,7 +18,7 @@ const GAS_URL = 'https://script.google.com/macros/s/AKfycby8oGOKP9nkwjZZ6-Ilaz7H
 // ─── CONSTANTES DE PRECIO (igual que app.js) ─────────
 const MARGEN = 30;   // % ganancia
 const FEE    = 2;    // % recargo Colombia (plataforma/envío)
-const FEE_VE = 0.3;  // % comisión banco pago móvil Venezuela
+const FEE_VE = 0.3;  // % comisión banco al convertir Bs recibidos → USDT
 
 // ─── ESTADO ───────────────────────────────────────────
 let todosProductos = [];
@@ -97,16 +97,18 @@ function fmt(n, dec = 2) {
 }
 
 function calcFinanzas(p) {
-  const fee = p.origen === 'venezuela' ? FEE_VE : FEE;
+  const fee = p.origen === 'venezuela' ? 0 : FEE;
   const costo_base_usd = p.origen === 'venezuela'
     ? (p.precio_bs || 0) / tasas.binance
     : (p.inv_cop   || 0) / tasas.trm;
 
-  // Costo efectivo: incluye el colchón de protección binance/bcv y la comisión.
+  // Costo efectivo: incluye el recargo de plataforma/envío (Colombia).
   // Es el "punto de equilibrio" que hay que recuperar antes de la ganancia.
-  const costo_usd    = costo_base_usd * (tasas.binance / tasas.bcv) * (1 + fee / 100);
+  const costo_usd    = costo_base_usd * (1 + fee / 100);
   const pvp_usd      = costo_usd / (1 - MARGEN / 100);
-  const pvp_bs       = pvp_usd * tasas.bcv;
+  // pvp_bs siempre a tasa Binance (no BCV) y descontando la comisión bancaria
+  // de convertir Bs→USDT, para no perder valor ante la devaluación del BCV.
+  const pvp_bs       = pvp_usd * tasas.binance / (1 - FEE_VE / 100);
   const utilidad_usd = pvp_usd - costo_usd;
   const margen_pct   = MARGEN;
 
