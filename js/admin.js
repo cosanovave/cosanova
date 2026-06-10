@@ -265,6 +265,15 @@ function agregarTallaAdmin() {
   renderTallasAdmin();
 }
 
+function agregarTallasRapido() {
+  const input  = document.getElementById('tallas-quick-input');
+  const nuevas = parseTallasString(input.value);
+  if (!nuevas.length) return;
+  tallasState.push(...nuevas);
+  input.value = '';
+  renderTallasAdmin();
+}
+
 function eliminarTallaAdmin(idx) {
   tallasState.splice(idx, 1);
   renderTallasAdmin();
@@ -512,7 +521,7 @@ function toastAdmin(msg) {
 Object.assign(window, {
   cambiarPanel, abrirFormProducto, cerrarFormProducto,
   agregarImagenesAdmin, eliminarImagenAdmin,
-  agregarTallaAdmin, eliminarTallaAdmin, actualizarTallaAdmin,
+  agregarTallaAdmin, eliminarTallaAdmin, actualizarTallaAdmin, agregarTallasRapido,
   guardarProducto, toggleProductoActivo,
   confirmarEliminarProducto, filtrarTablaProductos, toggleOrigenAdmin,
   filtrarOrdenes, cambiarEstadoOrden,
