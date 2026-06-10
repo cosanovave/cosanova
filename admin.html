@@ -212,6 +212,21 @@
             </div>
           </div>
           <div class="form-admin-field form-admin-full">
+            <label>Colores (opcional)</label>
+            <div class="tallas-admin-wrap">
+              <div class="tallas-admin-grid" id="colores-admin-grid">
+                <span class="tallas-admin-empty">Sin colores — el producto se vende sin selector de color</span>
+              </div>
+              <div class="tallas-admin-actions">
+                <button type="button" class="btn-add-img" onclick="agregarColorAdmin()">+ Agregar color</button>
+                <div class="tallas-quick-add">
+                  <input type="text" id="colores-quick-input" placeholder="Negro|Azul:#1E3A8A|Rojo:#DC2626">
+                  <button type="button" class="btn-add-img" onclick="agregarColoresRapido()">+ Agregar lista</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-admin-field form-admin-full">
             <label>Descripción</label>
             <textarea id="prod-desc" rows="3" placeholder="Describe el producto..."></textarea>
           </div>
