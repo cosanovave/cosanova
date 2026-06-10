@@ -196,9 +196,14 @@
             <label>Subtipo</label>
             <input type="text" id="prod-subtipo" placeholder="ej: Jeans">
           </div>
-          <div class="form-admin-field">
+          <div class="form-admin-field form-admin-full">
             <label>Tallas (opcional)</label>
-            <input type="text" id="prod-tallas" placeholder="S|M|L|XL  ó  S:80000|M:85000">
+            <div class="tallas-admin-wrap">
+              <div class="tallas-admin-grid" id="tallas-admin-grid">
+                <span class="tallas-admin-empty">Sin tallas — el producto se vende sin selector de talla</span>
+              </div>
+              <button type="button" class="btn-add-img" onclick="agregarTallaAdmin()">+ Agregar talla</button>
+            </div>
           </div>
           <div class="form-admin-field form-admin-full">
             <label>Descripción</label>
