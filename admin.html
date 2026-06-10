@@ -202,7 +202,13 @@
               <div class="tallas-admin-grid" id="tallas-admin-grid">
                 <span class="tallas-admin-empty">Sin tallas — el producto se vende sin selector de talla</span>
               </div>
-              <button type="button" class="btn-add-img" onclick="agregarTallaAdmin()">+ Agregar talla</button>
+              <div class="tallas-admin-actions">
+                <button type="button" class="btn-add-img" onclick="agregarTallaAdmin()">+ Agregar talla</button>
+                <div class="tallas-quick-add">
+                  <input type="text" id="tallas-quick-input" placeholder="S|M|L|XL  ó  S:80000|M:85000">
+                  <button type="button" class="btn-add-img" onclick="agregarTallasRapido()">+ Agregar lista</button>
+                </div>
+              </div>
             </div>
           </div>
           <div class="form-admin-field form-admin-full">
