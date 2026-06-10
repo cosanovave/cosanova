@@ -97,17 +97,18 @@ function fmt(n, dec = 2) {
 }
 
 function calcFinanzas(p) {
-  const costo_usd = p.origen === 'venezuela'
+  const fee = p.origen === 'venezuela' ? FEE_VE : FEE;
+  const costo_base_usd = p.origen === 'venezuela'
     ? (p.precio_bs || 0) / tasas.binance
     : (p.inv_cop   || 0) / tasas.trm;
 
-  const pvp_usd = p.origen === 'venezuela'
-    ? costo_usd / (1 - MARGEN / 100) * (tasas.binance / tasas.bcv) * (1 + FEE_VE / 100)
-    : costo_usd / (1 - MARGEN / 100) * (tasas.binance / tasas.bcv) * (1 + FEE / 100);
-
+  // Costo efectivo: incluye el colchón de protección binance/bcv y la comisión.
+  // Es el "punto de equilibrio" que hay que recuperar antes de la ganancia.
+  const costo_usd    = costo_base_usd * (tasas.binance / tasas.bcv) * (1 + fee / 100);
+  const pvp_usd      = costo_usd / (1 - MARGEN / 100);
   const pvp_bs       = pvp_usd * tasas.bcv;
   const utilidad_usd = pvp_usd - costo_usd;
-  const margen_pct   = pvp_usd > 0 ? (utilidad_usd / pvp_usd) * 100 : 0;
+  const margen_pct   = MARGEN;
 
   return { costo_usd, pvp_usd, pvp_bs, utilidad_usd, margen_pct };
 }
@@ -135,7 +136,7 @@ function renderTablaProductos(lista) {
       <td><span class="badge-cat badge-${(p.categoria||'').toLowerCase()}">${p.categoria}</span></td>
       <td class="td-precio">
         <strong>${costoFmt}</strong>
-        <span class="precio-sub">≈ $${fmt(costo_usd)} USD</span>
+        <span class="precio-sub">Equilibrio: $${fmt(costo_usd)}</span>
       </td>
       <td class="td-precio">
         <strong>$ ${fmt(pvp_usd)} USD</strong>
