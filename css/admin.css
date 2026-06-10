@@ -198,6 +198,11 @@ body {
 }
 .no-img { color: #ccc; font-size: 18px; }
 .td-nom { font-weight: 600; max-width: 200px; }
+.td-precio { white-space: nowrap; line-height: 1.4; }
+.precio-sub { display: block; font-size: 11px; color: #999; font-weight: 500; }
+.utilidad-pos strong { color: #1B5E20; }
+.utilidad-neg strong { color: #c0392b; }
+.utilidad-neg .precio-sub { color: #c0392b; }
 .td-prods { max-width: 200px; color: #666; font-size: 12px; }
 .td-id { font-family: monospace; font-weight: 700; color: #666; }
 .td-sub { font-size: 11px; color: #aaa; }
