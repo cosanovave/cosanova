@@ -488,6 +488,14 @@ body {
   transition: border-color 0.2s;
 }
 .tallas-quick-add input:focus { border-color: #F0A500; }
+.color-admin-row {
+  grid-template-columns: 1fr auto auto;
+}
+.color-admin-row input[type="color"] {
+  padding: 2px; width: 44px; height: 36px;
+  border: 1.5px solid #e0e0e0; border-radius: 8px;
+  cursor: pointer; background: none;
+}
 
 /* ─── RESPONSIVE ──────────────────────────────────────── */
 @media (max-width: 768px) {

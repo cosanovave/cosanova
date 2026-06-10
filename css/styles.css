@@ -566,6 +566,43 @@ section { padding: 80px 0; }
   font-weight: 500;
 }
 
+/* Selector de colores en cards y modal */
+.colores-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.color-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  border-radius: 6px;
+  border: 1.5px solid var(--azul-m);
+  background: white;
+  color: var(--azul);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 10px;
+  transition: all 0.18s;
+}
+.color-btn:hover { background: var(--gris); }
+.color-btn.activa {
+  background: var(--azul);
+  color: white;
+  border-color: var(--azul);
+}
+.color-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.15);
+  flex-shrink: 0;
+}
+
 .productos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
