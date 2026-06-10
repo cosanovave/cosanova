@@ -513,10 +513,13 @@ function cardHTML(p, mini = false) {
 }
 
 // ─── HERO PREVIEW ─────────────────────────────────────
+let heroPreviewInterval = null;
+
 function renderHeroPreview(lista) {
   const cont = document.getElementById('hero-preview');
   if (!cont || !lista.length) return;
-  cont.innerHTML = lista.slice(0, 3).map(p => {
+  const aleatorios = [...lista].sort(() => Math.random() - 0.5).slice(0, 3);
+  cont.innerHTML = aleatorios.map(p => {
     const pvp    = calcPrecio(p);
     const imgSrc = getMainImage(p);
     const imgHTML = imgSrc
@@ -530,6 +533,10 @@ function renderHeroPreview(lista) {
       </div>
     </div>`;
   }).join('');
+
+  if (!heroPreviewInterval) {
+    heroPreviewInterval = setInterval(() => renderHeroPreview(productos), 30000);
+  }
 }
 
 // ─── MODAL DETALLE PRODUCTO ───────────────────────────
