@@ -763,7 +763,7 @@ function actualizarBotonCarritoModal() {
 }
 
 function iconoCategoria(cat) {
-  return { Perfumes:'🌸', Belleza:'💄', Ropa:'👗', General:'📦' }[cat] || '📦';
+  return { Perfumes:'🌸', Belleza:'💄', Ropa:'👗', Calzado:'👟', General:'📦' }[cat] || '📦';
 }
 
 // ─── FILTROS ──────────────────────────────────────────
