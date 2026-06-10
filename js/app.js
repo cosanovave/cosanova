@@ -404,19 +404,13 @@ function mostrarTasasBar() {
 //          descontando la comisión bancaria (FEE_VE) de convertir Bs→USDT,
 //          así el bolívar recibido siempre equivale a pvp_usd sin importar
 //          cuánto se devalúe el BCV frente a Binance.
-function calcPrecio(prodOrInvCop) {
+function calcPrecio(p) {
   let costo_usd, fee;
-  if (typeof prodOrInvCop === 'object' && prodOrInvCop !== null) {
-    const p = prodOrInvCop;
-    if (p.origen === 'venezuela') {
-      costo_usd = (p.precio_bs || 0) / tasas.binance;
-      fee = 0;
-    } else {
-      costo_usd = (p.inv_cop || 0) / tasas.trm;
-      fee = FEE;
-    }
+  if (p.origen === 'venezuela') {
+    costo_usd = (p.precio_bs || 0) / tasas.binance;
+    fee = 0;
   } else {
-    costo_usd = prodOrInvCop / tasas.trm;
+    costo_usd = (p.inv_cop || 0) / tasas.trm;
     fee = FEE;
   }
   const pvp_usd = costo_usd / (1 - MARGEN / 100) * (1 + fee / 100);
@@ -474,7 +468,7 @@ function renderProductos(lista) {
 // ─── HTML TARJETA PRODUCTO ────────────────────────────
 function cardHTML(p, mini = false) {
   const { pvp_usd, pvp_bs } = calcPrecio(p);
-  const tallas  = parsearTallas(p.tallas, p.inv_cop);
+  const tallas  = parsearTallas(p.tallas, p);
   const nomEsc  = (p.nom || '').replace(/'/g, "\\'");
   const enWish  = wishlist.has(p.id);
   const imgSrc  = getMainImage(p);
@@ -487,7 +481,7 @@ function cardHTML(p, mini = false) {
     <div class="tallas-selector">
       <span class="tallas-label">Talla:</span>
       <div class="tallas-btns">
-        ${tallas.map(t => `<button class="talla-btn" onclick="seleccionarTalla(this,'${nomEsc}','${t.talla}',${t.inv_cop})">${t.talla}</button>`).join('')}
+        ${tallas.map(t => `<button class="talla-btn" onclick="seleccionarTalla(this,'${nomEsc}','${t.talla}',${t.valor},'${p.origen}')">${t.talla}</button>`).join('')}
       </div>
     </div>` : '';
 
@@ -589,7 +583,7 @@ function abrirProducto(id) {
   }
 
   const nomEsc   = (p.nom || '').replace(/'/g, "\\'");
-  const tallas   = parsearTallas(p.tallas, p.inv_cop);
+  const tallas   = parsearTallas(p.tallas, p);
   const mpBtn    = document.getElementById('mp-btn-carrito');
   const mpTallas = document.getElementById('mp-tallas');
   const mpTBtns  = document.getElementById('mp-tallas-btns');
@@ -597,7 +591,7 @@ function abrirProducto(id) {
   if (tallas.length > 0) {
     mpTallas.style.display = 'flex';
     mpTBtns.innerHTML = tallas.map(t =>
-      `<button class="talla-btn" onclick="seleccionarTallaModal(this,'${nomEsc}','${t.talla}',${t.inv_cop},'${id}')">${t.talla}</button>`
+      `<button class="talla-btn" onclick="seleccionarTallaModal(this,'${nomEsc}','${t.talla}',${t.valor},'${p.origen}','${id}')">${t.talla}</button>`
     ).join('');
     mpBtn.disabled = true; mpBtn.innerHTML = 'Elige una talla'; mpBtn.onclick = null;
   } else {
@@ -624,11 +618,11 @@ function cambiarImagenModal(src, thumbEl) {
 }
 
 // ─── TALLAS ───────────────────────────────────────────
-function seleccionarTalla(btn, nom, talla, inv_cop) {
+function seleccionarTalla(btn, nom, talla, valor, origen) {
   const card = btn.closest('.producto-card');
   card.querySelectorAll('.talla-btn').forEach(b => b.classList.remove('activa'));
   btn.classList.add('activa');
-  const { pvp_usd, pvp_bs } = calcPrecio(inv_cop);
+  const { pvp_usd, pvp_bs } = calcPrecio({ origen, inv_cop: valor, precio_bs: valor });
   card.querySelector('.precio-usd').innerHTML = `<span>$ </span>${fmt(pvp_usd)} <span>USD</span>`;
   card.querySelector('.precio-bs').innerHTML  = `BCV: <strong>Bs ${fmt(pvp_bs, 0)}</strong>`;
   const nomEsc  = nom.replace(/'/g, "\\'");
@@ -641,10 +635,10 @@ function seleccionarTalla(btn, nom, talla, inv_cop) {
   }
 }
 
-function seleccionarTallaModal(btn, nom, talla, inv_cop, id) {
+function seleccionarTallaModal(btn, nom, talla, valor, origen, id) {
   document.querySelectorAll('#mp-tallas-btns .talla-btn').forEach(b => b.classList.remove('activa'));
   btn.classList.add('activa');
-  const { pvp_usd, pvp_bs } = calcPrecio(inv_cop);
+  const { pvp_usd, pvp_bs } = calcPrecio({ origen, inv_cop: valor, precio_bs: valor });
   document.getElementById('mp-usd').textContent = fmt(pvp_usd);
   document.getElementById('mp-bs').textContent  = 'Bs ' + fmt(pvp_bs, 0);
   const nomEsc = nom.replace(/'/g, "\\'");
@@ -653,11 +647,12 @@ function seleccionarTallaModal(btn, nom, talla, inv_cop, id) {
   mpBtn.onclick = () => { agregarAlCarrito(nomEsc, pvp_usd.toFixed(2), 'Ropa', talla, id); cerrarProducto(); };
 }
 
-function parsearTallas(tallaStr, inv_cop_base) {
+function parsearTallas(tallaStr, p) {
   if (!tallaStr?.trim()) return [];
+  const base = p.origen === 'venezuela' ? (p.precio_bs || 0) : (p.inv_cop || 0);
   return tallaStr.split('|').map(t => {
-    const p = t.trim().split(':');
-    return { talla: p[0].trim(), inv_cop: p[1] ? parseFloat(p[1]) : inv_cop_base };
+    const partes = t.trim().split(':');
+    return { talla: partes[0].trim(), valor: partes[1] ? parseFloat(partes[1]) : base };
   }).filter(t => t.talla);
 }
 

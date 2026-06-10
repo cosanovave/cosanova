@@ -25,6 +25,7 @@ let todosProductos = [];
 let todasOrdenes   = [];
 let adminUser      = null;
 let imagenesState  = []; // [{ tipo: 'url'|'file', src: string }]
+let tallasState    = []; // [{ talla: string, precio: string }]
 let tasas          = { trm: 4200, bcv: 50, binance: 65 };
 
 // ─── INIT ─────────────────────────────────────────────
@@ -183,6 +184,7 @@ function toggleOrigenAdmin(origen) {
     inputCOP.required = true;
     inputBs.required  = false;
   }
+  renderTallasAdmin();
 }
 
 function renderImagenesAdmin() {
@@ -221,6 +223,57 @@ function eliminarImagenAdmin(idx) {
   renderImagenesAdmin();
 }
 
+// ─── TALLAS (precio por talla) ────────────────────────
+function parseTallasString(str) {
+  if (!str?.trim()) return [];
+  return str.split('|').map(t => {
+    const partes = t.trim().split(':');
+    return { talla: (partes[0] || '').trim(), precio: partes[1] !== undefined ? partes[1].trim() : '' };
+  }).filter(t => t.talla);
+}
+
+function serializeTallas(arr) {
+  return arr
+    .filter(t => (t.talla || '').trim())
+    .map(t => {
+      const nom    = t.talla.trim().replace(/[|:]/g, '');
+      const precio = (t.precio ?? '').toString().trim();
+      return precio ? `${nom}:${precio}` : nom;
+    })
+    .join('|');
+}
+
+function renderTallasAdmin() {
+  const grid = document.getElementById('tallas-admin-grid');
+  if (!grid) return;
+  const origen = document.getElementById('prod-origen')?.value || 'colombia';
+  const unidad = origen === 'venezuela' ? 'Bs' : 'COP';
+  if (!tallasState.length) {
+    grid.innerHTML = '<span class="tallas-admin-empty">Sin tallas — el producto se vende sin selector de talla</span>';
+    return;
+  }
+  grid.innerHTML = tallasState.map((t, i) => `
+    <div class="talla-admin-row">
+      <input type="text" placeholder="Talla (ej: M)" value="${t.talla}" oninput="actualizarTallaAdmin(${i},'talla',this.value)">
+      <input type="number" placeholder="Precio ${unidad} (opcional)" value="${t.precio}" step="500" oninput="actualizarTallaAdmin(${i},'precio',this.value)">
+      <button type="button" class="talla-admin-del" onclick="eliminarTallaAdmin(${i})" title="Quitar talla">×</button>
+    </div>`).join('');
+}
+
+function agregarTallaAdmin() {
+  tallasState.push({ talla: '', precio: '' });
+  renderTallasAdmin();
+}
+
+function eliminarTallaAdmin(idx) {
+  tallasState.splice(idx, 1);
+  renderTallasAdmin();
+}
+
+function actualizarTallaAdmin(idx, campo, valor) {
+  if (tallasState[idx]) tallasState[idx][campo] = valor;
+}
+
 function abrirFormProducto(id) {
   const modal = document.getElementById('modal-producto-admin');
   modal.classList.add('activo');
@@ -239,7 +292,6 @@ function abrirFormProducto(id) {
     document.getElementById('prod-precio-bs').value = p.precio_bs   || '';
     document.getElementById('prod-genero').value    = p.genero      || '';
     document.getElementById('prod-subtipo').value   = p.subtipo     || '';
-    document.getElementById('prod-tallas').value    = p.tallas      || '';
     document.getElementById('prod-desc').value      = p.descripcion || '';
     document.getElementById('prod-activo').checked  = p.activo !== false;
     toggleOrigenAdmin(p.origen || 'colombia');
@@ -250,6 +302,9 @@ function abrirFormProducto(id) {
       imagenesState = [{ tipo: 'url', src: p.imagen }];
     }
     renderImagenesAdmin();
+
+    tallasState = parseTallasString(p.tallas || '');
+    renderTallasAdmin();
   } else {
     document.getElementById('form-prod-titulo').textContent = 'Nuevo producto';
     document.getElementById('form-producto').reset();
@@ -257,6 +312,9 @@ function abrirFormProducto(id) {
     document.getElementById('prod-activo').checked = true;
     toggleOrigenAdmin('colombia');
     renderImagenesAdmin();
+
+    tallasState = [];
+    renderTallasAdmin();
   }
 }
 
@@ -294,7 +352,7 @@ async function guardarProducto(e) {
       precio_bs:  origen === 'venezuela' ? (parseFloat(document.getElementById('prod-precio-bs').value) || 0) : null,
       genero:     document.getElementById('prod-genero').value,
       subtipo:    document.getElementById('prod-subtipo').value.trim(),
-      tallas:     document.getElementById('prod-tallas').value.trim(),
+      tallas:     serializeTallas(tallasState),
       descripcion:document.getElementById('prod-desc').value.trim(),
       imagenes,
       imagen,
@@ -454,6 +512,7 @@ function toastAdmin(msg) {
 Object.assign(window, {
   cambiarPanel, abrirFormProducto, cerrarFormProducto,
   agregarImagenesAdmin, eliminarImagenAdmin,
+  agregarTallaAdmin, eliminarTallaAdmin, actualizarTallaAdmin,
   guardarProducto, toggleProductoActivo,
   confirmarEliminarProducto, filtrarTablaProductos, toggleOrigenAdmin,
   filtrarOrdenes, cambiarEstadoOrden,
