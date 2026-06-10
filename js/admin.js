@@ -26,6 +26,7 @@ let todasOrdenes   = [];
 let adminUser      = null;
 let imagenesState  = []; // [{ tipo: 'url'|'file', src: string }]
 let tallasState    = []; // [{ talla: string, precio: string }]
+let coloresState   = []; // [{ color: string, hex: string }]
 let tasas          = { trm: 4200, bcv: 50, binance: 65 };
 
 // ─── INIT ─────────────────────────────────────────────
@@ -283,6 +284,64 @@ function actualizarTallaAdmin(idx, campo, valor) {
   if (tallasState[idx]) tallasState[idx][campo] = valor;
 }
 
+// ─── COLORES ───────────────────────────────────────────
+function parseColoresString(str) {
+  if (!str?.trim()) return [];
+  return str.split('|').map(t => {
+    const partes = t.trim().split(':');
+    return { color: (partes[0] || '').trim(), hex: (partes[1] || '#cccccc').trim() };
+  }).filter(t => t.color);
+}
+
+function serializeColores(arr) {
+  return arr
+    .filter(t => (t.color || '').trim())
+    .map(t => {
+      const nom = t.color.trim().replace(/[|:]/g, '');
+      const hex = (t.hex || '#cccccc').trim();
+      return `${nom}:${hex}`;
+    })
+    .join('|');
+}
+
+function renderColoresAdmin() {
+  const grid = document.getElementById('colores-admin-grid');
+  if (!grid) return;
+  if (!coloresState.length) {
+    grid.innerHTML = '<span class="tallas-admin-empty">Sin colores — el producto se vende sin selector de color</span>';
+    return;
+  }
+  grid.innerHTML = coloresState.map((c, i) => `
+    <div class="talla-admin-row color-admin-row">
+      <input type="text" placeholder="Color (ej: Negro)" value="${c.color}" oninput="actualizarColorAdmin(${i},'color',this.value)">
+      <input type="color" value="${c.hex || '#cccccc'}" oninput="actualizarColorAdmin(${i},'hex',this.value)">
+      <button type="button" class="talla-admin-del" onclick="eliminarColorAdmin(${i})" title="Quitar color">×</button>
+    </div>`).join('');
+}
+
+function agregarColorAdmin() {
+  coloresState.push({ color: '', hex: '#cccccc' });
+  renderColoresAdmin();
+}
+
+function agregarColoresRapido() {
+  const input  = document.getElementById('colores-quick-input');
+  const nuevos = parseColoresString(input.value);
+  if (!nuevos.length) return;
+  coloresState.push(...nuevos);
+  input.value = '';
+  renderColoresAdmin();
+}
+
+function eliminarColorAdmin(idx) {
+  coloresState.splice(idx, 1);
+  renderColoresAdmin();
+}
+
+function actualizarColorAdmin(idx, campo, valor) {
+  if (coloresState[idx]) coloresState[idx][campo] = valor;
+}
+
 function abrirFormProducto(id) {
   const modal = document.getElementById('modal-producto-admin');
   modal.classList.add('activo');
@@ -314,6 +373,9 @@ function abrirFormProducto(id) {
 
     tallasState = parseTallasString(p.tallas || '');
     renderTallasAdmin();
+
+    coloresState = parseColoresString(p.colores || '');
+    renderColoresAdmin();
   } else {
     document.getElementById('form-prod-titulo').textContent = 'Nuevo producto';
     document.getElementById('form-producto').reset();
@@ -324,6 +386,9 @@ function abrirFormProducto(id) {
 
     tallasState = [];
     renderTallasAdmin();
+
+    coloresState = [];
+    renderColoresAdmin();
   }
 }
 
@@ -362,6 +427,7 @@ async function guardarProducto(e) {
       genero:     document.getElementById('prod-genero').value,
       subtipo:    document.getElementById('prod-subtipo').value.trim(),
       tallas:     serializeTallas(tallasState),
+      colores:    serializeColores(coloresState),
       descripcion:document.getElementById('prod-desc').value.trim(),
       imagenes,
       imagen,
@@ -522,6 +588,7 @@ Object.assign(window, {
   cambiarPanel, abrirFormProducto, cerrarFormProducto,
   agregarImagenesAdmin, eliminarImagenAdmin,
   agregarTallaAdmin, eliminarTallaAdmin, actualizarTallaAdmin, agregarTallasRapido,
+  agregarColorAdmin, eliminarColorAdmin, actualizarColorAdmin, agregarColoresRapido,
   guardarProducto, toggleProductoActivo,
   confirmarEliminarProducto, filtrarTablaProductos, toggleOrigenAdmin,
   filtrarOrdenes, cambiarEstadoOrden,

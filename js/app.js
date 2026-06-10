@@ -41,6 +41,7 @@ let capturaArchivo  = null;
 let capturaB64      = '';
 let modoApartado    = false;
 let abonoApartado   = 0;
+let mpEstado        = {}; // selección talla/color en el modal de producto
 
 // ─── INICIALIZACIÓN ───────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -469,7 +470,9 @@ function renderProductos(lista) {
 function cardHTML(p, mini = false) {
   const { pvp_usd, pvp_bs } = calcPrecio(p);
   const tallas  = parsearTallas(p.tallas, p);
+  const colores = parsearColores(p.colores);
   const nomEsc  = (p.nom || '').replace(/'/g, "\\'");
+  const nomAttr = (p.nom || '').replace(/"/g, '&quot;');
   const enWish  = wishlist.has(p.id);
   const imgSrc  = getMainImage(p);
 
@@ -481,16 +484,25 @@ function cardHTML(p, mini = false) {
     <div class="tallas-selector">
       <span class="tallas-label">Talla:</span>
       <div class="tallas-btns">
-        ${tallas.map(t => `<button class="talla-btn" onclick="seleccionarTalla(this,'${nomEsc}','${t.talla}',${t.valor},'${p.origen}')">${t.talla}</button>`).join('')}
+        ${tallas.map(t => `<button class="talla-btn" onclick="seleccionarTalla(this,'${t.talla}',${t.valor},'${p.origen}')">${t.talla}</button>`).join('')}
       </div>
     </div>` : '';
 
-  const btnHTML = tallas.length > 0
-    ? `<button class="btn-carrito btn-talla-pendiente" disabled>Elige una talla</button>`
-    : `<button class="btn-carrito" onclick="agregarAlCarrito('${nomEsc}',${pvp_usd.toFixed(2)},'${p.categoria}','','${p.id}')">🛒 Agregar</button>`;
+  const coloresHTML = colores.length > 0 ? `
+    <div class="tallas-selector">
+      <span class="tallas-label">Color:</span>
+      <div class="colores-btns">
+        ${colores.map(c => `<button class="color-btn" title="${c.color}" onclick="seleccionarColor(this,'${c.color}')"><span class="color-swatch" style="background:${c.hex}"></span><span class="color-nombre">${c.color}</span></button>`).join('')}
+      </div>
+    </div>` : '';
+
+  const necesitaSeleccion = tallas.length > 0 || colores.length > 0;
+  const btnHTML = necesitaSeleccion
+    ? `<button class="btn-carrito btn-talla-pendiente" disabled>${mensajeSeleccionPendiente(tallas.length > 0, colores.length > 0)}</button>`
+    : `<button class="btn-carrito" onclick="agregarAlCarrito('${nomEsc}',${pvp_usd.toFixed(2)},'${p.categoria}','','${p.id}','')">🛒 Agregar</button>`;
 
   return `
-    <div class="producto-card reveal${mini ? ' mini' : ''}">
+    <div class="producto-card reveal${mini ? ' mini' : ''}" data-id="${p.id}" data-nom="${nomAttr}" data-cat="${p.categoria}" data-pvp-usd="${pvp_usd}" data-need-talla="${tallas.length > 0 ? '1' : '0'}" data-need-color="${colores.length > 0 ? '1' : '0'}" data-talla-sel="" data-color-sel="">
       <div class="producto-img-wrap" onclick="abrirProducto('${p.id}')">
         ${imgHTML}
         <div class="producto-img-overlay"><span>🔍 Ver</span></div>
@@ -507,6 +519,7 @@ function cardHTML(p, mini = false) {
           <div class="precio-bs">BCV: <strong>Bs ${fmt(pvp_bs, 0)}</strong></div>
         </div>
         ${tallasHTML}
+        ${coloresHTML}
         ${btnHTML}
       </div>
     </div>`;
@@ -589,23 +602,40 @@ function abrirProducto(id) {
     mpHeart.onclick     = () => toggleWishlist(id);
   }
 
-  const nomEsc   = (p.nom || '').replace(/'/g, "\\'");
-  const tallas   = parsearTallas(p.tallas, p);
-  const mpBtn    = document.getElementById('mp-btn-carrito');
-  const mpTallas = document.getElementById('mp-tallas');
-  const mpTBtns  = document.getElementById('mp-tallas-btns');
+  const nomEsc    = (p.nom || '').replace(/'/g, "\\'");
+  const tallas    = parsearTallas(p.tallas, p);
+  const colores   = parsearColores(p.colores);
+  const mpTallas  = document.getElementById('mp-tallas');
+  const mpTBtns   = document.getElementById('mp-tallas-btns');
+  const mpColores = document.getElementById('mp-colores');
+  const mpCBtns   = document.getElementById('mp-colores-btns');
+
+  mpEstado = {
+    id, nom: nomEsc, cat: p.categoria,
+    pvp_usd,
+    necesitaTalla: tallas.length > 0, necesitaColor: colores.length > 0,
+    talla: '', color: ''
+  };
 
   if (tallas.length > 0) {
     mpTallas.style.display = 'flex';
     mpTBtns.innerHTML = tallas.map(t =>
-      `<button class="talla-btn" onclick="seleccionarTallaModal(this,'${nomEsc}','${t.talla}',${t.valor},'${p.origen}','${id}')">${t.talla}</button>`
+      `<button class="talla-btn" onclick="seleccionarTallaModal(this,'${t.talla}',${t.valor},'${p.origen}')">${t.talla}</button>`
     ).join('');
-    mpBtn.disabled = true; mpBtn.innerHTML = 'Elige una talla'; mpBtn.onclick = null;
   } else {
     mpTallas.style.display = 'none'; mpTBtns.innerHTML = '';
-    mpBtn.disabled = false; mpBtn.innerHTML = '🛒 Agregar al carrito';
-    mpBtn.onclick = () => { agregarAlCarrito(nomEsc, pvp_usd.toFixed(2), p.categoria, '', id); cerrarProducto(); };
   }
+
+  if (colores.length > 0) {
+    mpColores.style.display = 'flex';
+    mpCBtns.innerHTML = colores.map(c =>
+      `<button class="color-btn" title="${c.color}" onclick="seleccionarColorModal(this,'${c.color}')"><span class="color-swatch" style="background:${c.hex}"></span><span class="color-nombre">${c.color}</span></button>`
+    ).join('');
+  } else {
+    mpColores.style.display = 'none'; mpCBtns.innerHTML = '';
+  }
+
+  actualizarBotonCarritoModal();
 
   document.getElementById('modal-producto').classList.add('activo');
   document.body.style.overflow = 'hidden';
@@ -625,33 +655,43 @@ function cambiarImagenModal(src, thumbEl) {
 }
 
 // ─── TALLAS ───────────────────────────────────────────
-function seleccionarTalla(btn, nom, talla, valor, origen) {
+function seleccionarTalla(btn, talla, valor, origen) {
   const card = btn.closest('.producto-card');
   card.querySelectorAll('.talla-btn').forEach(b => b.classList.remove('activa'));
   btn.classList.add('activa');
   const { pvp_usd, pvp_bs } = calcPrecio({ origen, inv_cop: valor, precio_bs: valor });
   card.querySelector('.precio-usd').innerHTML = `<span>$ </span>${fmt(pvp_usd)} <span>USD</span>`;
   card.querySelector('.precio-bs').innerHTML  = `BCV: <strong>Bs ${fmt(pvp_bs, 0)}</strong>`;
-  const nomEsc  = nom.replace(/'/g, "\\'");
-  const prod    = productos.find(x => x.nom === nom);
-  const btnCarr = card.querySelector('.btn-carrito');
-  if (btnCarr) {
-    btnCarr.disabled = false; btnCarr.className = 'btn-carrito';
-    btnCarr.innerHTML = '🛒 Agregar';
-    btnCarr.onclick = () => agregarAlCarrito(nomEsc, pvp_usd.toFixed(2), 'Ropa', talla, prod?.id || '');
-  }
+  card.dataset.pvpUsd   = pvp_usd;
+  card.dataset.tallaSel = talla;
+  actualizarBotonCarritoCard(card);
 }
 
-function seleccionarTallaModal(btn, nom, talla, valor, origen, id) {
+function seleccionarTallaModal(btn, talla, valor, origen) {
   document.querySelectorAll('#mp-tallas-btns .talla-btn').forEach(b => b.classList.remove('activa'));
   btn.classList.add('activa');
   const { pvp_usd, pvp_bs } = calcPrecio({ origen, inv_cop: valor, precio_bs: valor });
   document.getElementById('mp-usd').textContent = fmt(pvp_usd);
   document.getElementById('mp-bs').textContent  = 'Bs ' + fmt(pvp_bs, 0);
-  const nomEsc = nom.replace(/'/g, "\\'");
-  const mpBtn  = document.getElementById('mp-btn-carrito');
-  mpBtn.disabled = false; mpBtn.innerHTML = '🛒 Agregar al carrito';
-  mpBtn.onclick = () => { agregarAlCarrito(nomEsc, pvp_usd.toFixed(2), 'Ropa', talla, id); cerrarProducto(); };
+  mpEstado.pvp_usd = pvp_usd;
+  mpEstado.talla   = talla;
+  actualizarBotonCarritoModal();
+}
+
+// ─── COLORES (selección) ───────────────────────────────
+function seleccionarColor(btn, color) {
+  const card = btn.closest('.producto-card');
+  card.querySelectorAll('.color-btn').forEach(b => b.classList.remove('activa'));
+  btn.classList.add('activa');
+  card.dataset.colorSel = color;
+  actualizarBotonCarritoCard(card);
+}
+
+function seleccionarColorModal(btn, color) {
+  document.querySelectorAll('#mp-colores-btns .color-btn').forEach(b => b.classList.remove('activa'));
+  btn.classList.add('activa');
+  mpEstado.color = color;
+  actualizarBotonCarritoModal();
 }
 
 function parsearTallas(tallaStr, p) {
@@ -661,6 +701,65 @@ function parsearTallas(tallaStr, p) {
     const partes = t.trim().split(':');
     return { talla: partes[0].trim(), valor: partes[1] ? parseFloat(partes[1]) : base };
   }).filter(t => t.talla);
+}
+
+// ─── COLORES ──────────────────────────────────────────
+function parsearColores(colorStr) {
+  if (!colorStr?.trim()) return [];
+  return colorStr.split('|').map(t => {
+    const partes = t.trim().split(':');
+    return { color: (partes[0] || '').trim(), hex: (partes[1] || '#cccccc').trim() };
+  }).filter(t => t.color);
+}
+
+// ─── SELECCIÓN TALLA/COLOR ────────────────────────────
+function mensajeSeleccionPendiente(faltaTalla, faltaColor) {
+  if (faltaTalla && faltaColor) return 'Elige talla y color';
+  if (faltaTalla) return 'Elige una talla';
+  if (faltaColor) return 'Elige un color';
+  return '🛒 Agregar';
+}
+
+function actualizarBotonCarritoCard(card) {
+  const necesitaTalla = card.dataset.needTalla === '1';
+  const necesitaColor = card.dataset.needColor === '1';
+  const tallaSel = card.dataset.tallaSel || '';
+  const colorSel = card.dataset.colorSel || '';
+  const btnCarr = card.querySelector('.btn-carrito');
+  if (!btnCarr) return;
+
+  if ((necesitaTalla && !tallaSel) || (necesitaColor && !colorSel)) {
+    btnCarr.disabled = true;
+    btnCarr.className = 'btn-carrito btn-talla-pendiente';
+    btnCarr.textContent = mensajeSeleccionPendiente(necesitaTalla && !tallaSel, necesitaColor && !colorSel);
+    return;
+  }
+
+  const nom     = card.dataset.nom;
+  const id      = card.dataset.id;
+  const cat     = card.dataset.cat;
+  const pvp_usd = parseFloat(card.dataset.pvpUsd);
+  btnCarr.disabled = false;
+  btnCarr.className = 'btn-carrito';
+  btnCarr.innerHTML = '🛒 Agregar';
+  btnCarr.onclick = () => agregarAlCarrito(nom, pvp_usd.toFixed(2), cat, tallaSel, id, colorSel);
+}
+
+function actualizarBotonCarritoModal() {
+  const mpBtn = document.getElementById('mp-btn-carrito');
+  if (!mpBtn) return;
+  const { id, nom, cat, pvp_usd, necesitaTalla, necesitaColor, talla, color } = mpEstado;
+
+  if ((necesitaTalla && !talla) || (necesitaColor && !color)) {
+    mpBtn.disabled = true;
+    mpBtn.innerHTML = mensajeSeleccionPendiente(necesitaTalla && !talla, necesitaColor && !color);
+    mpBtn.onclick = null;
+    return;
+  }
+
+  mpBtn.disabled = false;
+  mpBtn.innerHTML = '🛒 Agregar al carrito';
+  mpBtn.onclick = () => { agregarAlCarrito(nom, pvp_usd.toFixed(2), cat, talla, id, color); cerrarProducto(); };
 }
 
 function iconoCategoria(cat) {
@@ -732,19 +831,20 @@ function guardarCarrito() {
   localStorage.setItem('cn-carrito', JSON.stringify(carrito));
 }
 
-function agregarAlCarrito(nom, pvp_usd, cat, talla, id) {
-  talla = talla || '';
-  const idx = carrito.findIndex(x => x.nom === nom && (x.talla || '') === talla);
+function agregarAlCarrito(nom, pvp_usd, cat, talla, id, color) {
+  talla = talla || ''; color = color || '';
+  const idx = carrito.findIndex(x => x.nom === nom && (x.talla || '') === talla && (x.color || '') === color);
   if (idx >= 0) carrito[idx].qty++;
-  else carrito.push({ id: id || '', nom, pvp_usd: parseFloat(pvp_usd), cat, talla, qty: 1 });
+  else carrito.push({ id: id || '', nom, pvp_usd: parseFloat(pvp_usd), cat, talla, color, qty: 1 });
   guardarCarrito();
   actualizarCarritoUI();
-  mostrarToast('🛒 ' + nom + (talla ? ' (' + talla + ')' : '') + ' agregado');
+  const detalle = [talla, color].filter(Boolean).join(' / ');
+  mostrarToast('🛒 ' + nom + (detalle ? ' (' + detalle + ')' : '') + ' agregado');
 }
 
-function cambiarQty(nom, talla, delta) {
-  talla = talla || '';
-  const idx = carrito.findIndex(x => x.nom === nom && (x.talla || '') === talla);
+function cambiarQty(nom, talla, color, delta) {
+  talla = talla || ''; color = color || '';
+  const idx = carrito.findIndex(x => x.nom === nom && (x.talla || '') === talla && (x.color || '') === color);
   if (idx < 0) return;
   carrito[idx].qty += delta;
   if (carrito[idx].qty <= 0) carrito.splice(idx, 1);
@@ -774,15 +874,17 @@ function actualizarCarritoUI() {
   lista.innerHTML = carrito.map(item => {
     const ne = item.nom.replace(/'/g, "\\'");
     const te = (item.talla || '').replace(/'/g, "\\'");
+    const ce = (item.color || '').replace(/'/g, "\\'");
+    const detalle = [item.talla, item.color].filter(Boolean).join(' / ');
     return `<div class="cart-item">
       <div class="ci-info">
-        <div class="ci-nom">${item.nom}${item.talla ? ' <span class="ci-talla">('+item.talla+')</span>' : ''}</div>
+        <div class="ci-nom">${item.nom}${detalle ? ' <span class="ci-talla">('+detalle+')</span>' : ''}</div>
         <div class="ci-precio">$${fmt(item.pvp_usd)} c/u</div>
       </div>
       <div class="ci-controles">
-        <button class="ci-btn" onclick="cambiarQty('${ne}','${te}',-1)">−</button>
+        <button class="ci-btn" onclick="cambiarQty('${ne}','${te}','${ce}',-1)">−</button>
         <span class="ci-qty">${item.qty}</span>
-        <button class="ci-btn" onclick="cambiarQty('${ne}','${te}',1)">+</button>
+        <button class="ci-btn" onclick="cambiarQty('${ne}','${te}','${ce}',1)">+</button>
       </div>
       <div class="ci-total">$${fmt(item.pvp_usd * item.qty)}</div>
     </div>`;
@@ -926,7 +1028,10 @@ async function enviarPedido() {
 
   const total   = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
   const totalBs = total * tasas.binance / (1 - FEE_VE / 100);
-  const prods   = carrito.map(x => `${x.nom}${x.talla ? ' ['+x.talla+']' : ''} x${x.qty}`).join(', ');
+  const prods   = carrito.map(x => {
+    const detalle = [x.talla, x.color].filter(Boolean).join(' / ');
+    return `${x.nom}${detalle ? ' ['+detalle+']' : ''} x${x.qty}`;
+  }).join(', ');
   const abono   = modoApartado ? abonoApartado : total;
   const saldo   = modoApartado ? total - abonoApartado : 0;
 
@@ -951,7 +1056,7 @@ async function enviarPedido() {
       uid: usuario.uid,
       nombre: nom, email, telefono: tel, cedula, ciudad, direccion: dir,
       productos: prods,
-      productosDetalle: carrito.map(x => ({ id: x.id||'', nom: x.nom, pvp_usd: x.pvp_usd, qty: x.qty, talla: x.talla||'', cat: x.cat })),
+      productosDetalle: carrito.map(x => ({ id: x.id||'', nom: x.nom, pvp_usd: x.pvp_usd, qty: x.qty, talla: x.talla||'', color: x.color||'', cat: x.cat })),
       total_usd: fmt(total), total_bs: fmt(totalBs, 0),
       metodo_pago: metodoSeleccionado === 'usdt' ? 'USDT (Binance Pay)' : 'Pago Móvil BDV',
       tipo_orden:  modoApartado ? 'Apartado' : 'Completo',
@@ -1219,6 +1324,7 @@ Object.assign(window, {
   // Productos
   abrirProducto, cerrarProducto, cambiarImagenModal,
   seleccionarTalla, seleccionarTallaModal,
+  seleccionarColor, seleccionarColorModal,
   // Filtros
   filtrar, filtrarGenero, filtrarTipo, filtrarBusqueda, actualizarRangoPrecio,
   // Apartado
