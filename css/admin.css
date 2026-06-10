@@ -473,6 +473,21 @@ body {
   padding: 0; transition: background 0.15s;
 }
 .talla-admin-del:hover { background: rgba(200,30,30,0.8); }
+.tallas-admin-actions {
+  display: flex; flex-wrap: wrap;
+  align-items: center; gap: 10px;
+}
+.tallas-quick-add {
+  display: flex; gap: 8px; flex: 1; min-width: 220px;
+}
+.tallas-quick-add input {
+  border: 1.5px solid #e0e0e0; border-radius: 8px;
+  padding: 8px 10px; font-size: 13px;
+  outline: none; flex: 1;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+.tallas-quick-add input:focus { border-color: #F0A500; }
 
 /* ─── RESPONSIVE ──────────────────────────────────────── */
 @media (max-width: 768px) {
