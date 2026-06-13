@@ -516,7 +516,7 @@ function cardHTML(p, mini = false) {
         <span class="chip-apartado">💰 Apartado disponible</span>
         <div class="producto-precios">
           <div class="precio-usd"><span>$ </span>${fmt(pvp_usd)} <span>USD</span></div>
-          <div class="precio-bs">BCV: <strong>Bs ${fmt(pvp_bs, 0)}</strong></div>
+          <div class="precio-bs"><strong>Bs. ${fmt(pvp_bs, 0)}</strong></div>
         </div>
         ${tallasHTML}
         ${coloresHTML}
@@ -563,7 +563,7 @@ function abrirProducto(id) {
   document.getElementById('mp-nom').textContent  = p.nom;
   document.getElementById('mp-desc').textContent = p.descripcion || 'Sin descripción disponible.';
   document.getElementById('mp-usd').textContent  = fmt(pvp_usd);
-  document.getElementById('mp-bs').textContent   = 'Bs ' + fmt(pvp_bs, 0);
+  document.getElementById('mp-bs').textContent   = 'Bs. ' + fmt(pvp_bs, 0);
 
   const img  = document.getElementById('mp-img');
   const phld = document.getElementById('mp-img-placeholder');
@@ -661,7 +661,7 @@ function seleccionarTalla(btn, talla, valor, origen) {
   btn.classList.add('activa');
   const { pvp_usd, pvp_bs } = calcPrecio({ origen, inv_cop: valor, precio_bs: valor });
   card.querySelector('.precio-usd').innerHTML = `<span>$ </span>${fmt(pvp_usd)} <span>USD</span>`;
-  card.querySelector('.precio-bs').innerHTML  = `BCV: <strong>Bs ${fmt(pvp_bs, 0)}</strong>`;
+  card.querySelector('.precio-bs').innerHTML  = `<strong>Bs. ${fmt(pvp_bs, 0)}</strong>`;
   card.dataset.pvpUsd   = pvp_usd;
   card.dataset.tallaSel = talla;
   actualizarBotonCarritoCard(card);
@@ -672,7 +672,7 @@ function seleccionarTallaModal(btn, talla, valor, origen) {
   btn.classList.add('activa');
   const { pvp_usd, pvp_bs } = calcPrecio({ origen, inv_cop: valor, precio_bs: valor });
   document.getElementById('mp-usd').textContent = fmt(pvp_usd);
-  document.getElementById('mp-bs').textContent  = 'Bs ' + fmt(pvp_bs, 0);
+  document.getElementById('mp-bs').textContent  = 'Bs. ' + fmt(pvp_bs, 0);
   mpEstado.pvp_usd = pvp_usd;
   mpEstado.talla   = talla;
   actualizarBotonCarritoModal();
@@ -863,7 +863,7 @@ function actualizarCarritoUI() {
   const ctUsd = document.getElementById('ct-usd');
   const ctBs  = document.getElementById('ct-bs');
   if (ctUsd) ctUsd.textContent = '$' + fmt(total) + ' USD';
-  if (ctBs)  ctBs.textContent  = 'Bs ' + fmt(totalBs, 0);
+  if (ctBs)  ctBs.textContent  = 'Bs. ' + fmt(totalBs, 0);
 
   const lista = document.getElementById('cart-items');
   if (!lista) return;
