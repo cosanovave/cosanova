@@ -255,11 +255,15 @@ async function registrarUsuario() {
     mostrarToast('¡Cuenta creada! Bienvenido, ' + nom);
   } catch(e) {
     const msgs = {
-      'auth/email-already-in-use': 'Ya existe una cuenta con ese email',
-      'auth/invalid-email':        'Email inválido',
-      'auth/weak-password':        'Contraseña muy débil',
+      'auth/email-already-in-use':   'Ya existe una cuenta con ese email. Intenta iniciar sesión.',
+      'auth/invalid-email':          'El correo electrónico no es válido.',
+      'auth/weak-password':          'La contraseña debe tener al menos 6 caracteres.',
+      'auth/operation-not-allowed':  'El registro por email no está habilitado. Contacta al administrador.',
+      'auth/network-request-failed': 'Sin conexión. Verifica tu internet e intenta de nuevo.',
+      'auth/too-many-requests':      'Demasiados intentos. Espera unos minutos e intenta de nuevo.',
+      'permission-denied':           'No se pudo guardar el perfil. Intenta de nuevo.',
     };
-    mostrarErrorAuth('reg-error', msgs[e.code] || 'Error al crear cuenta');
+    mostrarErrorAuth('reg-error', msgs[e.code] || `Error al crear cuenta (${e.code || e.message})`);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Crear cuenta →'; }
   }
