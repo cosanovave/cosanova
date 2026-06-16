@@ -939,6 +939,28 @@ function cerrarCheckout() {
   modal.style.display = 'none';
 }
 
+function validarPaso1() {
+  const nom    = document.getElementById('co-nom')?.value.trim();
+  const email  = document.getElementById('co-email')?.value.trim();
+  const tel    = document.getElementById('co-tel')?.value.trim();
+  const cedula = document.getElementById('co-cedula')?.value.trim();
+  const ciudad = document.getElementById('co-ciudad')?.value.trim();
+  const dir    = document.getElementById('co-dir')?.value.trim();
+  if (!nom || !email || !tel || !cedula || !ciudad || !dir) {
+    mostrarToast('Completa todos los campos antes de continuar');
+    const campos = [
+      ['co-nom', nom], ['co-email', email], ['co-tel', tel],
+      ['co-cedula', cedula], ['co-ciudad', ciudad], ['co-dir', dir]
+    ];
+    campos.forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.style.borderColor = val ? '' : '#e53e3e';
+    });
+    return;
+  }
+  irPaso(2);
+}
+
 function irPaso(n) {
   [1,2,3,4].forEach(i => {
     document.getElementById('paso-' + i)?.classList.toggle('activo', i === n);
@@ -1320,7 +1342,7 @@ function initParticulas() {
 // ─── EXPONER FUNCIONES AL DOM ─────────────────────────
 Object.assign(window, {
   // Carrito
-  toggleCart, abrirCheckout, cerrarCheckout, irPaso,
+  toggleCart, abrirCheckout, cerrarCheckout, irPaso, validarPaso1,
   cambiarQty, agregarAlCarrito, actualizarCarritoUI,
   // Checkout
   seleccionarMetodo, copiar, previewCaptura, enviarPedido,
