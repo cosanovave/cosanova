@@ -11,7 +11,7 @@ import {
 
 import {
   onAuthStateChanged, signOut,
-  createUserWithEmailAndPassword, updateProfile
+  createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -627,6 +627,7 @@ async function cargarMayoristas() {
         <td>${passHTML}</td>
         <td><span class="badge-estado badge-activo">Activo</span></td>
         <td class="td-acciones">
+          <button class="btn-edit" onclick="enviarResetMayorista('${u.email || ''}')" title="Enviar email para cambiar contraseña">📧 Reset</button>
           <button class="btn-del" onclick="revocarMayorista('${uid}','${nomEsc}')">Revocar</button>
         </td>
       </tr>`;
@@ -701,7 +702,7 @@ async function promoverExistente(email, nombre, pass, msgEl) {
       nombre: nombre || snap.docs[0].data().nombre
     });
     limpiarFormMayorista();
-    if (msgEl) { msgEl.textContent = `✓ Cuenta existente promovida a mayorista: ${nombre || email}`; msgEl.style.display = 'block'; }
+    if (msgEl) { msgEl.textContent = `✓ Cuenta promovida a mayorista. Usa el botón 📧 Reset en la tabla para que ${nombre || email} establezca su contraseña.`; msgEl.style.display = 'block'; }
     cargarMayoristas();
   } catch(e) {
     mostrarMayErr('Error al promover cuenta: ' + e.message);
@@ -713,6 +714,16 @@ function limpiarFormMayorista() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+}
+
+async function enviarResetMayorista(email) {
+  if (!email) return;
+  try {
+    await sendPasswordResetEmail(auth, email);
+    toastAdmin(`✓ Email de restablecimiento enviado a ${email}`);
+  } catch(e) {
+    toastAdmin('Error al enviar reset: ' + e.message);
+  }
 }
 
 function mostrarMayErr(msg) {
@@ -756,5 +767,5 @@ Object.assign(window, {
   filtrarOrdenes, cambiarEstadoOrden,
   aprobarResena, eliminarResena,
   guardarTasas, adminCerrarSesion,
-  crearMayorista, revocarMayorista, togglePass
+  crearMayorista, revocarMayorista, togglePass, enviarResetMayorista
 });
