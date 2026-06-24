@@ -10,8 +10,23 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 import {
-  onAuthStateChanged, signOut
+  onAuthStateChanged, signOut,
+  createUserWithEmailAndPassword, updateProfile
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth as getAuthSecondary } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+// App secundaria para crear usuarios sin cerrar sesión del admin
+const secondaryApp = initializeApp({
+  apiKey:            "AIzaSyDrDAbFA744Vr4G3gH-pc5Qnn7WfwhoSXA",
+  authDomain:        "cosa-nova---store.firebaseapp.com",
+  projectId:         "cosa-nova---store",
+  storageBucket:     "cosa-nova---store.firebasestorage.app",
+  messagingSenderId: "547612106603",
+  appId:             "1:547612106603:web:aea4fd01019768d029f62e"
+}, 'secondary');
+const authSecondary = getAuthSecondary(secondaryApp);
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby8oGOKP9nkwjZZ6-Ilaz7HNTCxMnhHsWlswbV43-Y_luE8mJpaAl5TPa0gVA-PSBxN/exec';
 
@@ -89,6 +104,7 @@ function cambiarPanel(panel) {
   document.querySelectorAll('.snav-btn').forEach(b => b.classList.remove('activo'));
   document.getElementById('panel-' + panel)?.classList.add('activo');
   document.querySelector(`.snav-btn[data-panel="${panel}"]`)?.classList.add('activo');
+  if (panel === 'mayoristas') cargarMayoristas();
 }
 
 // ─── FINANZAS POR PRODUCTO ────────────────────────────
@@ -353,11 +369,12 @@ function abrirFormProducto(id) {
     if (!p) return;
     document.getElementById('form-prod-titulo').textContent = 'Editar producto';
     document.getElementById('prod-id').value        = id;
-    document.getElementById('prod-nom').value       = p.nom         || '';
-    document.getElementById('prod-categoria').value = p.categoria   || '';
-    document.getElementById('prod-origen').value    = p.origen      || 'colombia';
-    document.getElementById('prod-inv').value       = p.inv_cop     || '';
-    document.getElementById('prod-precio-bs').value = p.precio_bs   || '';
+    document.getElementById('prod-nom').value          = p.nom              || '';
+    document.getElementById('prod-categoria').value    = p.categoria        || '';
+    document.getElementById('prod-origen').value       = p.origen           || 'colombia';
+    document.getElementById('prod-inv').value          = p.inv_cop          || '';
+    document.getElementById('prod-precio-bs').value    = p.precio_bs        || '';
+    document.getElementById('prod-precio-may').value   = p.precio_mayorista || '';
     document.getElementById('prod-genero').value    = p.genero      || '';
     document.getElementById('prod-subtipo').value   = p.subtipo     || '';
     document.getElementById('prod-desc').value      = p.descripcion || '';
@@ -418,20 +435,28 @@ async function guardarProducto(e) {
     const imagen   = imagenes[0] || '';
 
     const origen = document.getElementById('prod-origen').value;
+    const pvpUsdEstimado = calcPrecioAdmin(origen,
+      parseFloat(document.getElementById('prod-inv').value) || 0,
+      parseFloat(document.getElementById('prod-precio-bs').value) || 0);
+    const precioMayEl = document.getElementById('prod-precio-may');
+    const precioMay = precioMayEl && precioMayEl.value
+      ? parseFloat(precioMayEl.value)
+      : parseFloat((pvpUsdEstimado * 0.75).toFixed(2));
     const data = {
-      nom:        document.getElementById('prod-nom').value.trim(),
-      categoria:  document.getElementById('prod-categoria').value,
+      nom:            document.getElementById('prod-nom').value.trim(),
+      categoria:      document.getElementById('prod-categoria').value,
       origen,
-      inv_cop:    origen === 'colombia' ? (parseFloat(document.getElementById('prod-inv').value) || 0) : null,
-      precio_bs:  origen === 'venezuela' ? (parseFloat(document.getElementById('prod-precio-bs').value) || 0) : null,
-      genero:     document.getElementById('prod-genero').value,
-      subtipo:    document.getElementById('prod-subtipo').value.trim(),
-      tallas:     serializeTallas(tallasState),
-      colores:    serializeColores(coloresState),
-      descripcion:document.getElementById('prod-desc').value.trim(),
+      inv_cop:        origen === 'colombia' ? (parseFloat(document.getElementById('prod-inv').value) || 0) : null,
+      precio_bs:      origen === 'venezuela' ? (parseFloat(document.getElementById('prod-precio-bs').value) || 0) : null,
+      precio_mayorista: precioMay,
+      genero:         document.getElementById('prod-genero').value,
+      subtipo:        document.getElementById('prod-subtipo').value.trim(),
+      tallas:         serializeTallas(tallasState),
+      colores:        serializeColores(coloresState),
+      descripcion:    document.getElementById('prod-desc').value.trim(),
       imagenes,
       imagen,
-      activo:     document.getElementById('prod-activo').checked,
+      activo:         document.getElementById('prod-activo').checked,
     };
 
     const id = document.getElementById('prod-id').value;
@@ -569,6 +594,99 @@ async function guardarTasas() {
   toastAdmin('Tasas guardadas ✓');
 }
 
+// ─── PRECIO ESTIMADO (para campo precio_mayorista) ────
+function calcPrecioAdmin(origen, inv_cop, precio_bs) {
+  const costo_usd = origen === 'venezuela'
+    ? precio_bs / (tasas.binance || 65)
+    : inv_cop / (tasas.trm || 4200);
+  return costo_usd / (1 - MARGEN / 100) * (1 + (origen === 'colombia' ? FEE : 0) / 100);
+}
+
+// ─── MAYORISTAS ───────────────────────────────────────
+async function cargarMayoristas() {
+  const tbody = document.getElementById('tbody-mayoristas');
+  if (!tbody) return;
+  try {
+    const snap = await getDocs(query(collection(db, 'usuarios'), where('esMayorista', '==', true)));
+    if (snap.empty) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:20px">Sin mayoristas registrados</td></tr>';
+      return;
+    }
+    tbody.innerHTML = snap.docs.map(d => {
+      const u = d.data();
+      return `<tr>
+        <td>${u.nombre || '—'}</td>
+        <td>${u.email || '—'}</td>
+        <td><span class="badge-estado badge-activo">Mayorista activo</span></td>
+        <td class="td-acciones">
+          <button class="btn-del" onclick="revocarMayorista('${d.id}','${(u.nombre||'').replace(/'/g,"\\'")}')">Revocar</button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="4" style="color:#e53e3e;padding:12px">Error: ${e.message}</td></tr>`;
+  }
+}
+
+async function crearMayorista() {
+  const nombre = document.getElementById('may-nom')?.value.trim();
+  const email  = document.getElementById('may-email')?.value.trim();
+  const pass   = document.getElementById('may-pass')?.value;
+  const msgEl  = document.getElementById('may-msg');
+  const errEl  = document.getElementById('may-err');
+  const btn    = document.getElementById('btn-crear-may');
+
+  if (msgEl) msgEl.style.display = 'none';
+  if (errEl) errEl.style.display = 'none';
+
+  if (!nombre || !email || !pass) return mostrarMayErr('Completa todos los campos');
+  if (pass.length < 6) return mostrarMayErr('La contraseña debe tener al menos 6 caracteres');
+
+  btn.disabled = true; btn.textContent = 'Creando...';
+  try {
+    const cred = await createUserWithEmailAndPassword(authSecondary, email, pass);
+    await updateProfile(cred.user, { displayName: nombre });
+    await setDoc(doc(db, 'usuarios', cred.user.uid), {
+      nombre, email,
+      telefono: '', cedula: '', ciudad: '', direccion: '',
+      esAdmin: false,
+      esMayorista: true,
+      createdAt: serverTimestamp()
+    });
+    await authSecondary.signOut();
+    document.getElementById('may-nom').value  = '';
+    document.getElementById('may-email').value = '';
+    document.getElementById('may-pass').value  = '';
+    if (msgEl) { msgEl.textContent = `✓ Acceso mayorista creado para ${nombre}`; msgEl.style.display = 'block'; }
+    cargarMayoristas();
+  } catch(e) {
+    const msgs = {
+      'auth/email-already-in-use': 'Ese email ya tiene una cuenta. Para convertirla en mayorista, usa el botón "Revocar/Activar" en la lista de usuarios.',
+      'auth/invalid-email':        'El correo no es válido.',
+      'auth/weak-password':        'Contraseña muy débil (mínimo 6 caracteres).',
+    };
+    mostrarMayErr(msgs[e.code] || e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '+ Crear acceso mayorista';
+  }
+}
+
+function mostrarMayErr(msg) {
+  const errEl = document.getElementById('may-err');
+  if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+}
+
+async function revocarMayorista(uid, nombre) {
+  if (!confirm(`¿Revocar acceso mayorista a "${nombre}"?`)) return;
+  try {
+    await updateDoc(doc(db, 'usuarios', uid), { esMayorista: false });
+    toastAdmin(`Acceso mayorista revocado a ${nombre}`);
+    cargarMayoristas();
+  } catch(e) {
+    toastAdmin('Error: ' + e.message);
+  }
+}
+
 // ─── AUTH ─────────────────────────────────────────────
 async function adminCerrarSesion() {
   await signOut(auth);
@@ -593,5 +711,6 @@ Object.assign(window, {
   confirmarEliminarProducto, filtrarTablaProductos, toggleOrigenAdmin,
   filtrarOrdenes, cambiarEstadoOrden,
   aprobarResena, eliminarResena,
-  guardarTasas, adminCerrarSesion
+  guardarTasas, adminCerrarSesion,
+  crearMayorista, revocarMayorista
 });

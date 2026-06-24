@@ -16,11 +16,12 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 // ─── CONSTANTES ───────────────────────────────────────
-const WA_NUM      = '573001885210';
-const MARGEN      = 30;
-const FEE         = 2;    // % recargo Colombia (plataforma/envío)
-const FEE_VE      = 0.3;  // % comisión banco al convertir Bs recibidos → USDT
-const ADMIN_EMAIL = 'cosanova.ve@gmail.com';
+const WA_NUM           = '573001885210';
+const MARGEN           = 30;
+const FEE              = 2;
+const FEE_VE           = 0.3;
+const ADMIN_EMAIL      = 'cosanova.ve@gmail.com';
+const DESC_MAYORISTA   = 0.25; // 25% descuento sobre pvp_usd
 const GAS_URL     = 'https://script.google.com/macros/s/AKfycby8oGOKP9nkwjZZ6-Ilaz7HNTCxMnhHsWlswbV43-Y_luE8mJpaAl5TPa0gVA-PSBxN/exec';
 
 // ─── ESTADO GLOBAL ────────────────────────────────────
@@ -99,6 +100,7 @@ function initAuth() {
       wishlist.clear();
     }
     actualizarUIAuth(user);
+    actualizarBannerMayorista();
     renderProductos(productos);
   });
 }
@@ -409,6 +411,14 @@ function mostrarTasasBar() {
 //          descontando la comisión bancaria (FEE_VE) de convertir Bs→USDT,
 //          así el bolívar recibido siempre equivale a pvp_usd sin importar
 //          cuánto se devalúe el BCV frente a Binance.
+function esMayoristaActivo() {
+  return !!(perfilUsuario && perfilUsuario.esMayorista);
+}
+
+function precioMayorista(pvp_usd) {
+  return pvp_usd * (1 - DESC_MAYORISTA);
+}
+
 function calcPrecio(p) {
   let costo_usd, fee;
   if (p.origen === 'venezuela') {
@@ -500,13 +510,29 @@ function cardHTML(p, mini = false) {
       </div>
     </div>` : '';
 
+  const esMay = esMayoristaActivo();
+  const pvp_may = precioMayorista(pvp_usd);
+  const pvp_may_bs = pvp_may * tasas.binance / (1 - FEE_VE / 100);
+  const precioCarrito = esMay ? pvp_may : pvp_usd;
+
+  const preciosHTML = esMay
+    ? `<div class="producto-precios">
+        <div class="precio-retail-tachado">$ ${fmt(pvp_usd)} USD</div>
+        <div class="precio-mayorista-tag">$ ${fmt(pvp_may)} USD <span class="badge-may">−25%</span></div>
+        <div class="precio-bs precio-bs-may"><strong>Bs. ${fmt(pvp_may_bs, 0)}</strong></div>
+      </div>`
+    : `<div class="producto-precios">
+        <div class="precio-usd"><span>$ </span>${fmt(pvp_usd)} <span>USD</span></div>
+        <div class="precio-bs"><strong>Bs. ${fmt(pvp_bs, 0)}</strong></div>
+      </div>`;
+
   const necesitaSeleccion = tallas.length > 0 || colores.length > 0;
   const btnHTML = necesitaSeleccion
     ? `<button class="btn-carrito btn-talla-pendiente" disabled>${mensajeSeleccionPendiente(tallas.length > 0, colores.length > 0)}</button>`
-    : `<button class="btn-carrito" onclick="agregarAlCarrito('${nomEsc}',${pvp_usd.toFixed(2)},'${p.categoria}','','${p.id}','')">🛒 Agregar</button>`;
+    : `<button class="btn-carrito" onclick="agregarAlCarrito('${nomEsc}',${precioCarrito.toFixed(2)},'${p.categoria}','','${p.id}','')">🛒 Agregar</button>`;
 
   return `
-    <div class="producto-card reveal${mini ? ' mini' : ''}" data-id="${p.id}" data-nom="${nomAttr}" data-cat="${p.categoria}" data-pvp-usd="${pvp_usd}" data-need-talla="${tallas.length > 0 ? '1' : '0'}" data-need-color="${colores.length > 0 ? '1' : '0'}" data-talla-sel="" data-color-sel="">
+    <div class="producto-card reveal${mini ? ' mini' : ''}" data-id="${p.id}" data-nom="${nomAttr}" data-cat="${p.categoria}" data-pvp-usd="${precioCarrito}" data-need-talla="${tallas.length > 0 ? '1' : '0'}" data-need-color="${colores.length > 0 ? '1' : '0'}" data-talla-sel="" data-color-sel="">
       <div class="producto-img-wrap" onclick="abrirProducto('${p.id}')">
         ${imgHTML}
         <div class="producto-img-overlay"><span>🔍 Ver</span></div>
@@ -518,10 +544,7 @@ function cardHTML(p, mini = false) {
         <span class="producto-cat">${p.categoria}</span>
         <h3 class="producto-nom producto-nom-link" onclick="abrirProducto('${p.id}')">${p.nom}</h3>
         <span class="chip-apartado">💰 Apartado disponible</span>
-        <div class="producto-precios">
-          <div class="precio-usd"><span>$ </span>${fmt(pvp_usd)} <span>USD</span></div>
-          <div class="precio-bs"><strong>Bs. ${fmt(pvp_bs, 0)}</strong></div>
-        </div>
+        ${preciosHTML}
         ${tallasHTML}
         ${coloresHTML}
         ${btnHTML}
@@ -562,12 +585,27 @@ function abrirProducto(id) {
   if (!p) return;
 
   const { pvp_usd, pvp_bs } = calcPrecio(p);
+  const esMay = esMayoristaActivo();
+  const pvp_may = precioMayorista(pvp_usd);
+  const pvp_may_bs = pvp_may * tasas.binance / (1 - FEE_VE / 100);
 
   document.getElementById('mp-cat').textContent  = p.categoria;
   document.getElementById('mp-nom').textContent  = p.nom;
   document.getElementById('mp-desc').textContent = p.descripcion || 'Sin descripción disponible.';
-  document.getElementById('mp-usd').textContent  = fmt(pvp_usd);
-  document.getElementById('mp-bs').textContent   = 'Bs. ' + fmt(pvp_bs, 0);
+
+  const mpUsdEl = document.getElementById('mp-usd');
+  const mpBsEl  = document.getElementById('mp-bs');
+  const mpRetailEl = document.getElementById('mp-retail-tachado');
+
+  if (esMay) {
+    if (mpRetailEl) { mpRetailEl.textContent = `$ ${fmt(pvp_usd)} USD`; mpRetailEl.style.display = 'block'; }
+    if (mpUsdEl) mpUsdEl.innerHTML = `$ ${fmt(pvp_may)} USD <span class="badge-may">−25%</span>`;
+    if (mpBsEl)  mpBsEl.textContent = 'Bs. ' + fmt(pvp_may_bs, 0);
+  } else {
+    if (mpRetailEl) mpRetailEl.style.display = 'none';
+    if (mpUsdEl) mpUsdEl.textContent = fmt(pvp_usd);
+    if (mpBsEl)  mpBsEl.textContent  = 'Bs. ' + fmt(pvp_bs, 0);
+  }
 
   const img  = document.getElementById('mp-img');
   const phld = document.getElementById('mp-img-placeholder');
@@ -616,7 +654,7 @@ function abrirProducto(id) {
 
   mpEstado = {
     id, nom: nomEsc, cat: p.categoria,
-    pvp_usd,
+    pvp_usd: esMay ? pvp_may : pvp_usd,
     necesitaTalla: tallas.length > 0, necesitaColor: colores.length > 0,
     talla: '', color: ''
   };
@@ -663,10 +701,23 @@ function seleccionarTalla(btn, talla, valor, origen) {
   const card = btn.closest('.producto-card');
   card.querySelectorAll('.talla-btn').forEach(b => b.classList.remove('activa'));
   btn.classList.add('activa');
+  const esMay = esMayoristaActivo();
   const { pvp_usd, pvp_bs } = calcPrecio({ origen, inv_cop: valor, precio_bs: valor });
-  card.querySelector('.precio-usd').innerHTML = `<span>$ </span>${fmt(pvp_usd)} <span>USD</span>`;
-  card.querySelector('.precio-bs').innerHTML  = `<strong>Bs. ${fmt(pvp_bs, 0)}</strong>`;
-  card.dataset.pvpUsd   = pvp_usd;
+  const pvp_may = precioMayorista(pvp_usd);
+  const pvp_may_bs = pvp_may * tasas.binance / (1 - FEE_VE / 100);
+  const precioFinal = esMay ? pvp_may : pvp_usd;
+  if (esMay) {
+    const retEl = card.querySelector('.precio-retail-tachado');
+    const mayEl = card.querySelector('.precio-mayorista-tag');
+    const bsEl  = card.querySelector('.precio-bs-may');
+    if (retEl) retEl.textContent = `$ ${fmt(pvp_usd)} USD`;
+    if (mayEl) mayEl.innerHTML   = `$ ${fmt(pvp_may)} USD <span class="badge-may">−25%</span>`;
+    if (bsEl)  bsEl.innerHTML    = `<strong>Bs. ${fmt(pvp_may_bs, 0)}</strong>`;
+  } else {
+    card.querySelector('.precio-usd').innerHTML = `<span>$ </span>${fmt(pvp_usd)} <span>USD</span>`;
+    card.querySelector('.precio-bs').innerHTML  = `<strong>Bs. ${fmt(pvp_bs, 0)}</strong>`;
+  }
+  card.dataset.pvpUsd   = precioFinal;
   card.dataset.tallaSel = talla;
   actualizarBotonCarritoCard(card);
 }
@@ -674,11 +725,22 @@ function seleccionarTalla(btn, talla, valor, origen) {
 function seleccionarTallaModal(btn, talla, valor, origen) {
   document.querySelectorAll('#mp-tallas-btns .talla-btn').forEach(b => b.classList.remove('activa'));
   btn.classList.add('activa');
+  const esMay = esMayoristaActivo();
   const { pvp_usd, pvp_bs } = calcPrecio({ origen, inv_cop: valor, precio_bs: valor });
-  document.getElementById('mp-usd').textContent = fmt(pvp_usd);
-  document.getElementById('mp-bs').textContent  = 'Bs. ' + fmt(pvp_bs, 0);
-  mpEstado.pvp_usd = pvp_usd;
-  mpEstado.talla   = talla;
+  const pvp_may = precioMayorista(pvp_usd);
+  const pvp_may_bs = pvp_may * tasas.binance / (1 - FEE_VE / 100);
+  const mpRetEl = document.getElementById('mp-retail-tachado');
+  if (esMay) {
+    if (mpRetEl) mpRetEl.textContent = `$ ${fmt(pvp_usd)} USD`;
+    document.getElementById('mp-usd').innerHTML = `$ ${fmt(pvp_may)} USD <span class="badge-may">−25%</span>`;
+    document.getElementById('mp-bs').textContent = 'Bs. ' + fmt(pvp_may_bs, 0);
+    mpEstado.pvp_usd = pvp_may;
+  } else {
+    document.getElementById('mp-usd').textContent = fmt(pvp_usd);
+    document.getElementById('mp-bs').textContent  = 'Bs. ' + fmt(pvp_bs, 0);
+    mpEstado.pvp_usd = pvp_usd;
+  }
+  mpEstado.talla = talla;
   actualizarBotonCarritoModal();
 }
 
@@ -1337,6 +1399,13 @@ function initParticulas() {
     requestAnimationFrame(draw);
   }
   draw();
+}
+
+// ─── BANNER MAYORISTA ─────────────────────────────────
+function actualizarBannerMayorista() {
+  const banner = document.getElementById('banner-mayorista');
+  if (!banner) return;
+  banner.style.display = esMayoristaActivo() ? 'flex' : 'none';
 }
 
 // ─── EXPONER FUNCIONES AL DOM ─────────────────────────
