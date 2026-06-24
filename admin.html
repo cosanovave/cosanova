@@ -146,6 +146,50 @@
         <p id="tasas-ok" class="tasas-ok" style="display:none">✓ Tasas actualizadas</p>
       </div>
 
+      <!-- PANEL MAYORISTAS -->
+      <div id="panel-mayoristas" class="admin-panel">
+        <div class="panel-header">
+          <h1>Mayoristas</h1>
+        </div>
+
+        <!-- Crear nuevo mayorista -->
+        <div class="admin-card" style="max-width:480px;margin-bottom:32px">
+          <h3 style="margin:0 0 16px;font-size:16px">Crear usuario mayorista</h3>
+          <div class="form-admin-grid">
+            <div class="form-admin-field">
+              <label>Nombre completo *</label>
+              <input type="text" id="may-nom" placeholder="Empresa o nombre del cliente">
+            </div>
+            <div class="form-admin-field">
+              <label>Correo electrónico *</label>
+              <input type="email" id="may-email" placeholder="cliente@email.com">
+            </div>
+            <div class="form-admin-field">
+              <label>Contraseña *</label>
+              <input type="password" id="may-pass" placeholder="Mínimo 6 caracteres">
+            </div>
+          </div>
+          <div class="form-admin-actions" style="margin-top:16px">
+            <button class="btn-primary-admin" id="btn-crear-may" onclick="crearMayorista()">+ Crear acceso mayorista</button>
+          </div>
+          <p id="may-msg" style="margin-top:10px;font-size:13px;color:#16a34a;display:none"></p>
+          <p id="may-err" style="margin-top:10px;font-size:13px;color:#e53e3e;display:none"></p>
+        </div>
+
+        <!-- Lista de mayoristas -->
+        <h3 style="font-size:15px;margin-bottom:12px">Clientes mayoristas activos</h3>
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="tabla-mayoristas">
+            <thead>
+              <tr><th>Nombre</th><th>Email</th><th>Estado</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tbody-mayoristas">
+              <tr><td colspan="4" class="loading-cell"><div class="loader-spin"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </main>
 
   </div>
@@ -262,50 +306,6 @@
       </form>
     </div>
   </div>
-
-      <!-- PANEL MAYORISTAS -->
-      <div id="panel-mayoristas" class="admin-panel">
-        <div class="panel-header">
-          <h1>Mayoristas</h1>
-        </div>
-
-        <!-- Crear nuevo mayorista -->
-        <div class="admin-card" style="max-width:480px;margin-bottom:32px">
-          <h3 style="margin:0 0 16px;font-size:16px">Crear usuario mayorista</h3>
-          <div class="form-admin-grid">
-            <div class="form-admin-field">
-              <label>Nombre completo *</label>
-              <input type="text" id="may-nom" placeholder="Empresa o nombre del cliente">
-            </div>
-            <div class="form-admin-field">
-              <label>Correo electrónico *</label>
-              <input type="email" id="may-email" placeholder="cliente@email.com">
-            </div>
-            <div class="form-admin-field">
-              <label>Contraseña *</label>
-              <input type="password" id="may-pass" placeholder="Mínimo 6 caracteres">
-            </div>
-          </div>
-          <div class="form-admin-actions" style="margin-top:16px">
-            <button class="btn-primary-admin" id="btn-crear-may" onclick="crearMayorista()">+ Crear acceso mayorista</button>
-          </div>
-          <p id="may-msg" style="margin-top:10px;font-size:13px;color:#16a34a;display:none"></p>
-          <p id="may-err" style="margin-top:10px;font-size:13px;color:#e53e3e;display:none"></p>
-        </div>
-
-        <!-- Lista de mayoristas -->
-        <h3 style="font-size:15px;margin-bottom:12px">Clientes mayoristas activos</h3>
-        <div class="admin-table-wrap">
-          <table class="admin-table" id="tabla-mayoristas">
-            <thead>
-              <tr><th>Nombre</th><th>Email</th><th>Estado</th><th>Acciones</th></tr>
-            </thead>
-            <tbody id="tbody-mayoristas">
-              <tr><td colspan="4" class="loading-cell"><div class="loader-spin"></div></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
   <div id="admin-toast" class="admin-toast"></div>
 
