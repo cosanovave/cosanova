@@ -609,23 +609,37 @@ async function cargarMayoristas() {
   try {
     const snap = await getDocs(query(collection(db, 'usuarios'), where('esMayorista', '==', true)));
     if (snap.empty) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;padding:20px">Sin mayoristas registrados</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Sin mayoristas registrados</td></tr>';
       return;
     }
     tbody.innerHTML = snap.docs.map(d => {
-      const u = d.data();
+      const u   = d.data();
+      const uid = d.id;
+      const nomEsc = (u.nombre || '').replace(/'/g, "\\'");
+      const passGuardada = u.acceso_pass || '';
+      const passHTML = passGuardada
+        ? `<span id="pass-${uid}" style="font-family:monospace;letter-spacing:1px">••••••••</span>
+           <button onclick="togglePass('${uid}','${passGuardada}')" style="background:none;border:none;cursor:pointer;font-size:14px" title="Ver/ocultar">👁</button>`
+        : `<span style="color:#aaa">No registrada</span>`;
       return `<tr>
         <td>${u.nombre || '—'}</td>
         <td>${u.email || '—'}</td>
-        <td><span class="badge-estado badge-activo">Mayorista activo</span></td>
+        <td>${passHTML}</td>
+        <td><span class="badge-estado badge-activo">Activo</span></td>
         <td class="td-acciones">
-          <button class="btn-del" onclick="revocarMayorista('${d.id}','${(u.nombre||'').replace(/'/g,"\\'")}')">Revocar</button>
+          <button class="btn-del" onclick="revocarMayorista('${uid}','${nomEsc}')">Revocar</button>
         </td>
       </tr>`;
     }).join('');
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="4" style="color:#e53e3e;padding:12px">Error: ${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="color:#e53e3e;padding:12px">Error: ${e.message}</td></tr>`;
   }
+}
+
+function togglePass(uid, pass) {
+  const el = document.getElementById('pass-' + uid);
+  if (!el) return;
+  el.textContent = el.textContent.includes('•') ? pass : '••••••••';
 }
 
 async function crearMayorista() {
@@ -649,26 +663,56 @@ async function crearMayorista() {
     await setDoc(doc(db, 'usuarios', cred.user.uid), {
       nombre, email,
       telefono: '', cedula: '', ciudad: '', direccion: '',
-      esAdmin: false,
-      esMayorista: true,
+      esAdmin: false, esMayorista: true,
+      acceso_pass: pass,
       createdAt: serverTimestamp()
     });
     await authSecondary.signOut();
-    document.getElementById('may-nom').value  = '';
-    document.getElementById('may-email').value = '';
-    document.getElementById('may-pass').value  = '';
+    limpiarFormMayorista();
     if (msgEl) { msgEl.textContent = `✓ Acceso mayorista creado para ${nombre}`; msgEl.style.display = 'block'; }
     cargarMayoristas();
   } catch(e) {
-    const msgs = {
-      'auth/email-already-in-use': 'Ese email ya tiene una cuenta. Para convertirla en mayorista, usa el botón "Revocar/Activar" en la lista de usuarios.',
-      'auth/invalid-email':        'El correo no es válido.',
-      'auth/weak-password':        'Contraseña muy débil (mínimo 6 caracteres).',
-    };
-    mostrarMayErr(msgs[e.code] || e.message);
+    if (e.code === 'auth/email-already-in-use') {
+      // Intentar promover cuenta existente
+      await promoverExistente(email, nombre, pass, msgEl);
+    } else {
+      const msgs = {
+        'auth/invalid-email':  'El correo no es válido.',
+        'auth/weak-password':  'Contraseña muy débil (mínimo 6 caracteres).',
+      };
+      mostrarMayErr(msgs[e.code] || e.message);
+    }
   } finally {
     btn.disabled = false; btn.textContent = '+ Crear acceso mayorista';
   }
+}
+
+async function promoverExistente(email, nombre, pass, msgEl) {
+  try {
+    const snap = await getDocs(query(collection(db, 'usuarios'), where('email', '==', email)));
+    if (snap.empty) {
+      mostrarMayErr('Cuenta existente pero sin perfil en Firestore. Contacta soporte.');
+      return;
+    }
+    const ref = snap.docs[0].ref;
+    await updateDoc(ref, {
+      esMayorista: true,
+      acceso_pass: pass,
+      nombre: nombre || snap.docs[0].data().nombre
+    });
+    limpiarFormMayorista();
+    if (msgEl) { msgEl.textContent = `✓ Cuenta existente promovida a mayorista: ${nombre || email}`; msgEl.style.display = 'block'; }
+    cargarMayoristas();
+  } catch(e) {
+    mostrarMayErr('Error al promover cuenta: ' + e.message);
+  }
+}
+
+function limpiarFormMayorista() {
+  ['may-nom','may-email','may-pass'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
 }
 
 function mostrarMayErr(msg) {
@@ -712,5 +756,5 @@ Object.assign(window, {
   filtrarOrdenes, cambiarEstadoOrden,
   aprobarResena, eliminarResena,
   guardarTasas, adminCerrarSesion,
-  crearMayorista, revocarMayorista
+  crearMayorista, revocarMayorista, togglePass
 });
