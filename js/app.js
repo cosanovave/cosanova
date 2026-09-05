@@ -904,13 +904,12 @@ function filtrar(cat, btnEl) {
   categoriaActual = cat;
   generoActual = ''; subtipoActual = '';
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('activa'));
-  const btn = btnEl || (typeof event !== 'undefined' ? event.target : null);
-  if (btn) btn.classList.add('activa');
+  if (btnEl && btnEl.classList) btnEl.classList.add('activa');
   document.querySelectorAll('.subcat-btn').forEach(b => b.classList.remove('activa'));
   const rowGenero = document.getElementById('subcat-genero');
   const rowTipo   = document.getElementById('subcat-tipo');
-  rowGenero.classList.toggle('visible', cat === 'Ropa' || cat === 'Perfumes' || cat === 'Calzado');
-  if (cat !== 'Ropa') rowTipo.classList.remove('visible');
+  if (rowGenero) rowGenero.classList.toggle('visible', cat === 'Ropa' || cat === 'Perfumes' || cat === 'Calzado');
+  if (rowTipo && cat !== 'Ropa') rowTipo.classList.remove('visible');
   renderProductos(productos);
   document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
