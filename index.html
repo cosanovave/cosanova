@@ -119,15 +119,22 @@
       <div class="nav-links nav-links-left">
         <div class="nav-dropdown" id="navDropdownProductos">
           <a href="#" onclick="return false;">Productos</a>
-          <div class="nav-dropdown-panel">
+          <div class="nav-dropdown-panel" onmouseleave="volverNivelProductos()">
             <div class="nav-dropdown-panel-inner">
-              <div class="nav-dd-nivel">
-                <a href="perfumes.html">Perfumes</a>
+              <div class="nav-dd-nivel" id="navDdCategorias">
+                <a href="#" onclick="event.preventDefault(); abrirGeneroProductos('perfumes')">Perfumes</a>
                 <a href="belleza.html">Belleza</a>
-                <a href="ropa.html">Ropa</a>
-                <a href="calzado.html">Calzado</a>
+                <a href="#" onclick="event.preventDefault(); abrirGeneroProductos('ropa')">Ropa</a>
+                <a href="#" onclick="event.preventDefault(); abrirGeneroProductos('calzado')">Calzado</a>
                 <a href="hogar.html">Hogar</a>
                 <a href="tecnologia.html">Tecnología</a>
+              </div>
+              <div class="nav-dd-nivel" id="navDdGenero" style="display:none">
+                <button type="button" class="nav-dd-volver" onclick="volverNivelProductos()">‹ Volver</button>
+                <a href="#" data-genero="Hombre">Hombre</a>
+                <a href="#" data-genero="Mujer">Mujer</a>
+                <a href="#" data-genero="Niños" class="nav-dd-genero-extra">Niños</a>
+                <a href="#" data-genero="Niñas" class="nav-dd-genero-extra">Niñas</a>
               </div>
             </div>
           </div>
@@ -1053,6 +1060,26 @@
     function toggleMobileMenuSub() {
       document.getElementById('mobile-menu-submenu')?.classList.toggle('activo');
       document.getElementById('mobile-menu-chevron')?.classList.toggle('activo');
+    }
+
+    // Menú "Productos": segundo nivel para elegir género antes de ir a la página de la categoría.
+    function abrirGeneroProductos(slug) {
+      document.getElementById('navDdCategorias').style.display = 'none';
+      var nivelGenero = document.getElementById('navDdGenero');
+      nivelGenero.style.display = 'flex';
+      var mostrarNinos = (slug === 'ropa' || slug === 'calzado');
+      nivelGenero.querySelectorAll('.nav-dd-genero-extra').forEach(function (el) {
+        el.style.display = mostrarNinos ? '' : 'none';
+      });
+      nivelGenero.querySelectorAll('a[data-genero]').forEach(function (a) {
+        a.href = slug + '.html?genero=' + encodeURIComponent(a.dataset.genero);
+      });
+    }
+    function volverNivelProductos() {
+      var catEl = document.getElementById('navDdCategorias');
+      var genEl = document.getElementById('navDdGenero');
+      if (catEl) catEl.style.display = 'flex';
+      if (genEl) genEl.style.display = 'none';
     }
   </script>
 </body>
