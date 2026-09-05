@@ -374,7 +374,7 @@
   <section id="hero" class="hero-split-cn">
 
     <!-- IZQUIERDA: foto real de producto, rotando aleatoriamente -->
-    <a href="#catalogo" class="hero-panel-cn hero-panel-cn-img">
+    <a href="perfumes.html" class="hero-panel-cn hero-panel-cn-img">
       <div class="hero-panel-bg-cn" id="heroBgCN"></div>
     </a>
 
@@ -412,7 +412,7 @@
           ¿No encuentras lo que buscas? <strong>Pídelo por WhatsApp →</strong>
         </a>
         <div class="hero-btns">
-          <a href="#catalogo" class="btn-primary">Ver Productos</a>
+          <a href="perfumes.html" class="btn-primary">Ver Productos</a>
           <a href="https://wa.me/573001885210?text=Hola%20Cosa%20Nova!%20Quiero%20información%20sobre%20sus%20productos%20🛍️" target="_blank" class="btn-wa">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
             Escribir por WhatsApp
@@ -436,7 +436,7 @@
 
   <!-- ══ CÓMO FUNCIONA ══════════════════════════════════ -->
   <section id="como-funciona" class="cf-split">
-    <a href="#catalogo" class="cf-panel cf-panel-img">
+    <a href="perfumes.html" class="cf-panel cf-panel-img">
       <div class="cf-panel-bg" id="cfBgCN"></div>
     </a>
     <div class="cf-panel cf-panel-texto patron-rombos">
@@ -525,7 +525,7 @@
                 <strong>Contra entrega</strong>
               </div>
             </div>
-            <a href="#catalogo" class="btn-ap-wa" onclick="document.getElementById('catalogo').scrollIntoView({behavior:'smooth'}); return false;">
+            <a href="perfumes.html" class="btn-ap-wa">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
               Ver productos y apartar ahora
             </a>
@@ -536,65 +536,6 @@
     </div>
   </section>
 
-  <!-- ══ CATÁLOGO ════════════════════════════════════════ -->
-  <section id="catalogo">
-    <div class="container">
-      <h2 class="section-title reveal">Nuestros Productos</h2>
-      <p class="section-sub reveal">Precios actualizados con la tasa Binance del día</p>
-
-      <div class="categorias reveal">
-        <button class="cat-btn activa" onclick="filtrar('todas')">Todos</button>
-        <button class="cat-btn" onclick="filtrar('Perfumes')">Perfumes 1.1</button>
-        <button class="cat-btn" onclick="filtrar('Belleza')">Belleza</button>
-        <button class="cat-btn" id="btn-ropa" onclick="filtrar('Ropa')">Ropa</button>
-        <button class="cat-btn" onclick="filtrar('Calzado')">Calzado</button>
-        <button class="cat-btn" onclick="filtrar('Hogar')">Hogar</button>
-        <button class="cat-btn" onclick="filtrar('Tecnologia')">Tecnología</button>
-      </div>
-
-      <!-- Submenú género (visible cuando Perfumes o Ropa están activos) -->
-      <div class="subcat-row" id="subcat-genero">
-        <span class="subcat-label">Género:</span>
-        <button class="subcat-btn" onclick="filtrarGenero('Hombre', this)">Hombre</button>
-        <button class="subcat-btn" onclick="filtrarGenero('Mujer', this)">Mujer</button>
-        <button class="subcat-btn" onclick="filtrarGenero('Niños', this)">Niños</button>
-        <button class="subcat-btn" onclick="filtrarGenero('Niñas', this)">Niñas</button>
-      </div>
-
-      <!-- Submenú tipo (visible sólo cuando un género está seleccionado) -->
-      <div class="subcat-row" id="subcat-tipo">
-        <span class="subcat-label">Tipo:</span>
-        <button class="subcat-btn" onclick="filtrarTipo('Jeans', this)">Jeans</button>
-      </div>
-
-      <!-- Barra de búsqueda + rango de precio -->
-      <div class="busqueda-row reveal">
-        <div class="busqueda-input-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" id="busqueda-input" placeholder="Buscar productos...">
-        </div>
-        <div class="precio-rango">
-          <span>Precio:</span>
-          <div class="rango-inputs">
-            <input type="range" id="precio-min" min="0" max="500" value="0"   step="5" oninput="actualizarRangoPrecio()">
-            <input type="range" id="precio-max" min="0" max="500" value="500" step="5" oninput="actualizarRangoPrecio()">
-          </div>
-          <span id="precio-display">$0 – +$500 USD</span>
-        </div>
-      </div>
-
-      <div id="productos-grid" class="productos-grid">
-        <div class="loading-productos">
-          <div class="loader-spin"></div>
-          <p>Cargando productos...</p>
-        </div>
-      </div>
-
-      <div id="sin-productos" style="display:none;" class="sin-productos">
-        <p>No hay productos en esta categoría aún.</p>
-      </div>
-    </div>
-  </section>
 
   <!-- ══ PAGOS ══════════════════════════════════════════ -->
   <section id="pagos">
@@ -975,9 +916,9 @@
           </div>
         </div>
       </div>
-      <button class="btn-ma-wa" onclick="cerrarModalApartado(); document.getElementById('catalogo').scrollIntoView({behavior:'smooth'});">
+      <a class="btn-ma-wa" href="perfumes.html" onclick="cerrarModalApartado();">
         🛍️ Ir al catálogo y apartar →
-      </button>
+      </a>
       <p class="ma-nota">* El 50% inicial activa el envío de inmediato. El plazo total es de 15 días desde ese primer abono; el saldo se paga contra entrega. El abono no es reembolsable.</p>
     </div>
   </div>
