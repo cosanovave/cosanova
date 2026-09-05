@@ -808,17 +808,14 @@
     }
 
     // ── Esta página muestra solo la categoría "Calzado" ──
+    // (el filtro real se aplica desde app.js/initCategoriaPagina, ya que
+    // este script corre antes de que el módulo defina filtrar() en window)
     (function () {
       var titulo = document.querySelector('#catalogo .section-title');
       if (titulo) titulo.textContent = 'Calzado';
-      filtrar('Calzado', document.querySelector('#categorias-pills .cat-btn.activa'));
+      window.__catInicial = 'Calzado';
       var genero = new URLSearchParams(window.location.search).get('genero');
-      if (genero) {
-        var btns = document.querySelectorAll('#subcat-genero .subcat-btn');
-        for (var i = 0; i < btns.length; i++) {
-          if (btns[i].textContent.trim() === genero) { filtrarGenero(genero, btns[i]); break; }
-        }
-      }
+      if (genero) window.__generoInicial = genero;
     })();
   </script>
 </body>

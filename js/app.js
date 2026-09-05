@@ -55,7 +55,26 @@ document.addEventListener('DOMContentLoaded', () => {
   initFirestore();
   initBusqueda();
   initCarruselTestimonios();
+  initCategoriaPagina();
 });
+
+// ─── FILTRO INICIAL DE LA PÁGINA DE CATEGORÍA ──────────
+// Las páginas de categoría (perfumes.html, ropa.html, etc.) fijan
+// window.__catInicial / __generoInicial antes de que este módulo cargue.
+// Se aplica aquí (tras DOMContentLoaded) para evitar la carrera con
+// el <script type="module"> que expone filtrar()/filtrarGenero() en window.
+function initCategoriaPagina() {
+  if (window.__catInicial) {
+    const btn = document.querySelector('#categorias-pills .cat-btn.activa');
+    filtrar(window.__catInicial, btn);
+  }
+  if (window.__generoInicial) {
+    const btns = document.querySelectorAll('#subcat-genero .subcat-btn');
+    for (const b of btns) {
+      if (b.textContent.trim() === window.__generoInicial) { filtrarGenero(window.__generoInicial, b); break; }
+    }
+  }
+}
 
 // ─── CARRUSEL INFINITO DE RESEÑAS ──────────────────────
 function initCarruselTestimonios() {
