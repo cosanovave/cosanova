@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tipografía Cosa Nova</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500;600&family=Marcellus&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --violeta: #4B2E83;
+    --oro: #C9A44C;
+    --azul: #0D2137;
+    --bg: #F1F2F5;
+    --card: #ffffff;
+    --texto-s: #6B7280;
+    --borde: #E2E4E9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--azul);
+    font-family: -apple-system, Segoe UI, sans-serif;
+    padding: 56px 24px 80px;
+  }
+  .marco { max-width: 760px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 44px; }
+  .kicker { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--oro); }
+  h1 { font-size: 26px; margin: 8px 0 6px; }
+  header p { font-size: 14px; color: var(--texto-s); margin: 0; }
+
+  .opciones { display: flex; flex-direction: column; gap: 20px; }
+  .opcion {
+    background: var(--card); border: 1px solid var(--borde); border-radius: 14px;
+    padding: 26px 28px; box-shadow: 0 10px 28px rgba(13,33,55,.05);
+  }
+  .opcion-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+  .opcion-nombre { font-size: 15px; font-weight: 700; }
+  .opcion-nota { font-size: 12.5px; color: var(--texto-s); }
+
+  .fila-nav {
+    display: flex; gap: 28px; flex-wrap: wrap; padding: 14px 0;
+    border-top: 1px solid var(--borde);
+  }
+  .fila-nav:first-of-type { border-top: none; }
+  .fila-nav a {
+    text-transform: uppercase; letter-spacing: .08em; font-size: 15px;
+    color: var(--azul); text-decoration: none;
+  }
+  .fila-nav .accent { color: var(--oro); }
+
+  .rec .opcion-nombre::after {
+    content: 'Recomendada'; margin-left: 10px; font-size: 10.5px; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--violeta);
+    background: rgba(75,46,131,.08); padding: 3px 9px; border-radius: 20px;
+  }
+  .rec { border-color: var(--violeta); }
+
+  .f-cormorant .fila-nav { font-family: 'Cormorant Garamond', serif; font-weight: 600; }
+  .f-jost .fila-nav { font-family: 'Jost', sans-serif; font-weight: 500; }
+  .f-marcellus .fila-nav { font-family: 'Marcellus', serif; }
+  .f-poppins .fila-nav { font-family: 'Poppins', sans-serif; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="marco">
+  <header>
+    <span class="kicker">Cosa Nova · Navbar</span>
+    <h1>Opciones de tipografía para el menú</h1>
+    <p>Mismos textos que ya tienes — "Productos · Cómo funciona · Pagos" y "Contacto · Reseñas · Ingresar · Carrito".</p>
+  </header>
+
+  <div class="opciones">
+
+    <div class="opcion f-cormorant rec">
+      <div class="opcion-head">
+        <span class="opcion-nombre">Cormorant Garamond</span>
+        <span class="opcion-nota">La misma familia del logo "COSA NOVA" — el menú queda hermanado con la marca.</span>
+      </div>
+      <div class="fila-nav">
+        <a href="#">Productos</a><a href="#">Cómo funciona</a><a href="#">Pagos</a>
+      </div>
+      <div class="fila-nav">
+        <a href="#">Contacto</a><a href="#">Reseñas</a><a href="#" class="accent">Ingresar</a><a href="#" class="accent">Carrito (1)</a>
+      </div>
+    </div>
+
+    <div class="opcion f-jost">
+      <div class="opcion-head">
+        <span class="opcion-nombre">Jost</span>
+        <span class="opcion-nota">Geométrica y elegante, más fina que Inter sin perder legibilidad en un menú.</span>
+      </div>
+      <div class="fila-nav">
+        <a href="#">Productos</a><a href="#">Cómo funciona</a><a href="#">Pagos</a>
+      </div>
+      <div class="fila-nav">
+        <a href="#">Contacto</a><a href="#">Reseñas</a><a href="#" class="accent">Ingresar</a><a href="#" class="accent">Carrito (1)</a>
+      </div>
+    </div>
+
+    <div class="opcion f-marcellus">
+      <div class="opcion-head">
+        <span class="opcion-nombre">Marcellus</span>
+        <span class="opcion-nota">Serif clásica y sobria, más discreta que Cormorant para un menú de solo texto.</span>
+      </div>
+      <div class="fila-nav">
+        <a href="#">Productos</a><a href="#">Cómo funciona</a><a href="#">Pagos</a>
+      </div>
+      <div class="fila-nav">
+        <a href="#">Contacto</a><a href="#">Reseñas</a><a href="#" class="accent">Ingresar</a><a href="#" class="accent">Carrito (1)</a>
+      </div>
+    </div>
+
+    <div class="opcion f-poppins">
+      <div class="opcion-head">
+        <span class="opcion-nombre">Poppins</span>
+        <span class="opcion-nota">Sans redondeada y suave — cercana, pero se aleja más del carácter del logo.</span>
+      </div>
+      <div class="fila-nav">
+        <a href="#">Productos</a><a href="#">Cómo funciona</a><a href="#">Pagos</a>
+      </div>
+      <div class="fila-nav">
+        <a href="#">Contacto</a><a href="#">Reseñas</a><a href="#" class="accent">Ingresar</a><a href="#" class="accent">Carrito (1)</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

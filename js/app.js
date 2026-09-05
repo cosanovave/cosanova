@@ -883,11 +883,12 @@ function iconoCategoria(cat) {
 }
 
 // ─── FILTROS ──────────────────────────────────────────
-function filtrar(cat) {
+function filtrar(cat, btnEl) {
   categoriaActual = cat;
   generoActual = ''; subtipoActual = '';
   document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('activa'));
-  event.target.classList.add('activa');
+  const btn = btnEl || (typeof event !== 'undefined' ? event.target : null);
+  if (btn) btn.classList.add('activa');
   document.querySelectorAll('.subcat-btn').forEach(b => b.classList.remove('activa'));
   const rowGenero = document.getElementById('subcat-genero');
   const rowTipo   = document.getElementById('subcat-tipo');

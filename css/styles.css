@@ -56,8 +56,7 @@ body {
   position: relative;
 }
 
-/* Fondo tipo "rombos" con puntos en las intersecciones que se desplazan
-   lentamente — capa decorativa fija detrás de todo el contenido. */
+/* Fondo tipo "rombos" — capa decorativa fija detrás de todo el contenido. */
 body::before {
   content: '';
   position: fixed;
@@ -66,17 +65,7 @@ body::before {
   pointer-events: none;
   background-image:
     repeating-linear-gradient(45deg, transparent, transparent 38px, rgba(13,33,55,0.07) 40px),
-    repeating-linear-gradient(-45deg, transparent, transparent 38px, rgba(13,33,55,0.07) 40px),
-    radial-gradient(circle, rgba(107,114,128,0.55) 1.6px, transparent 1.7px);
-  background-size: auto, auto, 40px 40px;
-  animation: fondoPuntosMovimiento 14s linear infinite;
-}
-@keyframes fondoPuntosMovimiento {
-  0%   { background-position: 0 0, 0 0, 0 0; }
-  100% { background-position: 0 0, 0 0, 80px 80px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  body::before { animation: none; }
+    repeating-linear-gradient(-45deg, transparent, transparent 38px, rgba(13,33,55,0.07) 40px);
 }
 
 .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
@@ -113,7 +102,7 @@ body::before {
   gap: 20px;
 }
 .nav-logo {
-  height: 220px;
+  height: 130px;
   transition: height 0.35s ease;
   justify-self: center;
 }
@@ -122,14 +111,16 @@ body::before {
 .nav-links { display: flex; gap: 24px; }
 .nav-links-left { justify-self: start; }
 .nav-links a {
+  font-family: 'Cormorant Garamond', serif;
   text-transform: uppercase;
   letter-spacing: 1.1px;
   font-weight: 500;
-  font-size: 12.5px;
+  font-size: 16px;
 }
 
-/* Dropdown de "Productos" al pasar el cursor, estilo The Row */
+/* Dropdown de "Productos" — se abre solo con clic, no con hover */
 .nav-dropdown { position: relative; }
+.nav-dropdown > a { cursor: pointer; }
 .nav-dropdown-panel {
   position: absolute;
   top: 100%;
@@ -173,8 +164,21 @@ body::before {
   font-size: 15px;
   color: var(--texto);
   padding: 6px 0;
+  display: block;
+  opacity: 1;
+  transition: opacity .35s ease, color .3s ease, text-shadow .4s ease;
 }
-.nav-dropdown-panel a:hover { color: var(--azul); }
+.nav-dd-nivel:hover a { opacity: .35; }
+.nav-dropdown-panel a:hover {
+  opacity: 1;
+  color: #4B2E83;
+  animation: navDdGlow .55s ease;
+}
+@keyframes navDdGlow {
+  0%   { text-shadow: 0 0 0 rgba(75,46,131,0); }
+  35%  { text-shadow: 0 0 12px rgba(75,46,131,.5); }
+  100% { text-shadow: 0 0 0 rgba(75,46,131,0); }
+}
 @media (max-width: 768px) {
   .nav-dropdown-panel { display: none; }
 }
@@ -182,11 +186,11 @@ body::before {
   color: var(--azul);
   text-decoration: none;
   font-size: 17px;
-  font-weight: 600;
+  font-weight: 500;
   transition: color 0.2s;
   letter-spacing: 0.3px;
 }
-.nav-links a:hover { color: var(--dorado); }
+.nav-links a:hover { color: #4B2E83; }
 .btn-wa-nav {
   display: flex;
   align-items: center;
@@ -543,9 +547,7 @@ section { padding: 80px 0; }
 .patron-rombos {
   background-image:
     repeating-linear-gradient(45deg, transparent, transparent 38px, rgba(13,33,55,0.09) 40px),
-    repeating-linear-gradient(-45deg, transparent, transparent 38px, rgba(13,33,55,0.09) 40px),
-    radial-gradient(circle, rgba(107,114,128,0.5) 1.6px, transparent 1.7px);
-  background-size: auto, auto, 40px 40px;
+    repeating-linear-gradient(-45deg, transparent, transparent 38px, rgba(13,33,55,0.09) 40px);
 }
 /* ── CÓMO FUNCIONA — panel dividido, foto + info (estilo hero) ── */
 .cf-split { display: grid; grid-template-columns: 1fr 1fr; min-height: 640px; }
@@ -622,6 +624,7 @@ section { padding: 80px 0; }
   margin-bottom: 40px;
 }
 .cat-btn {
+  display: inline-block;
   padding: 10px 22px;
   border-radius: 25px;
   border: 2px solid var(--azul);
@@ -629,6 +632,7 @@ section { padding: 80px 0; }
   color: var(--azul);
   font-weight: 600;
   font-size: 13px;
+  text-decoration: none;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -1685,11 +1689,11 @@ footer {
 }
 .cart-btn svg { width: 17px; height: 17px; flex-shrink: 0; opacity: 0.85; }
 .cart-btn-label {
-  font-size: 12.5px;
+  font-size: 16px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 1.1px;
-  font-family: inherit;
+  font-family: 'Cormorant Garamond', serif;
 }
 .cart-btn:hover { color: #F0A500; }
 .cart-badge { font-weight: 700; }
