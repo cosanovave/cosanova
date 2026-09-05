@@ -129,7 +129,7 @@ body::before {
   transform: translate(-50%, -8px);
   background: transparent;
   padding-top: 14px;
-  min-width: 160px;
+  min-width: 260px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.25s ease, transform 0.25s ease;
@@ -142,8 +142,8 @@ body::before {
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px 24px;
+  gap: 6px;
+  padding: 24px 32px;
 }
 .nav-dropdown:hover .nav-dropdown-panel,
 .nav-dropdown-panel:hover {
@@ -162,10 +162,11 @@ body::before {
   text-transform: none;
   letter-spacing: normal;
   font-weight: 500;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--texto);
-  padding: 6px 0;
+  padding: 8px 0;
   display: block;
+  white-space: nowrap;
   opacity: 1;
   transition: opacity .35s ease, color .3s ease, text-shadow .4s ease;
 }
