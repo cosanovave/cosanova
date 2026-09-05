@@ -1,0 +1,54 @@
+<script>
+  window.renderTasas = function() {
+    const ti = document.getElementById('t_trm');
+    const bi = document.getElementById('t_bcv');
+    const ni = document.getElementById('t_bin');
+    if (ti) ti.value = tasas.trm;
+    if (bi) bi.value = tasas.bcv;
+    if (ni) ni.value = tasas.binance;
+
+    document.getElementById('d-trm').innerText = 'COP ' + window.fmt(tasas.trm, 0);
+    document.getElementById('d-bcv').innerText = 'Bs ' + window.fmt(tasas.bcv, 2);
+    document.getElementById('d-bin').innerText = 'Bs ' + window.fmt(tasas.binance, 2);
+    document.getElementById('tasas-fecha').innerText = tasas.updated || '—';
+    document.getElementById('tasas-display').style.display = 'grid';
+  };
+
+  window.guardarTasas = function() {
+    const t = {
+      trm:     parseFloat(document.getElementById('t_trm').value),
+      bcv:     parseFloat(document.getElementById('t_bcv').value),
+      binance: parseFloat(document.getElementById('t_bin').value)
+    };
+    if (isNaN(t.trm) || isNaN(t.bcv) || isNaN(t.binance))
+      return alert('Por favor ingresa las tres tasas.');
+
+    window.wait('Guardando tasas...');
+    google.script.run.withSuccessHandler(function() {
+      tasas = { ...t, updated: new Date().toLocaleString('es-CO') };
+      window.renderTasas();
+      window.dibujar();
+      window.poblarSelectores();
+      window.stop();
+      alert('Tasas guardadas correctamente.');
+    }).saveTasas(t);
+  };
+
+  window.autoFetch = function() {
+    window.wait('Consultando tasas oficiales...');
+    google.script.run.withSuccessHandler(function(r) {
+      window.stop();
+      if (r.trm) {
+        document.getElementById('t_trm').value = r.trm.toFixed(2);
+        alert('TRM actualizada: COP ' + window.fmt(r.trm, 0));
+      }
+      if (r.bcv) {
+        document.getElementById('t_bcv').value = r.bcv.toFixed(2);
+        alert('BCV actualizada: Bs ' + window.fmt(r.bcv, 2));
+      }
+      if (!r.trm && !r.bcv) {
+        alert('No se pudo conectar con las fuentes automáticas.\nIngresa las tasas manualmente.');
+      }
+    }).fetchTasasAuto();
+  };
+</script>

@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Productos — lectura pública, escritura solo admin
+    match /productos/{id} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // Configuración (tasas) — lectura pública, escritura solo admin
+    match /configuracion/{id} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // Usuarios — cada usuario lee/edita su propio doc (sin poder auto-asignarse esAdmin); admin lee y escribe todos
+    match /usuarios/{uid} {
+      allow read:   if request.auth.uid == uid || isAdmin();
+      allow create: if request.auth.uid == uid &&
+                       request.resource.data.esAdmin == (request.auth.token.email == 'cosanova.ve@gmail.com');
+      allow update: if request.auth.uid == uid &&
+                       request.resource.data.esAdmin == resource.data.esAdmin;
+      allow write:  if isAdmin();
+
+      // Wishlist sub-colección
+      match /wishlist/{itemId} {
+        allow read, write: if request.auth.uid == uid;
+      }
+    }
+
+    // Órdenes — cualquier autenticado crea; solo el dueño o admin lee
+    match /ordenes/{id} {
+      allow create: if request.auth != null;
+      allow read:   if request.auth != null &&
+                       (request.auth.uid == resource.data.uid || isAdmin());
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Reseñas — cualquier autenticado crea; solo aprobadas son públicas
+    match /resenas/{id} {
+      allow read:   if resource.data.aprobada == true || isAdmin();
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin();
+    }
+
+    // Función helper: comprueba si el usuario logueado es admin
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.esAdmin == true;
+    }
+  }
+}

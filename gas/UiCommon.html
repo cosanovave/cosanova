@@ -1,0 +1,66 @@
+<script>
+  window.wait = function(m) {
+    document.getElementById('txt-L').innerText = m || 'Procesando...';
+    document.getElementById('loader').style.display = 'flex';
+  };
+  window.stop = function() {
+    document.getElementById('loader').style.display = 'none';
+  };
+  window.cambiarSeccion = function(id) {
+    document.querySelectorAll('.sec').forEach(s => s.classList.remove('activa'));
+    const sec = document.getElementById('sec-' + id);
+    if (sec) sec.classList.add('activa');
+    if (id === 'ordenes') window.cargarOrdenes();
+  };
+
+  // ── Formateo de números ──────────────────────────
+  window.fmt = function(n, dec) {
+    return parseFloat(n).toLocaleString('es-VE', {
+      minimumFractionDigits: dec !== undefined ? dec : 2,
+      maximumFractionDigits: dec !== undefined ? dec : 2
+    });
+  };
+
+  // ── Cálculo de flete WED Envíos ──────────────────
+  // Retorna el costo total del flete en COP para el paquete completo
+  window.calcularFlete = function(pesoKg, destino) {
+    const esPAP = destino !== 'resto';
+    const tarifas = esPAP
+      ? [22800, 21600, 19700, 16700, 13300, 13100]
+      : [29100, 27900, 24740, 20060, 16198, 15900];
+
+    if (pesoKg < 3)   return tarifas[0];              // tarifa plana
+    if (pesoKg < 10)  return pesoKg * tarifas[1];
+    if (pesoKg < 30)  return pesoKg * tarifas[2];
+    if (pesoKg < 50)  return pesoKg * tarifas[3];
+    if (pesoKg < 100) return pesoKg * tarifas[4];
+    return              pesoKg * tarifas[5];
+  };
+
+  // ── Fórmula central de precios ───────────────────
+  // inv_cop  = costo_producto + (flete + seguro) / unidades
+  // inv_usd  = inv_cop / TRM
+  // pvp_usd  = inv_usd × margen × (Binance/BCV) × fee
+  // pvp_bs   = pvp_usd × BCV  →  equivale a inv_usd × margen × Binance × fee
+  window.calcularPrecio = function(inv_cop, margenPct, feePct) {
+    const margen = 1 + (margenPct || 30) / 100;
+    const fee    = 1 + (feePct    || 2)  / 100;
+    const inv_usd = inv_cop / tasas.trm;
+    const pvp_usd = inv_usd * margen * (tasas.binance / tasas.bcv) * fee;
+    const pvp_bs  = pvp_usd * tasas.bcv;   // = inv_usd × margen × binance × fee
+    return { inv_usd, pvp_usd, pvp_bs };
+  };
+
+  // ── Poblar ambos selectores de factura ───────────
+  window.poblarSelectores = function() {
+    const opts = '<option value="">-- Seleccionar --</option>' +
+      stock.map(x => {
+        const { pvp_usd } = window.calcularPrecio(x.inv_cop, 30);
+        return `<option value="${pvp_usd.toFixed(2)}">${x.nom}</option>`;
+      }).join('');
+    const f1 = document.getElementById('f_i');
+    const f2 = document.getElementById('f_i2');
+    if (f1) f1.innerHTML = opts;
+    if (f2) f2.innerHTML = opts;
+  };
+</script>

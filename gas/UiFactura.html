@@ -1,0 +1,152 @@
+<script>
+  function buscarCl() {
+    const doc = document.getElementById('f_d').value.trim();
+    if (!doc) return;
+    document.getElementById('mini-c').style.display = 'block';
+    google.script.run.withSuccessHandler(function(c) {
+      document.getElementById('mini-c').style.display = 'none';
+      if (c) {
+        document.getElementById('f_n').value   = c.nom;
+        document.getElementById('f_t').value   = c.tel;
+        document.getElementById('f_dir').value = c.dir || '';
+      } else {
+        alert('Cliente no encontrado. Completa los datos manualmente.');
+      }
+    }).findCl(doc);
+  }
+
+  function agregarItemALista() {
+    const sel  = document.getElementById('f_i2');
+    const desc = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text.split(' — ')[0] : '';
+    const pu   = parseFloat(document.getElementById('f_p').value);
+    const q    = parseInt(document.getElementById('f_q').value) || 1;
+
+    if (!desc || desc === '-- Seleccionar --') return alert('Selecciona un producto.');
+    if (isNaN(pu) || pu <= 0)                  return alert('Ingresa un precio válido.');
+
+    itemsFactura.push({ desc, q, pu, total: pu * q });
+    renderListaItems();
+    totales();
+  }
+
+  function quitarItem(i) {
+    itemsFactura.splice(i, 1);
+    renderListaItems();
+    totales();
+  }
+
+  function renderListaItems() {
+    const cont = document.getElementById('lista-items');
+    if (!cont) return;
+    if (itemsFactura.length === 0) { cont.innerHTML = ''; return; }
+    cont.innerHTML = itemsFactura.map((item, i) => `
+      <div class="item-factura">
+        <span><strong>${item.desc}</strong> × ${item.q} = <strong>$ ${window.fmt(item.total)}</strong></span>
+        <button onclick="quitarItem(${i})">×</button>
+      </div>`).join('');
+  }
+
+  function totales() {
+    const granTotal = itemsFactura.reduce((acc, x) => acc + x.total, 0);
+    const ab        = parseFloat(document.getElementById('f_a').value) || 0;
+    const totalBs   = granTotal * tasas.binance;
+
+    document.getElementById('t_t').innerText  = '$ '  + window.fmt(granTotal);
+    document.getElementById('t_bs').innerText = 'Bs ' + window.fmt(totalBs, 0);
+    document.getElementById('t_s').innerText  = '$ '  + window.fmt(granTotal - ab);
+  }
+
+  function validar() {
+    datC = {
+      doc:   document.getElementById('f_d').value.trim(),
+      nom:   document.getElementById('f_n').value.trim(),
+      tel:   document.getElementById('f_t').value.trim(),
+      dir:   document.getElementById('f_dir').value.trim(),
+      email: ''
+    };
+    const pago = document.getElementById('f_met').value;
+
+    if (!datC.doc || !datC.nom || !datC.tel) return alert('Faltan datos del cliente.');
+    if (itemsFactura.length === 0)            return alert('No hay productos en la factura.');
+
+    window.wait('Generando factura...');
+    google.script.run.withSuccessHandler(function(r) {
+      if (r === 'OK') {
+        google.script.run.withSuccessHandler(function(n) {
+          numFact = n;
+          ejecutarPdf(pago);
+        }).getNextFactNum();
+      }
+    }).syncCl(datC);
+  }
+
+  // ── Cargar orden del marketplace directamente en el formulario ──
+  window.facturarOrden = function(num) {
+    const o = (window._ordenesData || []).find(function(x) { return x.num == num; });
+    if (!o) return alert('Orden no encontrada. Recarga las órdenes e intenta de nuevo.');
+
+    // 1. Navegar a la pestaña Factura
+    cambiarSeccion('factura');
+
+    // 2. Llenar datos del cliente
+    document.getElementById('f_d').value   = o.doc     || '';
+    document.getElementById('f_n').value   = o.cliente || '';
+    document.getElementById('f_t').value   = o.tel     || '';
+    document.getElementById('f_dir').value = '';
+    document.getElementById('f_a').value   = '0';
+
+    // 3. Buscar dirección guardada en hoja Clientes (asíncrono)
+    if (o.doc) {
+      google.script.run.withSuccessHandler(function(cl) {
+        if (cl && cl.dir) document.getElementById('f_dir').value = cl.dir;
+      }).findCl(o.doc);
+    }
+
+    // 4. Método de pago
+    var metStr = ((o.pago || '').split(' | ')[0]).toLowerCase();
+    var metSel = document.getElementById('f_met');
+    if (metSel) {
+      if      (metStr.indexOf('usdt') >= 0 || metStr.indexOf('binance') >= 0) metSel.value = 'USDT';
+      else if (metStr.indexOf('zelle') >= 0)                                  metSel.value = 'Zelle';
+      else if (metStr.indexOf('bolívar') >= 0 || metStr.indexOf('bolivar') >= 0
+            || metStr.indexOf('movil')   >= 0 || metStr.indexOf('móvil')   >= 0
+            || metStr.indexOf('bdv')     >= 0)                                metSel.value = 'Bolívares';
+    }
+
+    // 5. Parsear productos y distribuir total_usd exactamente
+    var totalUsd = parseFloat(o.total_usd) || 0;
+    var partes = (o.productos || '').split(',')
+      .map(function(p) {
+        var m = p.trim().match(/^(.+?)\s+x(\d+)$/i);
+        return { desc: m ? m[1].trim() : p.trim(), q: m ? parseInt(m[2]) : 1 };
+      })
+      .filter(function(p) { return p.desc !== ''; });
+
+    if (partes.length === 0) {
+      partes = [{ desc: 'Orden CN-' + String(o.num).padStart(4, '0'), q: 1 }];
+    }
+
+    var totalQty = partes.reduce(function(s, p) { return s + p.q; }, 0) || 1;
+    var acum = 0;
+
+    itemsFactura = partes.map(function(p, i) {
+      var itemTotal;
+      if (i === partes.length - 1) {
+        itemTotal = Math.round((totalUsd - acum) * 100) / 100;
+      } else {
+        itemTotal = Math.round((totalUsd * p.q / totalQty) * 100) / 100;
+        acum += itemTotal;
+      }
+      var pu = p.q > 0 ? Math.round(itemTotal / p.q * 100) / 100 : 0;
+      return { desc: p.desc, q: p.q, pu: pu, total: itemTotal };
+    });
+
+    // 6. Limpiar campos del selector de producto
+    document.getElementById('f_p').value = '';
+    document.getElementById('f_q').value = '1';
+
+    // 7. Renderizar lista y recalcular totales
+    renderListaItems();
+    totales();
+  };
+</script>

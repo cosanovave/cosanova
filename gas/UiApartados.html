@@ -1,0 +1,335 @@
+<style>
+  .semaforo-verde    { color: #16a34a; font-size: 15px; }
+  .semaforo-amarillo { color: #d97706; font-size: 15px; }
+  .semaforo-rojo     { color: #dc2626; font-size: 15px; }
+
+  .ap-resumen {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .ap-res-card {
+    flex: 1;
+    min-width: 120px;
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 14px 18px;
+    text-align: center;
+    border: 1px solid #eee;
+  }
+  .ap-res-card .ap-res-num  { font-size: 28px; font-weight: 800; color: #0D2137; }
+  .ap-res-card .ap-res-lbl  { font-size: 11px; color: #999; margin-top: 2px; }
+  .ap-res-card.verde  { border-color: #bbf7d0; background: #f0fdf4; }
+  .ap-res-card.verde  .ap-res-num  { color: #16a34a; }
+  .ap-res-card.amarillo { border-color: #fde68a; background: #fffbeb; }
+  .ap-res-card.amarillo .ap-res-num { color: #d97706; }
+  .ap-res-card.rojo   { border-color: #fecaca; background: #fef2f2; }
+  .ap-res-card.rojo   .ap-res-num  { color: #dc2626; }
+
+  .abono-inp-wrap {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-bottom: 4px;
+    background: #f9f5ff;
+    border: 1px solid #d8b4fe;
+    border-radius: 6px;
+    padding: 3px 6px;
+  }
+  .abono-inp-wrap span { font-size: 11px; color: #7c3aed; font-weight: 700; white-space: nowrap; }
+  .abono-inp-wrap input {
+    width: 65px;
+    border: none;
+    background: transparent;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0D2137;
+    outline: none;
+    text-align: right;
+  }
+  .btn-facturar {
+    padding: 5px 10px;
+    font-size: 11px;
+    margin-bottom: 4px;
+    width: 100%;
+    border-radius: 6px;
+    border: none;
+    font-weight: 700;
+    cursor: not-allowed;
+    background: #e5e7eb;
+    color: #9ca3af;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-facturar.listo {
+    background: #F0A500;
+    color: #0D2137;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  var ESTADOS_AP = ['Recibida', 'En proceso', 'Enviada', 'Entregada', 'Cancelada'];
+
+  var WA_MENSAJES_AP = {
+    'Recibida':   'Hola {cliente} 👋, tu apartado *AP-{num}* ha sido *recibido* por Cosa Nova. Lo estamos verificando. ¡Gracias por tu compra! 🛍️',
+    'En proceso': 'Hola {cliente} 👋, tu apartado *AP-{num}* está *en proceso* de preparación. Te avisamos cuando sea enviado. ✨',
+    'Enviada':    'Hola {cliente} 👋, ¡buenas noticias! Tu apartado *AP-{num}* ha sido *enviado* 🚚. Llegará en aproximadamente 7 días hábiles.',
+    'Entregada':  'Hola {cliente} 👋, tu apartado *AP-{num}* ha sido *entregado* ✅. ¡Esperamos que lo disfrutes! Gracias por comprar en Cosa Nova 🌟',
+    'Cancelada':  'Hola {cliente}, lamentamos informarte que tu apartado *AP-{num}* ha sido *cancelado* ❌. Contáctanos para más información.'
+  };
+
+  window.cambiarEstadoApartado = function(num, estado, tel, cliente) {
+    var plantilla = WA_MENSAJES_AP[estado];
+    if (plantilla && tel) {
+      var mensaje  = plantilla
+        .replace('{cliente}', cliente || 'cliente')
+        .replace('{num}', String(num).padStart(4, '0'));
+      var telefono = tel.toString().replace(/\D/g, '');
+      window.open('https://wa.me/' + telefono + '?text=' + encodeURIComponent(mensaje), '_blank');
+    }
+    window.wait('Actualizando estado...');
+    google.script.run.withSuccessHandler(function() {
+      window.stop();
+      window.cargarApartados();
+    }).actualizarEstadoApartado(num, estado);
+  };
+
+  window.cargarApartados = function() {
+    window.wait('Cargando apartados...');
+    google.script.run.withSuccessHandler(function(data) {
+      window.stop();
+      window.renderApartados(data);
+    }).getApartados();
+  };
+
+  window.renderApartados = function(apartados) {
+    const cont = document.getElementById('tabla-apartados');
+    if (!cont) return;
+
+    if (!apartados || apartados.length === 0) {
+      cont.innerHTML = '<p style="text-align:center;color:#999;padding:30px;">No hay apartados registrados aún.</p>';
+      return;
+    }
+
+    window._apartadosData = apartados;
+    apartados.sort((a, b) => b.num - a.num);
+
+    // ── Contadores para resumen ─────────────────
+    const hoy = new Date();
+    let cActivos = 0, cPorVencer = 0, cVencidos = 0, cCompletados = 0;
+    let totalSaldo = 0;
+
+    apartados.forEach(ap => {
+      if (ap.estado === 'Completado') { cCompletados++; return; }
+      if (ap.estado === 'Vencido')    { cVencidos++;    return; }
+      const dias = ap.fecha_limite_iso ? Math.ceil((new Date(ap.fecha_limite_iso) - hoy) / 86400000) : 99;
+      totalSaldo += parseFloat(ap.saldo_usd) || 0;
+      if (dias > 5)     cActivos++;
+      else if (dias >= 1) cPorVencer++;
+      else               cVencidos++;
+    });
+
+    // ── Resumen cards ───────────────────────────
+    let html = `
+      <div class="ap-resumen">
+        <div class="ap-res-card verde">
+          <div class="ap-res-num">${cActivos}</div>
+          <div class="ap-res-lbl">Activos (>5 días)</div>
+        </div>
+        <div class="ap-res-card amarillo">
+          <div class="ap-res-num">${cPorVencer}</div>
+          <div class="ap-res-lbl">Por vencer (≤5 días)</div>
+        </div>
+        <div class="ap-res-card rojo">
+          <div class="ap-res-num">${cVencidos}</div>
+          <div class="ap-res-lbl">Vencidos</div>
+        </div>
+        <div class="ap-res-card">
+          <div class="ap-res-num">$${window.fmt(totalSaldo)}</div>
+          <div class="ap-res-lbl">Saldo pendiente USD</div>
+        </div>
+        <div class="ap-res-card">
+          <div class="ap-res-num">${cCompletados}</div>
+          <div class="ap-res-lbl">Completados</div>
+        </div>
+      </div>`;
+
+    // ── Tabla ───────────────────────────────────
+    html += `<div style="overflow-x:auto;">
+      <table class="tabla-ordenes">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Teléfono</th>
+            <th>Dirección de entrega</th>
+            <th>Productos</th>
+            <th>Total</th>
+            <th>Abono ✅</th>
+            <th>Saldo ⏳</th>
+            <th>Vence</th>
+            <th>Días</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+    apartados.forEach(ap => {
+      let diasRest = '—';
+      let semaforoClass = '';
+
+      if (ap.fecha_limite_iso && ap.estado === 'Activo') {
+        const diff = Math.ceil((new Date(ap.fecha_limite_iso) - hoy) / 86400000);
+        diasRest = diff;
+        if (diff > 5)     semaforoClass = 'semaforo-verde';
+        else if (diff >= 1) semaforoClass = 'semaforo-amarillo';
+        else               semaforoClass = 'semaforo-rojo';
+      }
+
+      const estadoBadge = {
+        'Recibida':   'badge-recibida',
+        'En proceso': 'badge-proceso',
+        'Enviada':    'badge-enviada',
+        'Entregada':  'badge-entregada',
+        'Cancelada':  'badge-cancelada'
+      }[ap.estado] || 'badge-recibida';
+
+      const numStr = 'AP-' + String(ap.num).padStart(4, '0');
+      const saldo  = parseFloat(ap.saldo_usd) || 0;
+
+      html += `
+        <tr>
+          <td><strong>${numStr}</strong></td>
+          <td>${ap.fecha}</td>
+          <td style="text-align:left;">
+            ${ap.cliente}<br>
+            <small style="color:#999;">${ap.cedula || ''}</small>
+          </td>
+          <td>${ap.tel}</td>
+          <td style="text-align:left;font-size:11px;max-width:180px;">
+            ${ap.ciudad ? '<span style="font-weight:600;color:#0D2137;">' + ap.ciudad + '</span><br>' : ''}
+            ${ap.direccion || '<span style="color:#bbb;">Sin dirección</span>'}
+          </td>
+          <td style="text-align:left;font-size:11px;max-width:160px;">${ap.productos}</td>
+          <td style="font-weight:700;">$${window.fmt(ap.total_usd)}</td>
+          <td style="color:#16a34a;font-weight:700;">$${window.fmt(ap.abono_usd)}</td>
+          <td style="color:#E91E63;font-weight:700;">$${window.fmt(ap.saldo_usd)}</td>
+          <td style="font-size:12px;">${ap.fecha_limite}</td>
+          <td>
+            <span class="${semaforoClass}" style="font-weight:800;">
+              ${typeof diasRest === 'number' ? diasRest + 'd' : diasRest}
+            </span>
+          </td>
+          <td><span class="badge ${estadoBadge}">${ap.estado}</span></td>
+          <td style="white-space:nowrap; min-width:150px;">
+            <button class="btn-m" style="padding:5px 10px;font-size:11px;margin-bottom:4px;width:100%;background:#25D366;color:#fff;"
+              onclick="recordarApartado(${ap.num},'${ap.tel}','${ap.cliente}','${ap.saldo_usd}','${ap.fecha_limite}')">
+              📱 Recordar
+            </button>
+            <div class="abono-inp-wrap">
+              <span>Abono $</span>
+              <input type="number" id="abono-inp-${ap.num}" min="0" step="0.01" placeholder="0.00"
+                oninput="verificarAbono(${ap.num}, ${saldo})">
+            </div>
+            <button class="btn-facturar" id="btn-facturar-${ap.num}"
+              onclick="facturarApartado(${ap.num})" disabled>
+              📄 Facturar
+            </button>
+            <select class="estado-sel"
+              onchange="cambiarEstadoApartado(${ap.num}, this.value, '${ap.tel}', '${ap.cliente}')">
+              ${ESTADOS_AP.map(e => `<option value="${e}"${e === ap.estado ? ' selected' : ''}>${e}</option>`).join('')}
+            </select>
+            ${ap.captura_url ? `<a href="${ap.captura_url}" target="_blank" style="display:block;margin-top:4px;font-size:11px;color:#F0A500;">🧾 Comprobante</a>` : ''}
+          </td>
+        </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+    cont.innerHTML = html;
+  };
+
+  window.verificarAbono = function(num, saldo) {
+    var inp = document.getElementById('abono-inp-' + num);
+    var btn = document.getElementById('btn-facturar-' + num);
+    if (!inp || !btn) return;
+    var val = parseFloat(inp.value) || 0;
+    if (val >= saldo) {
+      btn.disabled = false;
+      btn.classList.add('listo');
+    } else {
+      btn.disabled = true;
+      btn.classList.remove('listo');
+    }
+  };
+
+  window.facturarApartado = function(num) {
+    var ap = (window._apartadosData || []).find(function(x) { return x.num == num; });
+    if (!ap) return alert('Apartado no encontrado. Recarga e intenta de nuevo.');
+
+    cambiarSeccion('factura');
+
+    document.getElementById('f_d').value   = ap.cedula  || '';
+    document.getElementById('f_n').value   = ap.cliente || '';
+    document.getElementById('f_t').value   = ap.tel     || '';
+    document.getElementById('f_dir').value = (ap.ciudad && ap.direccion)
+      ? ap.ciudad + ' — ' + ap.direccion
+      : (ap.ciudad || ap.direccion || '');
+    document.getElementById('f_a').value   = '0';
+
+    var metStr = (ap.metodo_pago || '').toLowerCase();
+    var metSel = document.getElementById('f_met');
+    if (metSel) {
+      if      (metStr.indexOf('usdt') >= 0 || metStr.indexOf('binance') >= 0) metSel.value = 'USDT';
+      else if (metStr.indexOf('zelle') >= 0)                                  metSel.value = 'Zelle';
+      else if (metStr.indexOf('bolívar') >= 0 || metStr.indexOf('bolivar') >= 0
+            || metStr.indexOf('movil')   >= 0 || metStr.indexOf('móvil')   >= 0
+            || metStr.indexOf('bdv')     >= 0)                                metSel.value = 'Bolívares';
+    }
+
+    var totalUsd = parseFloat(ap.total_usd) || 0;
+    var partes = (ap.productos || '').split(',')
+      .map(function(p) {
+        var m = p.trim().match(/^(.+?)\s+x(\d+)$/i);
+        return { desc: m ? m[1].trim() : p.trim(), q: m ? parseInt(m[2]) : 1 };
+      })
+      .filter(function(p) { return p.desc !== ''; });
+
+    if (partes.length === 0) {
+      partes = [{ desc: 'Apartado AP-' + String(ap.num).padStart(4, '0'), q: 1 }];
+    }
+
+    var totalQty = partes.reduce(function(s, p) { return s + p.q; }, 0) || 1;
+    var acum = 0;
+
+    itemsFactura = partes.map(function(p, i) {
+      var itemTotal;
+      if (i === partes.length - 1) {
+        itemTotal = Math.round((totalUsd - acum) * 100) / 100;
+      } else {
+        itemTotal = Math.round((totalUsd * p.q / totalQty) * 100) / 100;
+        acum += itemTotal;
+      }
+      var pu = p.q > 0 ? Math.round(itemTotal / p.q * 100) / 100 : 0;
+      return { desc: p.desc, q: p.q, pu: pu, total: itemTotal };
+    });
+
+    document.getElementById('f_p').value = '';
+    document.getElementById('f_q').value = '1';
+
+    renderListaItems();
+    totales();
+  };
+
+  window.recordarApartado = function(num, tel, cliente, saldo, fechaLimite) {
+    var numStr  = 'AP-' + String(num).padStart(4, '0');
+    var msg     = 'Hola ' + cliente + ' 👋, te recordamos que tu apartado *' + numStr + '* vence el *' + fechaLimite + '*.\n\n'
+                + 'Saldo pendiente: *$' + saldo + ' USD* — se paga contra entrega cuando recibas tu pedido. 📦\n\n'
+                + 'Ante cualquier duda, estamos aquí. ¡Gracias por confiar en Cosa Nova! 🌟';
+    var telefono = tel.toString().replace(/\D/g, '');
+    window.open('https://wa.me/' + telefono + '?text=' + encodeURIComponent(msg), '_blank');
+  };
+
+</script>

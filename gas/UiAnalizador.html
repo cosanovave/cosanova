@@ -1,0 +1,66 @@
+<script>
+  var itemT = null;
+
+  window.calcular = function() {
+    const nom    = document.getElementById('c_n').value.trim();
+    const cat    = document.getElementById('c_cat').value;
+    const cop    = parseFloat(document.getElementById('c_cop').value);
+    const peso   = parseFloat(document.getElementById('c_peso').value);
+    const uds    = parseInt(document.getElementById('c_uds').value) || 1;
+    const decl   = parseFloat(document.getElementById('c_decl').value) || 0;
+    const dest   = document.getElementById('c_dest').value;
+    const margen = parseFloat(document.getElementById('c_margen').value) || 30;
+
+    if (!nom)       return alert('Ingresa el nombre del producto.');
+    if (isNaN(cop)) return alert('Ingresa el costo del producto en COP.');
+    if (isNaN(peso))return alert('Ingresa el peso del paquete.');
+
+    // ── Flete total del paquete ──────────────────
+    const flete_total  = window.calcularFlete(peso, dest);
+    const seguro_total = decl * 0.05;
+
+    // ── Costo por unidad ─────────────────────────
+    const flete_uds  = flete_total  / uds;
+    const seguro_uds = seguro_total / uds;
+    const inv_cop    = cop + flete_uds + seguro_uds;
+
+    // ── Precios ──────────────────────────────────
+    const { inv_usd, pvp_usd, pvp_bs } = window.calcularPrecio(inv_cop, margen);
+
+    // ── Guardar para el botón "Guardar en Stock" ─
+    itemT = {
+      nom,
+      inv_cop:     Math.round(inv_cop),
+      categoria:   cat,
+      peso_gr:     Math.round(peso * 1000),
+      descripcion: '',
+      genero:      (cat === 'Ropa' || cat === 'Perfumes') ? (document.getElementById('c_genero').value  || '') : '',
+      subtipo:     cat === 'Ropa'                        ? (document.getElementById('c_subtipo').value || '') : '',
+      tallas:      cat === 'Ropa'                        ? (document.getElementById('c_tallas').value  || '') : ''
+    };
+
+    // ── Mostrar resultados ───────────────────────
+    document.getElementById('r-flete').innerText   = 'COP ' + window.fmt(flete_uds, 0);
+    document.getElementById('r-seguro').innerText  = 'COP ' + window.fmt(seguro_uds, 0);
+    document.getElementById('r-inv').innerText     = '$ '   + window.fmt(inv_usd);
+    document.getElementById('r-usd').innerText     = '$ '   + window.fmt(pvp_usd);
+    document.getElementById('r-bs').innerText      = 'Bs '  + window.fmt(pvp_bs, 0);
+    document.getElementById('box-r').style.display = 'block';
+  };
+
+  window.guardar = function() {
+    if (!itemT) return;
+    window.wait('Guardando en stock...');
+    google.script.run.withSuccessHandler(function(s) {
+      stock = s;
+      window.dibujar();
+      window.poblarSelectores();
+      window.stop();
+      document.getElementById('box-r').style.display = 'none';
+      document.getElementById('c_n').value = '';
+      document.getElementById('c_cop').value = '';
+      itemT = null;
+      alert('Producto guardado en stock.');
+    }).saveStock(itemT);
+  };
+</script>

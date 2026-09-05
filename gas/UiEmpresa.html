@@ -1,0 +1,423 @@
+<style>
+  .emp-subnav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .emp-tab {
+    background: none;
+    border: none;
+    padding: 8px 22px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #888;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .emp-tab:hover { background: #f0f0f0; color: #0D2137; }
+  .emp-tab-act   { background: #0D2137 !important; color: #F0A500 !important; }
+
+  .emp-summary {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .emp-sum-card {
+    flex: 1;
+    min-width: 130px;
+    background: #f4f6ff;
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-left: 4px solid #0D2137;
+  }
+  .emp-sum-nt    { border-left-color: #7b1fa2; background: #fdf4ff; }
+  .emp-sum-total { border-left-color: #F0A500; background: #fffbf0; }
+  .emp-sum-red   { border-left-color: #c62828; background: #fff5f5; }
+  .emp-sum-oro   { border-left-color: #F0A500; background: #fffbf0; }
+
+  .esp-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #999; }
+  .esp-val   { font-size: 22px; font-weight: 800; color: #0D2137; }
+  .esp-sub   { font-size: 10px; color: #bbb; }
+
+  .badge-ent {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .badge-cn  { background: #e8f0fe; color: #0D2137; }
+  .badge-nt  { background: #f3e5f5; color: #6a1b9a; }
+  .badge-oro { background: #fff8e1; color: #e65100; }
+  .badge-red { background: #fce4ec; color: #c62828; }
+  .badge-cat { background: #e8f5e9; color: #2e7d32; }
+
+  .sub-form {
+    background: #f8f9ff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 8px;
+  }
+  .sub-titulo {
+    font-size: 12px;
+    font-weight: 800;
+    color: #0D2137;
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .sub-desc {
+    font-size: 12px;
+    color: #888;
+    margin: 0 0 16px 0;
+  }
+  .neto-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 800;
+    min-height: 42px;
+  }
+  .neto-red   { background: #fff5f5; color: #c62828; border: 1px solid #ffcdd2; }
+  .neto-green { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+
+  .gan-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 640px) { .gan-grid { grid-template-columns: 1fr; } }
+
+  .gan-card {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 14px rgba(13,33,55,0.10);
+  }
+  .gan-header {
+    padding: 13px 18px;
+    font-weight: 800;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .gan-cn { background: #0D2137; color: #F0A500; }
+  .gan-nt { background: #4a0072; color: #e1bee7; }
+
+  .gan-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+    background: #fff;
+  }
+  .gan-neg strong { color: #c62828; }
+  .gan-info { background: #fffbf0; border-left: 3px solid #F0A500; }
+
+  .gan-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    font-weight: 700;
+    font-size: 14px;
+    background: #f8f9ff;
+  }
+  .gan-pos strong { color: #2e7d32; font-size: 20px; }
+  .gan-total.gan-neg strong { color: #c62828; font-size: 20px; }
+</style>
+
+<script>
+// == EMPRESA ==================================================
+
+function empTab(t) {
+  document.querySelectorAll('.emp-tab').forEach(function(el) { el.classList.remove('emp-tab-act'); });
+  document.querySelectorAll('.emp-sec').forEach(function(el) { el.style.display = 'none'; });
+  document.getElementById('emp-' + t).style.display = 'block';
+  document.querySelector('.emp-tab[data-t="' + t + '"]').classList.add('emp-tab-act');
+}
+
+function cargarEmpresa() {
+  empTab('socios');
+  cargarSocios();
+}
+
+// -- SOCIOS ---------------------------------------------------
+function cargarSocios() {
+  window.wait('Cargando socios...');
+  google.script.run
+    .withSuccessHandler(function(d) { renderSocios(d); window.stop(); })
+    .withFailureHandler(function(e) { window.stop(); alert('Error: ' + e.message); })
+    .getSocios();
+}
+
+function renderSocios(rows) {
+  var el = document.getElementById('tabla-socios');
+  if (!rows || !rows.length) {
+    el.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Sin registros de inversion.</p>';
+    return;
+  }
+
+  var cn = rows.filter(function(r) { return r.entidad === 'Cosa Nova'; })
+               .reduce(function(s, r) { return s + r.monto_usd; }, 0);
+  var nt = rows.filter(function(r) { return r.entidad === 'Novatech'; })
+               .reduce(function(s, r) { return s + r.monto_usd; }, 0);
+
+  var html = '<div class="emp-summary">' +
+    '<div class="emp-sum-card"><span class="esp-label">Cosa Nova Market</span><span class="esp-val">$' + cn.toFixed(2) + '</span><span class="esp-sub">Total invertido</span></div>' +
+    '<div class="emp-sum-card emp-sum-nt"><span class="esp-label">Novatech</span><span class="esp-val">$' + nt.toFixed(2) + '</span><span class="esp-sub">Total invertido</span></div>' +
+    '<div class="emp-sum-card emp-sum-total"><span class="esp-label">Total general</span><span class="esp-val">$' + (cn + nt).toFixed(2) + '</span><span class="esp-sub">Ambas filiales</span></div>' +
+  '</div>';
+
+  html += '<div style="overflow-x:auto;margin-top:15px;"><table class="tabla-stock">';
+  html += '<thead><tr><th>Fecha</th><th>Socio</th><th>Filial</th><th>Monto USD</th></tr></thead><tbody>';
+  rows.forEach(function(r) {
+    html += '<tr><td>' + r.fecha + '</td><td><strong>' + r.socio + '</strong></td>';
+    html += '<td><span class="badge-ent badge-' + (r.entidad === 'Cosa Nova' ? 'cn' : 'nt') + '">' + r.entidad + '</span></td>';
+    html += '<td><strong>$' + r.monto_usd.toFixed(2) + '</strong></td></tr>';
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function guardarSocio() {
+  var socio = document.getElementById('s_socio').value.trim();
+  var monto = parseFloat(document.getElementById('s_monto').value) || 0;
+  if (!socio || !monto) { alert('Completa socio y monto.'); return; }
+  var d = { socio: socio, entidad: document.getElementById('s_entidad').value, monto_usd: monto };
+  window.wait('Guardando...');
+  google.script.run
+    .withSuccessHandler(function(rows) {
+      renderSocios(rows);
+      document.getElementById('s_socio').value = '';
+      document.getElementById('s_monto').value = '';
+      window.stop();
+    })
+    .withFailureHandler(function(e) { window.stop(); alert('Error: ' + e.message); })
+    .saveSocio(d);
+}
+
+// -- GASTOS OPERATIVOS ----------------------------------------
+function cargarGastos() {
+  window.wait('Cargando...');
+  google.script.run
+    .withSuccessHandler(function(d) {
+      renderGastos(d);
+      google.script.run
+        .withSuccessHandler(function(c) { renderCompras(c); window.stop(); })
+        .withFailureHandler(function(e) { window.stop(); alert('Error: ' + e.message); })
+        .getComprasInv();
+    })
+    .withFailureHandler(function(e) { window.stop(); alert('Error: ' + e.message); })
+    .getGastosEmpresa();
+}
+
+function renderGastos(rows) {
+  var el = document.getElementById('tabla-gastos-op');
+  if (!rows || !rows.length) {
+    el.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Sin gastos registrados.</p>';
+    return;
+  }
+  var totalCN = rows.filter(function(r) { return r.filial === 'Cosa Nova'; }).reduce(function(s, r) { return s + r.monto_usd; }, 0);
+  var totalNT = rows.filter(function(r) { return r.filial === 'Novatech'; }).reduce(function(s, r) { return s + r.monto_usd; }, 0);
+
+  var html = '<div class="emp-summary">' +
+    '<div class="emp-sum-card emp-sum-red"><span class="esp-label">Gastos CN</span><span class="esp-val">$' + totalCN.toFixed(2) + '</span></div>' +
+    '<div class="emp-sum-card emp-sum-red"><span class="esp-label">Gastos Novatech</span><span class="esp-val">$' + totalNT.toFixed(2) + '</span></div>' +
+  '</div>';
+  html += '<div style="overflow-x:auto;margin-top:15px;"><table class="tabla-stock">';
+  html += '<thead><tr><th>Fecha</th><th>Descripcion</th><th>Categoria</th><th>Monto USD</th><th>Filial</th></tr></thead><tbody>';
+  rows.forEach(function(r) {
+    html += '<tr><td>' + r.fecha + '</td><td>' + r.descripcion + '</td>';
+    html += '<td><span class="badge-ent badge-cat">' + r.categoria + '</span></td>';
+    html += '<td><strong>$' + r.monto_usd.toFixed(2) + '</strong></td>';
+    html += '<td><span class="badge-ent badge-' + (r.filial === 'Cosa Nova' ? 'cn' : 'nt') + '">' + r.filial + '</span></td></tr>';
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function guardarGastoOp() {
+  var desc  = document.getElementById('g_desc').value.trim();
+  var monto = parseFloat(document.getElementById('g_monto').value) || 0;
+  if (!desc || !monto) { alert('Completa descripcion y monto.'); return; }
+  var d = { descripcion: desc, monto_usd: monto, filial: document.getElementById('g_filial').value, categoria: document.getElementById('g_cat').value };
+  window.wait('Guardando...');
+  google.script.run
+    .withSuccessHandler(function(rows) {
+      renderGastos(rows);
+      document.getElementById('g_desc').value  = '';
+      document.getElementById('g_monto').value = '';
+      window.stop();
+    })
+    .withFailureHandler(function(e) { window.stop(); alert('Error: ' + e.message); })
+    .saveGastoEmpresa(d);
+}
+
+// -- COMPRAS CON INVERSION ------------------------------------
+function calcNeto() {
+  var cop      = parseFloat(document.getElementById('c_costo_cop').value) || 0;
+  var adelanto = parseFloat(document.getElementById('c_adelanto').value)  || 0;
+  var trm = tasas.trm     || 4200;
+  var bcv = tasas.bcv     || 50;
+  var bin = tasas.binance || 65;
+  var usd  = cop / trm;
+  var neto = Math.max(0, usd - adelanto);
+  var pvp  = (cop / trm) * 1.30 * (bin / bcv) * 1.02;
+  document.getElementById('c_usd_display').textContent  = '$' + usd.toFixed(2);
+  document.getElementById('c_neto_display').textContent = '$' + neto.toFixed(2);
+  document.getElementById('c_pvp_display').textContent  = '$' + pvp.toFixed(2);
+}
+
+function renderCompras(rows) {
+  var el = document.getElementById('tabla-compras');
+  if (!rows || !rows.length) {
+    el.innerHTML = '<p style="color:#999;text-align:center;padding:20px;">Sin compras registradas.</p>';
+    return;
+  }
+  var totalCOP      = rows.reduce(function(s, r) { return s + r.costo_cop; }, 0);
+  var totalUSD      = rows.reduce(function(s, r) { return s + r.costo_usd; }, 0);
+  var totalAdelanto = rows.reduce(function(s, r) { return s + r.adelanto_usd; }, 0);
+  var totalNeto     = rows.reduce(function(s, r) { return s + r.neto_usd; }, 0);
+  var porCobrar     = rows.filter(function(r) { return r.estado === 'Pendiente'; })
+                          .reduce(function(s, r) { return s + (r.costo_usd - r.adelanto_usd); }, 0);
+
+  var html = '<div class="emp-summary">' +
+    '<div class="emp-sum-card"><span class="esp-label">Costo total COP</span><span class="esp-val" style="font-size:17px;">$' + Math.round(totalCOP).toLocaleString() + '</span></div>' +
+    '<div class="emp-sum-card"><span class="esp-label">Costo total USD</span><span class="esp-val">$' + totalUSD.toFixed(2) + '</span></div>' +
+    '<div class="emp-sum-card emp-sum-oro"><span class="esp-label">Adelantos recibidos</span><span class="esp-val">$' + totalAdelanto.toFixed(2) + '</span></div>' +
+    '<div class="emp-sum-card emp-sum-red"><span class="esp-label">Neto de inversion</span><span class="esp-val">$' + totalNeto.toFixed(2) + '</span></div>' +
+    '<div class="emp-sum-card emp-sum-red"><span class="esp-label">Por cobrar</span><span class="esp-val">$' + porCobrar.toFixed(2) + '</span></div>' +
+  '</div>';
+  html += '<div style="overflow-x:auto;margin-top:15px;"><table class="tabla-stock">';
+  html += '<thead><tr><th>Fecha</th><th>Producto</th><th>Costo COP</th><th>Costo USD</th><th>Adelanto</th><th>Neto Inv.</th><th>PVP min.</th><th>Cliente</th><th>Estado</th></tr></thead><tbody>';
+  rows.forEach(function(r) {
+    var estadoCls = r.estado === 'Cobrado' ? 'badge-cn' : 'badge-oro';
+    html += '<tr>';
+    html += '<td>' + r.fecha + '</td>';
+    html += '<td><strong>' + r.producto + '</strong></td>';
+    html += '<td style="font-size:12px;">$' + Math.round(r.costo_cop).toLocaleString() + '</td>';
+    html += '<td>$' + r.costo_usd.toFixed(2) + '</td>';
+    html += '<td style="color:#2e7d32;">$' + r.adelanto_usd.toFixed(2) + '</td>';
+    html += '<td><strong>$' + r.neto_usd.toFixed(2) + '</strong></td>';
+    html += '<td style="color:#0D2137;font-weight:700;">$' + (r.pvp_min_usd || 0).toFixed(2) + '</td>';
+    html += '<td>' + (r.cliente || '-') + '</td>';
+    html += '<td><span class="badge-ent ' + estadoCls + '">' + r.estado + '</span></td>';
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  el.innerHTML = html;
+}
+
+function guardarCompra() {
+  var producto  = document.getElementById('c_prod').value.trim();
+  var costo_cop = parseFloat(document.getElementById('c_costo_cop').value) || 0;
+  if (!producto || !costo_cop) { alert('Completa producto y costo en COP.'); return; }
+  var adelanto = parseFloat(document.getElementById('c_adelanto').value) || 0;
+  var trm = tasas.trm     || 4200;
+  var bcv = tasas.bcv     || 50;
+  var bin = tasas.binance || 65;
+  var costo_usd = costo_cop / trm;
+  var d = {
+    producto:     producto,
+    costo_cop:    costo_cop,
+    costo_usd:    costo_usd,
+    adelanto_usd: adelanto,
+    neto_usd:     Math.max(0, costo_usd - adelanto),
+    pvp_min_usd:  (costo_cop / trm) * 1.30 * (bin / bcv) * 1.02,
+    cliente:      document.getElementById('c_cliente').value.trim(),
+    filial:       document.getElementById('c_filial').value,
+    estado:       document.getElementById('c_estado').value
+  };
+  window.wait('Guardando...');
+  google.script.run
+    .withSuccessHandler(function(rows) {
+      renderCompras(rows);
+      document.getElementById('c_prod').value               = '';
+      document.getElementById('c_costo_cop').value          = '';
+      document.getElementById('c_adelanto').value           = '';
+      document.getElementById('c_cliente').value            = '';
+      document.getElementById('c_usd_display').textContent  = '$0.00';
+      document.getElementById('c_neto_display').textContent = '$0.00';
+      document.getElementById('c_pvp_display').textContent  = '$0.00';
+      window.stop();
+    })
+    .withFailureHandler(function(e) { window.stop(); alert('Error: ' + e.message); })
+    .saveCompraInv(d);
+}
+
+// -- GANANCIAS ------------------------------------------------
+function cargarGanancias() {
+  window.wait('Calculando...');
+  google.script.run
+    .withSuccessHandler(function(r) { renderGanancias(r); window.stop(); })
+    .withFailureHandler(function(e) { window.stop(); alert('Error: ' + e.message); })
+    .getResumenFinanciero();
+}
+
+function renderGanancias(r) {
+  function fila(lbl, val, neg) {
+    var cls   = neg ? ' gan-neg' : '';
+    var signo = neg ? '-' : '+';
+    return '<div class="gan-row' + cls + '"><span>' + lbl + '</span><strong>' + signo + '$' + Math.abs(val).toFixed(2) + '</strong></div>';
+  }
+  function filaInfo(lbl, val) {
+    return '<div class="gan-row gan-info"><span>' + lbl + '</span><span style="font-size:11px;color:#e65100;font-weight:700;">~$' + Math.abs(val).toFixed(2) + ' pendiente</span></div>';
+  }
+  var cn   = r.cosa_nova;
+  var nt   = r.novatech;
+  var html = '<div class="gan-grid">';
+  html += '<div class="gan-card">' +
+    '<div class="gan-header gan-cn">Cosa Nova Market</div>' +
+    fila('Inversion socios',    cn.inversion,   false) +
+    fila('Ventas (entregadas)',  cn.ventas,      false) +
+    filaInfo('Ordenes en proceso', cn.en_proceso) +
+    fila('Gastos operativos',   cn.gastos,      true)  +
+    fila('Compras (neto inv.)', cn.compras_neto, true) +
+    '<div class="gan-total ' + (cn.neto >= 0 ? 'gan-pos' : 'gan-neg') + '">' +
+    '<span>NETO</span><strong>' + (cn.neto >= 0 ? '+' : '-') + '$' + Math.abs(cn.neto).toFixed(2) + '</strong></div>' +
+  '</div>';
+  html += '<div class="gan-card">' +
+    '<div class="gan-header gan-nt">Novatech</div>' +
+    fila('Inversion socios',   nt.inversion,           false) +
+    fila('Ingresos servicios', nt.ingresos_servicios,  false) +
+    fila('Gastos operativos',  nt.gastos,              true)  +
+    fila('Compras (neto inv.)',nt.compras_neto,         true)  +
+    '<div class="gan-total ' + (nt.neto >= 0 ? 'gan-pos' : 'gan-neg') + '">' +
+    '<span>NETO</span><strong>' + (nt.neto >= 0 ? '+' : '-') + '$' + Math.abs(nt.neto).toFixed(2) + '</strong></div>' +
+  '</div>';
+  html += '</div>';
+  document.getElementById('panel-ganancias').innerHTML = html;
+}
+
+function guardarIngresoNT() {
+  var desc  = document.getElementById('nt_desc').value.trim();
+  var monto = parseFloat(document.getElementById('nt_monto').value) || 0;
+  if (!desc || !monto) { alert('Completa descripcion y monto.'); return; }
+  var d = { descripcion: desc, monto_usd: monto, servicio: document.getElementById('nt_srv').value };
+  window.wait('Guardando...');
+  google.script.run
+    .withSuccessHandler(function() {
+      document.getElementById('nt_desc').value  = '';
+      document.getElementById('nt_monto').value = '';
+      cargarGanancias();
+    })
+    .withFailureHandler(function(e) { window.stop(); alert('Error: ' + e.message); })
+    .saveIngresoNT(d);
+}
+</script>

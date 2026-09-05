@@ -1,0 +1,297 @@
+<style>
+  :root {
+    --mag:   #E91E63;
+    --cian:  #00BCD4;
+    --dark:  #121212;
+    --white: #ffffff;
+    --gray:  #f4f4f4;
+    --text:  #333333;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--gray);
+    padding-top: 120px;
+    color: var(--text);
+  }
+
+  /* ── HEADER ── */
+  header {
+    width: 100%;
+    height: 100px;
+    background: var(--dark);
+    border-bottom: 4px solid var(--mag);
+    position: fixed;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  header img { max-height: 80px; }
+
+  /* ── NAV ── */
+  nav {
+    background: var(--white);
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    position: sticky;
+    top: 100px;
+    z-index: 999;
+    border-bottom: 1px solid #ddd;
+    flex-wrap: wrap;
+  }
+  .btn-n {
+    padding: 10px 18px;
+    border: 2px solid var(--cian);
+    background: var(--white);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 11px;
+    text-transform: uppercase;
+    border-radius: 4px;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn-n:hover { background: var(--cian); color: var(--white); }
+
+  /* ── SECCIONES ── */
+  .sec { max-width: 900px; margin: 20px auto; padding: 0 15px; display: none; }
+  .sec.activa { display: block; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border-top: 6px solid var(--mag);
+  }
+
+  .titulo-sec {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0 0 4px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .subtitulo { font-size: 12px; color: #999; margin: 0 0 20px 0; }
+
+  /* ── LOADER ── */
+  #loader {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.88);
+    z-index: 2000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+  }
+  .spin {
+    width: 48px; height: 48px;
+    border: 5px solid #fff;
+    border-top: 5px solid var(--mag);
+    border-radius: 50%;
+    animation: girar 1s linear infinite;
+  }
+  @keyframes girar { to { transform: rotate(360deg); } }
+
+  /* ── GRID ── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+
+  /* ── INPUTS ── */
+  label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+  }
+  input, select {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  input:focus, select:focus { border-color: var(--cian); }
+
+  /* ── BOTONES ── */
+  .btn-m {
+    background: var(--dark);
+    color: #fff;
+    border: none;
+    padding: 14px 20px;
+    width: 100%;
+    cursor: pointer;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 12px;
+    border-bottom: 4px solid var(--cian);
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    transition: opacity 0.2s;
+  }
+  .btn-m:hover { opacity: 0.85; }
+  .btn-auto { background: var(--cian); border-bottom-color: var(--mag); }
+  .btn-wa   { background: #25D366;    border-bottom-color: #128C7E; }
+  .btn-buscar {
+    padding: 12px 16px;
+    background: var(--dark);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* ── TASAS CARDS ── */
+  .tasas-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+  }
+  .tasa-card {
+    background: var(--gray);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    border-left: 4px solid var(--cian);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .tasa-highlight { border-left-color: var(--mag); background: #fff0f5; }
+  .tasa-label { font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; }
+  .tasa-val   { font-size: 24px; font-weight: 900; color: var(--dark); }
+  .tasa-sub   { font-size: 11px; color: #aaa; }
+
+  /* ── RESULTADO CALCULADORA ── */
+  .resultado-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+  .res-item {
+    background: var(--gray);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 3px solid #ddd;
+  }
+  .res-usd { border-top-color: var(--mag); background: #fff0f5; }
+  .res-bs  { border-top-color: #f59e0b; background: #fffbeb; }
+  .res-label { font-size: 10px; font-weight: 700; color: #999; text-transform: uppercase; }
+  .res-val   { font-size: 18px; font-weight: 900; color: var(--dark); }
+
+  /* ── TABLA STOCK ── */
+  .tabla-stock { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tabla-stock thead tr { background: var(--dark); color: var(--cian); }
+  .tabla-stock th { padding: 12px 10px; text-align: center; font-size: 11px; text-transform: uppercase; }
+  .tabla-stock td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
+  .tabla-stock tbody tr:hover { background: #f9f9f9; }
+  .btn-del {
+    background: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #999;
+  }
+  .btn-del:hover { border-color: var(--mag); color: var(--mag); }
+
+  /* ── TABLA ÓRDENES ── */
+  .tabla-ordenes { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .tabla-ordenes thead tr { background: var(--dark); color: var(--cian); }
+  .tabla-ordenes th { padding: 10px 8px; text-align: center; font-size: 10px; text-transform: uppercase; }
+  .tabla-ordenes td { padding: 10px 8px; border-bottom: 1px solid #eee; text-align: center; }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .badge-recibida  { background: #e3f2fd; color: #1565c0; }
+  .badge-proceso   { background: #fff3e0; color: #e65100; }
+  .badge-enviada   { background: #e8f5e9; color: #2e7d32; }
+  .badge-entregada { background: #f3e5f5; color: #6a1b9a; }
+  .badge-cancelada { background: #ffebee; color: #b71c1c; }
+
+  /* ── LISTA ITEMS FACTURA ── */
+  .item-factura {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: var(--gray);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .item-factura button {
+    background: none;
+    border: none;
+    color: var(--mag);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 900;
+  }
+
+  /* ── TOTALES FACTURA ── */
+  .totales-box {
+    background: var(--dark);
+    border-radius: 8px;
+    padding: 20px 25px;
+    margin-top: 20px;
+    color: var(--white);
+  }
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 14px;
+  }
+  .total-row:last-child { border-bottom: none; }
+  .total-saldo strong { color: var(--cian); font-size: 20px; }
+
+  /* ── ESTADO SELECT ── */
+  .estado-sel {
+    font-size: 11px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+  }
+
+  @media (max-width: 600px) {
+    .tasas-cards { grid-template-columns: 1fr; }
+    .card { padding: 20px 15px; }
+  }
+</style>

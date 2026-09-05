@@ -83,6 +83,7 @@ function initFirestore() {
       .sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
     renderProductos(productos);
     renderHeroPreview(productos);
+    iniciarFondoHeroCN(productos);
   }, err => {
     console.error('Error cargando productos desde Firestore:', err);
   });
@@ -446,6 +447,37 @@ function getMainImage(p) {
   return img.startsWith('http') ? img : `assets/products/${img}`;
 }
 
+// ─── FONDO ROTATIVO DEL HERO (panel izquierdo) ────────
+let heroFondoCNIniciado = false;
+function iniciarFondoHeroCN(lista) {
+  if (heroFondoCNIniciado) return; // solo se monta una vez, con las fotos ya cargadas
+  const imagenes = lista.map(getMainImage).filter(Boolean);
+  if (imagenes.length === 0) return;
+  heroFondoCNIniciado = true;
+
+  const barajadas = [...imagenes].sort(() => Math.random() - 0.5);
+  const contenedor = document.getElementById('heroBgCN');
+  if (!contenedor) return;
+
+  let indice = 0;
+  const imgA = document.createElement('img');
+  const imgB = document.createElement('img');
+  imgA.src = barajadas[0];
+  imgA.className = 'visible';
+  contenedor.appendChild(imgA);
+  contenedor.appendChild(imgB);
+  let activa = imgA, inactiva = imgB;
+
+  if (barajadas.length === 1) return;
+  setInterval(() => {
+    indice = (indice + 1) % barajadas.length;
+    inactiva.src = barajadas[indice];
+    inactiva.classList.add('visible');
+    activa.classList.remove('visible');
+    const temp = activa; activa = inactiva; inactiva = temp;
+  }, 4500);
+}
+
 // ─── RENDER PRODUCTOS ─────────────────────────────────
 function renderProductos(lista) {
   const grid    = document.getElementById('productos-grid');
@@ -529,7 +561,7 @@ function cardHTML(p, mini = false) {
   const necesitaSeleccion = tallas.length > 0 || colores.length > 0;
   const btnHTML = necesitaSeleccion
     ? `<button class="btn-carrito btn-talla-pendiente" disabled>${mensajeSeleccionPendiente(tallas.length > 0, colores.length > 0)}</button>`
-    : `<button class="btn-carrito" onclick="agregarAlCarrito('${nomEsc}',${precioCarrito.toFixed(2)},'${p.categoria}','','${p.id}','')">🛒 Agregar</button>`;
+    : `<button class="btn-carrito" onclick="agregarAlCarrito('${nomEsc}',${precioCarrito.toFixed(2)},'${p.categoria}','','${p.id}','')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Agregar</button>`;
 
   return `
     <div class="producto-card reveal${mini ? ' mini' : ''}" data-id="${p.id}" data-nom="${nomAttr}" data-cat="${p.categoria}" data-pvp-usd="${precioCarrito}" data-need-talla="${tallas.length > 0 ? '1' : '0'}" data-need-color="${colores.length > 0 ? '1' : '0'}" data-talla-sel="" data-color-sel="">
@@ -783,7 +815,7 @@ function mensajeSeleccionPendiente(faltaTalla, faltaColor) {
   if (faltaTalla && faltaColor) return 'Elige talla y color';
   if (faltaTalla) return 'Elige una talla';
   if (faltaColor) return 'Elige un color';
-  return '🛒 Agregar';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Agregar';
 }
 
 function actualizarBotonCarritoCard(card) {
@@ -807,7 +839,7 @@ function actualizarBotonCarritoCard(card) {
   const pvp_usd = parseFloat(card.dataset.pvpUsd);
   btnCarr.disabled = false;
   btnCarr.className = 'btn-carrito';
-  btnCarr.innerHTML = '🛒 Agregar';
+  btnCarr.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Agregar';
   btnCarr.onclick = () => agregarAlCarrito(nom, pvp_usd.toFixed(2), cat, tallaSel, id, colorSel);
 }
 
@@ -824,7 +856,7 @@ function actualizarBotonCarritoModal() {
   }
 
   mpBtn.disabled = false;
-  mpBtn.innerHTML = '🛒 Agregar al carrito';
+  mpBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Agregar al carrito';
   mpBtn.onclick = () => { agregarAlCarrito(nom, pvp_usd.toFixed(2), cat, talla, id, color); cerrarProducto(); };
 }
 
@@ -841,7 +873,7 @@ function filtrar(cat) {
   document.querySelectorAll('.subcat-btn').forEach(b => b.classList.remove('activa'));
   const rowGenero = document.getElementById('subcat-genero');
   const rowTipo   = document.getElementById('subcat-tipo');
-  rowGenero.classList.toggle('visible', cat === 'Ropa' || cat === 'Perfumes');
+  rowGenero.classList.toggle('visible', cat === 'Ropa' || cat === 'Perfumes' || cat === 'Calzado');
   if (cat !== 'Ropa') rowTipo.classList.remove('visible');
   renderProductos(productos);
   document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -924,7 +956,7 @@ function actualizarCarritoUI() {
   const count   = carrito.reduce((a, x) => a + x.qty, 0);
 
   const badge = document.getElementById('cart-badge');
-  if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'flex' : 'none'; }
+  if (badge) { badge.textContent = count; }
 
   const ctUsd = document.getElementById('ct-usd');
   const ctBs  = document.getElementById('ct-bs');
@@ -1332,20 +1364,31 @@ function mostrarToast(msg) {
   setTimeout(() => t.classList.remove('visible'), 3000);
 }
 
+// ─── ALTURA REAL DEL NAV (para que el hero quede justo debajo) ──
+function ajustarAlturaNavCN() {
+  const anuncio = document.getElementById('anuncio-bar');
+  const nav = document.getElementById('navbar');
+  const total = (anuncio?.offsetHeight || 0) + (nav?.offsetHeight || 0);
+  document.documentElement.style.setProperty('--nav-total-h', total + 'px');
+}
+window.addEventListener('load', ajustarAlturaNavCN);
+window.addEventListener('resize', ajustarAlturaNavCN);
+
 // ─── NAVBAR SCROLL ────────────────────────────────────
 function initNavbar() {
   const nav  = document.getElementById('navbar');
   const logo = nav?.querySelector('.nav-logo');
+  ajustarAlturaNavCN();
   window.addEventListener('scroll', () => {
     if (!nav) return;
     if (window.scrollY > 80) {
-      nav.style.background     = 'rgba(250,244,232,0.97)';
+      nav.style.background     = 'rgba(241,242,245,0.97)';
       nav.style.backdropFilter = 'blur(14px)';
       nav.style.borderBottom   = '1px solid rgba(240,165,0,0.3)';
       logo?.classList.add('scrolled');
     } else {
-      nav.style.background     = 'transparent';
-      nav.style.backdropFilter = 'none';
+      nav.style.background     = 'rgba(241,242,245,0.97)';
+      nav.style.backdropFilter = 'blur(10px)';
       nav.style.borderBottom   = 'none';
       logo?.classList.remove('scrolled');
     }

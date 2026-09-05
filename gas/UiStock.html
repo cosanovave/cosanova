@@ -1,0 +1,52 @@
+<script>
+  window.dibujar = function() {
+    const filtro = (document.getElementById('s_cat') || {}).value || '';
+    const body   = document.getElementById('tb');
+    const sel1   = document.getElementById('f_i');
+    const sel2   = document.getElementById('f_i2');
+    if (!body) return;
+
+    body.innerHTML = '';
+    const optsBase = '<option value="">-- Seleccionar --</option>';
+    let   opts     = optsBase;
+
+    const filtrado = filtro ? stock.filter(x => x.categoria === filtro) : stock;
+
+    if (filtrado.length === 0) {
+      body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:#999;">No hay productos en esta categoría.</td></tr>';
+    }
+
+    filtrado.forEach(x => {
+      const { pvp_usd, pvp_bs } = window.calcularPrecio(x.inv_cop, 30);
+
+      // Fila de tabla
+      body.innerHTML += `
+        <tr>
+          <td style="text-align:left; font-weight:600;">${x.nom}</td>
+          <td><span style="font-size:11px;background:#f0f0f0;padding:3px 8px;border-radius:10px;">${x.categoria}</span></td>
+          <td>COP ${window.fmt(x.inv_cop, 0)}</td>
+          <td style="color:#E91E63; font-weight:700;">$ ${window.fmt(pvp_usd)}</td>
+          <td style="color:#f59e0b; font-weight:700;">Bs ${window.fmt(pvp_bs, 0)}</td>
+          <td>
+            <button class="btn-del" onclick="eliminarStock('${x.nom.replace(/'/g, "\\'")}')">Eliminar</button>
+          </td>
+        </tr>`;
+
+      // Opción para selectores de factura
+      opts += `<option value="${pvp_usd.toFixed(2)}">${x.nom} — $${window.fmt(pvp_usd)}</option>`;
+    });
+
+    if (sel1) sel1.innerHTML = opts;
+    if (sel2) sel2.innerHTML = opts;
+  };
+
+  window.eliminarStock = function(nom) {
+    if (!confirm('¿Eliminar "' + nom + '" del stock?')) return;
+    window.wait('Eliminando...');
+    google.script.run.withSuccessHandler(function(s) {
+      stock = s;
+      window.dibujar();
+      window.stop();
+    }).deleteStock(nom);
+  };
+</script>

@@ -1,0 +1,102 @@
+<script>
+  var ESTADOS = ['Recibida', 'En proceso', 'Enviada', 'Entregada', 'Cancelada'];
+  var BADGE_CLASS = {
+    'Recibida':   'badge-recibida',
+    'En proceso': 'badge-proceso',
+    'Enviada':    'badge-enviada',
+    'Entregada':  'badge-entregada',
+    'Cancelada':  'badge-cancelada'
+  };
+
+  var WA_MENSAJES = {
+    'Recibida':   'Hola {cliente} 👋, tu pedido *CN-{num}* ha sido *recibido* por Cosa Nova. Lo estamos verificando. ¡Gracias por tu compra! 🛍️',
+    'En proceso': 'Hola {cliente} 👋, tu pedido *CN-{num}* está *en proceso* de preparación. Te avisamos cuando sea enviado. ✨',
+    'Enviada':    'Hola {cliente} 👋, ¡buenas noticias! Tu pedido *CN-{num}* ha sido *enviado* 🚚. Llegará en aproximadamente 7 días hábiles.',
+    'Entregada':  'Hola {cliente} 👋, tu pedido *CN-{num}* ha sido *entregado* ✅. ¡Esperamos que lo disfrutes! Gracias por comprar en Cosa Nova 🌟',
+    'Cancelada':  'Hola {cliente}, lamentamos informarte que tu pedido *CN-{num}* ha sido *cancelado* ❌. Contáctanos para más información.'
+  };
+
+  function formatPago(pago) {
+    if (!pago) return '';
+    var partes = pago.split(' | ');
+    var metodo = partes[0] || '';
+    var url    = partes[1] || '';
+    if (url) {
+      return metodo + ' | <a href="' + url + '" target="_blank" style="color:#F0A500; font-weight:600;">Ver comprobante</a>';
+    }
+    return metodo;
+  }
+
+  window.cargarOrdenes = function() {
+    window.wait('Cargando órdenes...');
+    google.script.run.withSuccessHandler(function(ordenes) {
+      window.stop();
+      window.renderOrdenes(ordenes);
+    }).getOrdenes();
+  };
+
+  window.renderOrdenes = function(ordenes) {
+    window._ordenesData = ordenes;
+
+    var cont = document.getElementById('tabla-ordenes');
+    if (!cont) return;
+
+    if (!ordenes || ordenes.length === 0) {
+      cont.innerHTML = '<p style="text-align:center;color:#999;padding:30px;">No hay órdenes registradas aún.</p>';
+      return;
+    }
+
+    ordenes.sort(function(a, b) { return b.num - a.num; });
+
+    var html = '<div style="overflow-x:auto;"><table class="tabla-ordenes"><thead><tr>' +
+      '<th>N°</th><th>Fecha</th><th>Cliente</th><th>Cédula</th><th>Teléfono</th>' +
+      '<th>Dirección de entrega</th><th>Total USD</th><th>Total Bs</th><th>Pago</th><th>Estado</th><th>Acción</th>' +
+      '</tr></thead><tbody>';
+
+    ordenes.forEach(function(o) {
+      var badgeClass  = BADGE_CLASS[o.estado] || 'badge-recibida';
+      var optsEstado  = ESTADOS.map(function(e) {
+        return '<option value="' + e + '"' + (e === o.estado ? ' selected' : '') + '>' + e + '</option>';
+      }).join('');
+      var dirHTML = (o.ciudad ? '<span style="font-weight:600;color:#0D2137;">' + o.ciudad + '</span><br>' : '') +
+                   (o.direccion || '<span style="color:#bbb;">Sin dirección</span>');
+
+      html +=
+        '<tr>' +
+          '<td><strong>CN-' + String(o.num).padStart(4,'0') + '</strong></td>' +
+          '<td>' + o.fecha + '</td>' +
+          '<td style="text-align:left;">' + o.cliente + '</td>' +
+          '<td style="font-size:11px;color:#888;">' + (o.doc || '—') + '</td>' +
+          '<td>' + o.tel + '</td>' +
+          '<td style="text-align:left;font-size:11px;max-width:180px;">' + dirHTML + '</td>' +
+          '<td style="color:#E91E63;font-weight:700;">$ ' + window.fmt(o.total_usd) + '</td>' +
+          '<td style="color:#f59e0b;font-weight:700;">Bs ' + window.fmt(o.total_bs, 0) + '</td>' +
+          '<td style="font-size:11px;">' + formatPago(o.pago) + '</td>' +
+          '<td><span class="badge ' + badgeClass + '">' + o.estado + '</span></td>' +
+          '<td style="white-space:nowrap;">' +
+            '<button class="btn-m" style="padding:5px 10px;font-size:11px;margin-bottom:5px;width:100%;background:#0D2137;color:#F0A500;" onclick="window.facturarOrden(' + o.num + ')">📄 Facturar</button>' +
+            '<select class="estado-sel" onchange="cambiarEstado(' + o.num + ', this.value, \'' + o.tel + '\', \'' + o.cliente + '\')">' + optsEstado + '</select>' +
+          '</td>' +
+        '</tr>';
+    });
+
+    html += '</tbody></table></div>';
+    cont.innerHTML = html;
+  };
+
+  window.cambiarEstado = function(num, estado, tel, cliente) {
+    var plantilla = WA_MENSAJES[estado];
+    if (plantilla && tel) {
+      var mensaje  = plantilla
+        .replace('{cliente}', cliente || 'cliente')
+        .replace('{num}', String(num).padStart(4, '0'));
+      var telefono = tel.toString().replace(/\D/g, '');
+      window.open('https://wa.me/' + telefono + '?text=' + encodeURIComponent(mensaje), '_blank');
+    }
+    window.wait('Actualizando estado...');
+    google.script.run.withSuccessHandler(function() {
+      window.stop();
+      window.cargarOrdenes();
+    }).updateEstado(num, estado);
+  };
+</script>

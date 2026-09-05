@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <?!= include('Estilos') ?>
+</head>
+<body>
+
+<div id="loader">
+  <div class="loader-logo-wrap">
+    <div class="loader-ring"></div>
+    <img src="https://raw.githubusercontent.com/cosanovave/logo_cosanova/refs/heads/main/logo_cosanova.jpg"
+         class="loader-logo-img" alt="Cosa Nova">
+  </div>
+  <p id="txt-L">Cargando...</p>
+</div>
+
+<style>
+  #loader {
+    position: fixed;
+    inset: 0;
+    background: #0D2137;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    gap: 24px;
+  }
+  #txt-L {
+    color: rgba(240,165,0,0.85);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin: 0;
+  }
+  .loader-logo-wrap {
+    position: relative;
+    width: 110px;
+    height: 110px;
+  }
+  .loader-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 3px solid rgba(240,165,0,0.15);
+    border-top-color: #F0A500;
+    border-right-color: rgba(240,165,0,0.5);
+    animation: loaderGiro 1s linear infinite;
+  }
+  .loader-logo-img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    object-fit: cover;
+    animation: loaderPulso 2s ease-in-out infinite;
+  }
+  @keyframes loaderGiro {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes loaderPulso {
+    0%, 100% { opacity: 1;   transform: translate(-50%, -50%) scale(1);    }
+    50%       { opacity: 0.8; transform: translate(-50%, -50%) scale(0.93); }
+  }
+</style>
+
+<header>
+  <img id="logo" src="https://raw.githubusercontent.com/cosanovave/logo_cosanova/refs/heads/main/logo_cosanova.jpg" alt="Cosa Nova">
+</header>
+
+<nav>
+  <button class="btn-n" onclick="cambiarSeccion('tasas')">Tasas</button>
+  <button class="btn-n" onclick="cambiarSeccion('analiz')">Calculadora</button>
+  <button class="btn-n" onclick="cambiarSeccion('stock')">Stock</button>
+  <button class="btn-n" onclick="cambiarSeccion('ordenes')">Órdenes</button>
+  <button class="btn-n" onclick="cambiarSeccion('apartados'); cargarApartados();">Apartados</button>
+  <button class="btn-n" onclick="cambiarSeccion('factura')">Factura</button>
+  <button class="btn-n" onclick="cambiarSeccion('empresa'); cargarEmpresa();">Empresa</button>
+</nav>
+
+<!-- ══ TASAS ══════════════════════════════ -->
+<section id="sec-tasas" class="sec activa">
+  <div class="card">
+    <h2 class="titulo-sec">Tasas de Cambio</h2>
+    <p class="subtitulo">Última actualización: <span id="tasas-fecha">—</span></p>
+
+    <div class="grid">
+      <div>
+        <label>TRM — COP por USD</label>
+        <input type="number" id="t_trm" placeholder="4200">
+      </div>
+      <div>
+        <label>BCV — Bs por USD</label>
+        <input type="number" id="t_bcv" placeholder="50">
+      </div>
+      <div>
+        <label>Binance — Bs por USDT</label>
+        <input type="number" id="t_bin" placeholder="65">
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap;">
+      <button class="btn-m btn-auto" onclick="autoFetch()">Auto TRM + BCV</button>
+      <button class="btn-m" onclick="guardarTasas()">Guardar Tasas</button>
+    </div>
+
+    <div id="tasas-display" class="tasas-cards" style="display:none; margin-top:25px;">
+      <div class="tasa-card">
+        <span class="tasa-label">TRM</span>
+        <span class="tasa-val" id="d-trm">—</span>
+        <span class="tasa-sub">COP / USD</span>
+      </div>
+      <div class="tasa-card">
+        <span class="tasa-label">BCV</span>
+        <span class="tasa-val" id="d-bcv">—</span>
+        <span class="tasa-sub">Bs / USD</span>
+      </div>
+      <div class="tasa-card tasa-highlight">
+        <span class="tasa-label">Binance</span>
+        <span class="tasa-val" id="d-bin">—</span>
+        <span class="tasa-sub">Bs / USDT</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CALCULADORA ════════════════════════ -->
+<section id="sec-analiz" class="sec">
+  <div class="card">
+    <h2 class="titulo-sec">Calculadora de Precio</h2>
+
+    <div class="grid">
+      <div>
+        <label>Nombre del Producto</label>
+        <input type="text" id="c_n" placeholder="Ej: Dior Sauvage 100ml">
+      </div>
+      <div>
+        <label>Categoría</label>
+        <select id="c_cat" onchange="toggleRopaFields()">
+          <option value="Perfumes">Perfumes y Fragancias</option>
+          <option value="Belleza">Belleza y Cuidado Personal</option>
+          <option value="Ropa">Ropa y Accesorios</option>
+          <option value="General">General</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Campos adicionales para Perfumes y Ropa -->
+    <div id="genero-extra" style="display:none; margin-top:10px;">
+      <div class="grid">
+        <div>
+          <label>Género</label>
+          <select id="c_genero">
+            <option value="">— Seleccionar —</option>
+            <option value="Hombre">Hombre</option>
+            <option value="Mujer">Mujer</option>
+            <option value="Niños">Niños</option>
+            <option value="Niñas">Niñas</option>
+          </select>
+        </div>
+        <div id="subtipo-wrap" style="display:none;">
+          <label>Tipo de ropa</label>
+          <select id="c_subtipo">
+            <option value="">— Seleccionar —</option>
+            <option value="Jeans">Jeans</option>
+          </select>
+        </div>
+      </div>
+      <!-- Tallas: solo para Ropa -->
+      <div id="tallas-wrap" style="display:none; margin-top:10px;">
+        <label>Tallas disponibles</label>
+        <input type="text" id="c_tallas" placeholder="S|M|L|XL  ó  S:80000|M:85000|L:90000">
+        <p style="font-size:11px; color:#999; margin-top:4px;">
+          Mismo precio: <strong>S|M|L|XL</strong> &nbsp;·&nbsp; Precio por talla (COP): <strong>S:80000|M:85000</strong>
+        </p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <label>Costo del Producto (COP)</label>
+        <input type="number" id="c_cop" placeholder="80000">
+      </div>
+      <div>
+        <label>Peso del Paquete Total (kg)</label>
+        <input type="number" id="c_peso" placeholder="1.5" step="0.01">
+      </div>
+      <div>
+        <label>Unidades en el Paquete</label>
+        <input type="number" id="c_uds" placeholder="1" value="1" min="1">
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <label>Valor Declarado Total (COP)</label>
+        <input type="number" id="c_decl" placeholder="300000">
+      </div>
+      <div>
+        <label>Destino</label>
+        <select id="c_dest">
+          <option value="pap">Maracay / Valencia / PAP</option>
+          <option value="resto">Resto de Venezuela</option>
+        </select>
+      </div>
+      <div>
+        <label>Margen de Ganancia (%)</label>
+        <input type="number" id="c_margen" value="30" min="0">
+      </div>
+    </div>
+
+    <button class="btn-m" onclick="calcular()" style="margin-top:5px;">Calcular Precio</button>
+
+    <div id="box-r" style="display:none; margin-top:25px;">
+      <div class="resultado-grid">
+        <div class="res-item">
+          <span class="res-label">Flete por unidad</span>
+          <span class="res-val" id="r-flete">—</span>
+        </div>
+        <div class="res-item">
+          <span class="res-label">Seguro por unidad</span>
+          <span class="res-val" id="r-seguro">—</span>
+        </div>
+        <div class="res-item">
+          <span class="res-label">Inversión (USD)</span>
+          <span class="res-val" id="r-inv">—</span>
+        </div>
+        <div class="res-item res-usd">
+          <span class="res-label">PVP en USD</span>
+          <span class="res-val" id="r-usd">—</span>
+        </div>
+        <div class="res-item res-bs">
+          <span class="res-label">Equivalente en Bs</span>
+          <span class="res-val" id="r-bs">—</span>
+        </div>
+      </div>
+      <button class="btn-m" onclick="guardar()" style="margin-top:15px;">Guardar en Stock</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STOCK ══════════════════════════════ -->
+<section id="sec-stock" class="sec">
+  <div class="card">
+    <h2 class="titulo-sec">Inventario y Precios</h2>
+    <p class="subtitulo">Precios actualizados con tasas del día</p>
+
+    <div style="margin-bottom:15px;">
+      <label>Filtrar por categoría</label>
+      <select id="s_cat" onchange="dibujar()" style="margin-top:5px;">
+        <option value="">Todas</option>
+        <option value="Perfumes">Perfumes</option>
+        <option value="Belleza">Belleza</option>
+        <option value="Ropa">Ropa</option>
+        <option value="General">General</option>
+      </select>
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table class="tabla-stock">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Inv. COP</th>
+            <th>PVP USD</th>
+            <th>PVP Bs</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tb"></tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:20px; padding-top:20px; border-top:1px solid #eee;">
+      <label>Seleccionar producto para factura</label>
+      <select id="f_i" style="margin-top:5px; width:100%;"></select>
+    </div>
+  </div>
+</section>
+
+<!-- ══ ÓRDENES ════════════════════════════ -->
+<section id="sec-ordenes" class="sec">
+  <div class="card">
+    <h2 class="titulo-sec">Gestión de Órdenes</h2>
+    <button class="btn-m btn-auto" onclick="cargarOrdenes()" style="margin-bottom:20px; width:auto; padding:12px 24px;">Actualizar</button>
+    <div id="tabla-ordenes"><p style="color:#999; text-align:center;">Cargando órdenes...</p></div>
+  </div>
+</section>
+
+<!-- ══ APARTADOS ══════════════════════════ -->
+<section id="sec-apartados" class="sec">
+  <div class="card">
+    <h2 class="titulo-sec">Apartados por Abono</h2>
+    <button class="btn-m btn-auto" onclick="cargarApartados()" style="margin-bottom:20px; width:auto; padding:12px 24px;">Actualizar</button>
+    <div id="tabla-apartados"><p style="color:#999; text-align:center;">Cargando apartados...</p></div>
+  </div>
+</section>
+
+<!-- ══ FACTURA ════════════════════════════ -->
+<section id="sec-factura" class="sec">
+  <div class="card">
+    <h2 class="titulo-sec">Generar Factura</h2>
+
+    <div class="grid">
+      <div>
+        <label>Cédula / Doc. del Cliente</label>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="f_d" placeholder="V-12345678" style="flex:1;">
+          <button onclick="buscarCl()" class="btn-buscar">Buscar</button>
+        </div>
+        <div id="mini-c" style="display:none; font-size:11px; color:#999; margin-top:4px;">Buscando...</div>
+      </div>
+      <div>
+        <label>Nombre del Cliente</label>
+        <input type="text" id="f_n" placeholder="Nombre completo">
+      </div>
+    </div>
+
+    <div class="grid">
+      <div>
+        <label>Teléfono</label>
+        <input type="text" id="f_t" placeholder="+58 412 0000000">
+      </div>
+      <div>
+        <label>Dirección / Ciudad</label>
+        <input type="text" id="f_dir" placeholder="Maracay, Aragua">
+      </div>
+      <div>
+        <label>Método de Pago</label>
+        <select id="f_met">
+          <option value="USDT">USDT / Cripto</option>
+          <option value="Zelle">Zelle</option>
+          <option value="Bolívares">Bolívares (Transferencia)</option>
+          <option value="Transferencia COL">Transferencia Colombia</option>
+        </select>
+      </div>
+    </div>
+
+    <hr style="margin:20px 0; border:none; border-top:1px solid #eee;">
+
+    <div class="grid">
+      <div>
+        <label>Producto</label>
+        <select id="f_i2" style="width:100%;"></select>
+      </div>
+      <div>
+        <label>Precio (USD)</label>
+        <input type="number" id="f_p" placeholder="0.00" step="0.01" oninput="totales()">
+      </div>
+      <div>
+        <label>Cantidad</label>
+        <input type="number" id="f_q" value="1" min="1" oninput="totales()">
+      </div>
+    </div>
+
+    <button class="btn-m" onclick="agregarItemALista()" style="margin-bottom:15px;">+ Agregar Producto</button>
+
+    <div id="lista-items" style="margin-bottom:15px;"></div>
+
+    <div style="max-width:300px;">
+      <label>Abono / Adelanto (USD)</label>
+      <input type="number" id="f_a" value="0" step="0.01" oninput="totales()">
+    </div>
+
+    <div class="totales-box">
+      <div class="total-row">
+        <span>Total USD:</span>
+        <strong id="t_t">$ 0.00</strong>
+      </div>
+      <div class="total-row">
+        <span>Equivalente en Bs:</span>
+        <strong id="t_bs">Bs. 0</strong>
+      </div>
+      <div class="total-row total-saldo">
+        <span>SALDO:</span>
+        <strong id="t_s">$ 0.00</strong>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+      <button id="btn-gen" class="btn-m" onclick="validar()">Generar Factura PDF</button>
+      <button id="btn-wa" class="btn-m btn-wa" onclick="enviarWA()" style="display:none;">Enviar por WhatsApp</button>
+    </div>
+  </div>
+</section>
+
+<!-- == EMPRESA =========================================== -->
+<section id="sec-empresa" class="sec">
+  <div class="card">
+    <h2 class="titulo-sec">Administracion Empresa</h2>
+
+    <div class="emp-subnav">
+      <button class="emp-tab emp-tab-act" data-t="socios"    onclick="empTab('socios');    cargarSocios();">Socios</button>
+      <button class="emp-tab"             data-t="gastos"    onclick="empTab('gastos');    cargarGastos();">Gastos</button>
+      <button class="emp-tab"             data-t="ganancias" onclick="empTab('ganancias'); cargarGanancias();">Ganancias</button>
+    </div>
+
+    <!-- Socios -->
+    <div id="emp-socios" class="emp-sec">
+      <div class="sub-form">
+        <p class="sub-titulo">Registrar Inversion</p>
+        <div class="grid">
+          <div><label>Socio</label><input type="text" id="s_socio" placeholder="Nombre del socio"></div>
+          <div><label>Filial</label>
+            <select id="s_entidad">
+              <option value="Cosa Nova">Cosa Nova Market</option>
+              <option value="Novatech">Novatech</option>
+            </select>
+          </div>
+          <div><label>Monto (USD)</label><input type="number" id="s_monto" placeholder="0.00" step="0.01" min="0"></div>
+        </div>
+        <button class="btn-m" onclick="guardarSocio()">+ Registrar</button>
+      </div>
+      <div id="tabla-socios" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- Gastos -->
+    <div id="emp-gastos" class="emp-sec" style="display:none;">
+      <div class="sub-form">
+        <p class="sub-titulo">Gastos Operativos</p>
+        <p class="sub-desc">Membresias, publicidad, herramientas y otros gastos fijos.</p>
+        <div class="grid">
+          <div><label>Descripcion</label><input type="text" id="g_desc" placeholder="Ej: Membresia Canva, Google Ads..."></div>
+          <div><label>Monto (USD)</label><input type="number" id="g_monto" placeholder="0.00" step="0.01" min="0"></div>
+          <div><label>Filial</label>
+            <select id="g_filial">
+              <option value="Cosa Nova">Cosa Nova Market</option>
+              <option value="Novatech">Novatech</option>
+            </select>
+          </div>
+          <div><label>Categoria</label>
+            <select id="g_cat">
+              <option value="Membresia">Membresia</option>
+              <option value="Publicidad">Publicidad</option>
+              <option value="Herramienta">Herramienta</option>
+              <option value="Logistica">Logistica</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-m" onclick="guardarGastoOp()">+ Registrar Gasto</button>
+      </div>
+      <div id="tabla-gastos-op" style="margin-bottom:30px;"></div>
+
+      <hr style="border:none;border-top:2px solid #eee;margin:10px 0 24px;">
+
+      <div class="sub-form">
+        <p class="sub-titulo">Compras con Inversion</p>
+        <p class="sub-desc">Producto comprado con la inversion. Si el cliente dio adelanto se descuenta del neto. Margen objetivo: 30%.</p>
+        <div class="grid">
+          <div><label>Producto</label><input type="text" id="c_prod" placeholder="Ej: Perfume Dior Sauvage 100ml"></div>
+          <div><label>Cliente (opcional)</label><input type="text" id="c_cliente" placeholder="Nombre del cliente"></div>
+        </div>
+        <div class="grid">
+          <div><label>Costo (COP)</label><input type="number" id="c_costo_cop" placeholder="80000" step="1" min="0" oninput="calcNeto()"></div>
+          <div><label>Equivalente USD (TRM dia)</label><div class="neto-display" style="background:#f4f6ff;border:1px solid #c5cae9;color:#0D2137;"><span id="c_usd_display">$0.00</span></div></div>
+          <div><label>Adelanto del cliente (USD)</label><input type="number" id="c_adelanto" placeholder="0.00" step="0.01" min="0" value="0" oninput="calcNeto()"></div>
+          <div><label>Neto de inversion</label><div class="neto-display neto-red"><span id="c_neto_display">$0.00</span></div></div>
+          <div><label>PVP min. referencia</label><div class="neto-display neto-green"><span id="c_pvp_display">$0.00</span></div></div>
+        </div>
+        <div class="grid">
+          <div><label>Filial</label>
+            <select id="c_filial">
+              <option value="Cosa Nova">Cosa Nova Market</option>
+              <option value="Novatech">Novatech</option>
+            </select>
+          </div>
+          <div><label>Estado del cobro</label>
+            <select id="c_estado">
+              <option value="Pendiente">Pendiente</option>
+              <option value="Cobrado">Cobrado</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-m" onclick="guardarCompra()">+ Registrar Compra</button>
+      </div>
+      <div id="tabla-compras"></div>
+    </div>
+
+    <!-- Ganancias -->
+    <div id="emp-ganancias" class="emp-sec" style="display:none;">
+      <div id="panel-ganancias" style="margin-bottom:30px;"></div>
+      <div class="sub-form">
+        <p class="sub-titulo">Registrar Ingreso Novatech</p>
+        <div class="grid">
+          <div><label>Descripcion / Cliente</label><input type="text" id="nt_desc" placeholder="Ej: Landing page para Luis Garcia"></div>
+          <div><label>Monto (USD)</label><input type="number" id="nt_monto" placeholder="0.00" step="0.01" min="0"></div>
+          <div><label>Servicio</label>
+            <select id="nt_srv">
+              <option value="Landing Page">Landing Page</option>
+              <option value="Marketing Basico">Marketing Basico</option>
+              <option value="Marketing Pro">Marketing Pro</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-m" onclick="guardarIngresoNT()">+ Registrar Ingreso</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ ESTADO GLOBAL ══════════════════════ -->
+<script>
+  var stock       = [];
+  var tasas       = { trm: 4200, bcv: 50, binance: 65 };
+  var itemsFactura = [];
+  var datC        = {};
+  var urlF        = '';
+  var numFact     = 0;
+
+  window.onload = function() {
+    window.wait("Cargando datos...");
+    google.script.run
+      .withSuccessHandler(function(t) {
+        tasas = t;
+        google.script.run
+          .withSuccessHandler(function(s) {
+            stock = s;
+            window.renderTasas();
+            var _origDib = window.dibujar;
+            window.dibujar = function() { _origDib.apply(this, arguments); addCopEditButtons(); };
+            window.dibujar();
+            window.poblarSelectores();
+            window.stop();
+            cambiarSeccion('tasas');
+          })
+          .withFailureHandler(function(e) { window.stop(); alert('Error getStock: ' + e.message); })
+          .getStock();
+      })
+      .withFailureHandler(function(e) { window.stop(); alert('Error getTasas: ' + e.message); })
+      .getTasas();
+  };
+
+  function addCopEditButtons() {
+    var rows = document.querySelectorAll('#tb tr');
+    rows.forEach(function(row) {
+      var cells = row.cells;
+      if (!cells || cells.length < 3) return;
+      if (cells[2].querySelector('.btn-cop-edit')) return;
+      var nombre = cells[0].textContent.trim();
+      var btn = document.createElement('button');
+      btn.className = 'btn-cop-edit';
+      btn.textContent = '✏';
+      btn.title = 'Editar Inv. COP';
+      btn.style.cssText = 'margin-left:6px;padding:1px 5px;font-size:11px;cursor:pointer;border:1px solid #ccc;border-radius:3px;background:#f8f8f8;vertical-align:middle;';
+      btn.onclick = function(e) { e.stopPropagation(); editarCop(nombre); };
+      cells[2].appendChild(btn);
+    });
+  }
+
+  function editarCop(nombre) {
+    var item = null;
+    for (var i = 0; i < stock.length; i++) {
+      if (stock[i].nom === nombre) { item = stock[i]; break; }
+    }
+    var actual = item ? item.inv_cop : '';
+    var nuevo = prompt('Nuevo Inv. COP para:\n' + nombre, actual);
+    if (nuevo === null) return;
+    var valor = parseInt(nuevo.replace(/[^0-9]/g, ''), 10);
+    if (!valor || valor <= 0) { alert('Valor no valido.'); return; }
+    window.wait('Guardando...');
+    google.script.run
+      .withSuccessHandler(function(s) { stock = s; window.dibujar(); window.stop(); })
+      .withFailureHandler(function(e) { window.stop(); alert('Error: ' + e.message); })
+      .updateInvCop(nombre, valor);
+  }
+
+  function toggleRopaFields() {
+    var cat       = document.getElementById('c_cat').value;
+    var extra     = document.getElementById('genero-extra');
+    var tipoWrap  = document.getElementById('subtipo-wrap');
+    var tallasWrap = document.getElementById('tallas-wrap');
+    if (cat === 'Ropa' || cat === 'Perfumes') {
+      extra.style.display      = 'block';
+      tipoWrap.style.display   = cat === 'Ropa' ? 'block' : 'none';
+      tallasWrap.style.display = cat === 'Ropa' ? 'block' : 'none';
+      if (cat !== 'Ropa') {
+        document.getElementById('c_subtipo').value = '';
+        document.getElementById('c_tallas').value  = '';
+      }
+    } else {
+      extra.style.display      = 'none';
+      tipoWrap.style.display   = 'none';
+      tallasWrap.style.display = 'none';
+      document.getElementById('c_genero').value  = '';
+      document.getElementById('c_subtipo').value = '';
+      document.getElementById('c_tallas').value  = '';
+    }
+  }
+</script>
+
+<?!= include('UiCommon') ?>
+<?!= include('UiTasas') ?>
+<?!= include('UiAnalizador') ?>
+<?!= include('UiStock') ?>
+<?!= include('UiOrdenes') ?>
+<?!= include('UiApartados') ?>
+<?!= include('UiFactura') ?>
+<?!= include('UiEmpresa') ?>
+<?!= include('PdfMotor') ?>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+</body>
+</html>

@@ -116,28 +116,52 @@
   <!-- ══ NAV ════════════════════════════════════════════ -->
   <nav id="navbar">
     <div class="nav-inner">
-      <img src="assets/logo_sin_fondo.png" alt="Cosa Nova" class="nav-logo">
-      <div class="nav-links">
-        <a href="#catalogo">Productos</a>
+      <div class="nav-links nav-links-left">
+        <div class="nav-dropdown">
+          <a href="#catalogo">Productos</a>
+          <div class="nav-dropdown-panel" onmouseleave="volverCategoriasNav()">
+            <div class="nav-dropdown-panel-inner">
+              <div class="nav-dd-nivel" id="navDdCategorias">
+                <a href="#" onclick="event.preventDefault(); navAbrirCategoria('Perfumes')">Perfumes</a>
+                <a href="#catalogo" onclick="filtrar('Belleza')">Belleza</a>
+                <a href="#" onclick="event.preventDefault(); navAbrirCategoria('Ropa')">Ropa</a>
+                <a href="#" onclick="event.preventDefault(); navAbrirCategoria('Calzado')">Calzado</a>
+                <a href="#catalogo" onclick="filtrar('General')">General</a>
+              </div>
+              <div class="nav-dd-nivel" id="navDdGenero" style="display:none">
+                <button type="button" class="nav-dd-volver" onclick="volverCategoriasNav()">‹ Volver</button>
+                <a href="#catalogo" onclick="navFiltrarCategoriaGenero('Hombre')">Hombre</a>
+                <a href="#catalogo" onclick="navFiltrarCategoriaGenero('Mujer')">Mujer</a>
+                <a href="#catalogo" class="nav-dd-genero-extra" onclick="navFiltrarCategoriaGenero('Niños')">Niños</a>
+                <a href="#catalogo" class="nav-dd-genero-extra" onclick="navFiltrarCategoriaGenero('Niñas')">Niñas</a>
+              </div>
+            </div>
+          </div>
+        </div>
         <a href="#como-funciona">Cómo funciona</a>
         <a href="#pagos">Pagos</a>
-        <a href="#contacto">Contacto</a>
-        <a href="#resenas">Reseñas</a>
       </div>
-      <button class="nav-user-btn" id="nav-user-btn" onclick="abrirAuth()">
-        <div id="nav-user-avatar" class="nav-user-avatar">U</div>
-        <svg class="nav-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        <span id="nav-user-label">Ingresar</span>
-      </button>
-      <button class="cart-btn" onclick="toggleCart()">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        <span id="cart-badge" class="cart-badge" style="display:none">0</span>
-      </button>
-      <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menú">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
+      <img src="assets/nuevo-logo-sin.png" alt="Cosa Nova" class="nav-logo">
+      <div class="nav-actions-group">
+        <div class="nav-links nav-links-right">
+          <a href="#contacto">Contacto</a>
+          <a href="#resenas">Reseñas</a>
+        </div>
+        <button class="nav-user-btn" id="nav-user-btn" onclick="abrirAuth()">
+          <div id="nav-user-avatar" class="nav-user-avatar">U</div>
+          <svg class="nav-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span id="nav-user-label">Ingresar</span>
+        </button>
+        <button class="cart-btn" onclick="toggleCart()">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-btn-label">Carrito (<span id="cart-badge" class="cart-badge">0</span>)</span>
+        </button>
+        <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menú">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
     </div>
   </nav>
 
@@ -145,7 +169,20 @@
   <div id="mobile-menu-overlay" class="mobile-menu-overlay" onclick="cerrarMobileMenu()"></div>
   <div id="mobile-menu" class="mobile-menu" role="navigation">
     <button class="mobile-menu-close" onclick="cerrarMobileMenu()" aria-label="Cerrar menú">×</button>
-    <a href="#catalogo" onclick="cerrarMobileMenu()">🛍️ Productos</a>
+
+    <button type="button" class="mobile-menu-toggle-sub" onclick="toggleMobileMenuSub()">
+      🛍️ Productos <span class="mobile-menu-chevron" id="mobile-menu-chevron">›</span>
+    </button>
+    <div class="mobile-menu-submenu" id="mobile-menu-submenu">
+      <div class="mobile-menu-submenu-inner">
+        <a href="#catalogo" onclick="filtrar('Perfumes'); cerrarMobileMenu()">Perfumes</a>
+        <a href="#catalogo" onclick="filtrar('Belleza'); cerrarMobileMenu()">Belleza</a>
+        <a href="#catalogo" onclick="filtrar('Ropa'); cerrarMobileMenu()">Ropa</a>
+        <a href="#catalogo" onclick="filtrar('Calzado'); cerrarMobileMenu()">Calzado</a>
+        <a href="#catalogo" onclick="filtrar('General'); cerrarMobileMenu()">General</a>
+      </div>
+    </div>
+
     <a href="#como-funciona" onclick="cerrarMobileMenu()">❓ Cómo funciona</a>
     <a href="#pagos" onclick="cerrarMobileMenu()">💳 Métodos de pago</a>
     <a href="#confianza" onclick="cerrarMobileMenu()">🛡️ Garantías</a>
@@ -339,66 +376,42 @@
   </div>
 
   <!-- ══ HERO ═══════════════════════════════════════════ -->
-  <section id="hero">
+  <section id="hero" class="hero-split-cn">
 
-    <!-- Canvas de partículas animadas -->
-    <canvas id="canvas-particulas"></canvas>
+    <!-- IZQUIERDA: foto real de producto, rotando aleatoriamente -->
+    <a href="#catalogo" class="hero-panel-cn hero-panel-cn-img">
+      <div class="hero-panel-bg-cn" id="heroBgCN"></div>
+    </a>
 
-    <!-- Orbes suaves de fondo -->
-    <div class="hero-bg">
-      <div class="orb orb-1"></div>
-      <div class="orb orb-2"></div>
-      <div class="orb orb-3"></div>
-    </div>
-
-    <!-- Layout 3 columnas -->
-    <div class="hero-layout">
-
-      <!-- IZQUIERDA: Stats de confianza -->
-      <div class="hero-side hero-side-left">
-        <div class="hero-badge">
-          <span class="hero-badge-icon">🚚</span>
-          <div>
-            <strong>7 días hábiles</strong>
-            <span>Entrega Colombia → Venezuela</span>
-          </div>
-        </div>
-        <div class="hero-badge">
-          <span class="hero-badge-icon">🛡️</span>
-          <div>
-            <strong>100% asegurado</strong>
-            <span>Mercancía protegida en todo momento</span>
-          </div>
-        </div>
-        <div class="hero-badge">
-          <span class="hero-badge-icon">💬</span>
-          <div>
-            <strong>Atención real</strong>
-            <span>WhatsApp · respuesta en minutos</span>
-          </div>
-        </div>
-        <div class="hero-badge">
-          <span class="hero-badge-icon">📦</span>
-          <div>
-            <strong>Tracking en vivo</strong>
-            <span>Sigue tu paquete en tiempo real</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- CENTRO: Texto principal -->
-      <div class="hero-content">
-        <div class="hero-ruta">
-          <span>🇨🇴 Colombia</span>
-          <span class="ruta-flecha">→</span>
-          <span>🇻🇪 Venezuela</span>
-        </div>
+    <!-- DERECHA: información -->
+    <div class="hero-panel-cn hero-panel-cn-texto">
+      <div class="hero-texto-inner">
         <h1 class="hero-titulo">
           Fácil, seguro y al mejor precio.<br>
           <span class="gold">Así se compra en Cosa Nova.</span>
         </h1>
+
+        <div class="hero-trust-cn">
+          <div class="hero-badge">
+            <svg class="hero-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="7" width="14" height="10"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></svg>
+            <div><strong>7 días hábiles</strong><span>Entrega Colombia → Venezuela</span></div>
+          </div>
+          <div class="hero-badge">
+            <svg class="hero-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2 4 5v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V5z"/></svg>
+            <div><strong>100% asegurado</strong><span>Mercancía protegida en todo momento</span></div>
+          </div>
+          <div class="hero-badge">
+            <svg class="hero-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            <div><strong>Atención real</strong><span>WhatsApp · respuesta en minutos</span></div>
+          </div>
+          <div class="hero-badge">
+            <svg class="hero-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+            <div><strong>Tracking en vivo</strong><span>Sigue tu paquete en tiempo real</span></div>
+          </div>
+        </div>
+
         <p class="hero-sub">
-          Perfumes 1.1 · Belleza · Ropa y más — envío seguro en 7 días hábiles.
+          Perfumes · Belleza · Ropa y más — envío seguro en 7 días hábiles.
         </p>
         <a href="https://wa.me/573001885210?text=Hola%20Cosa%20Nova!%20Busco%20un%20producto%20que%20no%20veo%20en%20la%20página%20🛍️" target="_blank" class="hero-pedido-custom">
           ¿No encuentras lo que buscas? <strong>Pídelo por WhatsApp →</strong>
@@ -411,19 +424,8 @@
           </a>
         </div>
       </div>
-
-      <!-- DERECHA: Productos destacados -->
-      <div class="hero-side hero-side-right">
-        <p class="hero-side-titulo">🔥 Destacados</p>
-        <div id="hero-preview" class="hero-preview"></div>
-      </div>
-
     </div>
 
-    <div class="scroll-hint">
-      <span>Explorar</span>
-      <div class="scroll-arrow"></div>
-    </div>
   </section>
 
   <!-- ══ TASAS EN VIVO ══════════════════════════════════ -->
@@ -438,28 +440,28 @@
   </div>
 
   <!-- ══ CÓMO FUNCIONA ══════════════════════════════════ -->
-  <section id="como-funciona">
+  <section id="como-funciona" class="patron-rombos">
     <div class="container">
       <h2 class="section-title reveal">¿Cómo funciona?</h2>
       <p class="section-sub reveal">Simple, rápido y sin complicaciones</p>
       <div class="pasos">
         <div class="paso reveal">
           <div class="paso-num">1</div>
-          <div class="paso-icon">🛍️</div>
+          <svg class="paso-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
           <h3>Elige tu producto</h3>
           <p>Explora nuestro catálogo y encuentra lo que necesitas. Precios en USD con equivalente en bolívares.</p>
         </div>
         <div class="paso-arrow reveal">→</div>
         <div class="paso reveal">
           <div class="paso-num">2</div>
-          <div class="paso-icon">💳</div>
+          <svg class="paso-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
           <h3>Paga a tu manera</h3>
           <p>USDT, Zelle o transferencia en bolívares. Tú eliges cómo pagar desde Venezuela.</p>
         </div>
         <div class="paso-arrow reveal">→</div>
         <div class="paso reveal">
           <div class="paso-num">3</div>
-          <div class="paso-icon">📦</div>
+          <svg class="paso-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
           <h3>Recibe en casa</h3>
           <p>Enviamos desde Colombia. Tu paquete llega en 7 días hábiles con seguimiento en tiempo real.</p>
         </div>
@@ -474,24 +476,24 @@
 
         <!-- Izquierda: texto y condiciones -->
         <div class="apartado-texto">
-          <span class="apartado-eyebrow">💰 ¡NUEVO!</span>
+          <span class="apartado-eyebrow">¡NUEVO!</span>
           <h2 class="apartado-titulo">¿No tienes todo el dinero ahora?<br><span class="ap-gold">Apártalo y paga en abonos.</span></h2>
           <p class="apartado-sub">Paga el <strong>50% hoy</strong> y enviamos de inmediato. Cuando llegue en 7 días hábiles, pagas el resto — o si necesitas más tiempo, tienes hasta los 15 días para pagar contra entrega.</p>
           <div class="apartado-condiciones">
             <div class="ap-cond reveal">
-              <span class="ap-cond-ico">✅</span>
+              <svg class="ap-cond-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6 9 17l-5-5"/></svg>
               <div><strong>50% activa el envío</strong><p>Con el abono inicial el pedido sale de inmediato</p></div>
             </div>
             <div class="ap-cond reveal">
-              <span class="ap-cond-ico">🚚</span>
+              <svg class="ap-cond-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="7" width="14" height="10"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></svg>
               <div><strong>Llega en 7 días hábiles</strong><p>Pagas el saldo al recibirlo, o antes si puedes</p></div>
             </div>
             <div class="ap-cond reveal">
-              <span class="ap-cond-ico">📅</span>
+              <svg class="ap-cond-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
               <div><strong>Hasta 15 días para completar</strong><p>Los días que resten se suman como plazo contra entrega</p></div>
             </div>
             <div class="ap-cond ap-cond-warn reveal">
-              <span class="ap-cond-ico">⚠️</span>
+              <svg class="ap-cond-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
               <div><strong>Abono no reembolsable</strong><p>Si no se completa el pago dentro del plazo de 15 días</p></div>
             </div>
           </div>
@@ -508,25 +510,26 @@
                 <strong>$25.00 USD</strong>
               </div>
               <div class="ap-ej-row ap-ej-abono">
-                <span>💰 Pagas hoy (50%)</span>
+                <span>Pagas hoy (50%)</span>
                 <strong>$12.50 USD</strong>
               </div>
               <div class="ap-ej-divider"></div>
               <div class="ap-ej-row">
-                <span>⏳ Saldo en 15 días</span>
+                <span>Saldo en 15 días</span>
                 <strong>$12.50 USD</strong>
               </div>
               <div class="ap-ej-row ap-ej-ok">
-                <span>🚚 Enviamos al pagar el 50%</span>
+                <span>Enviamos al pagar el 50%</span>
                 <strong>¡Inmediato!</strong>
               </div>
               <div class="ap-ej-row">
-                <span>💳 Saldo al recibir (o en plazo)</span>
+                <span>Saldo al recibir (o en plazo)</span>
                 <strong>Contra entrega</strong>
               </div>
             </div>
             <a href="#catalogo" class="btn-ap-wa" onclick="document.getElementById('catalogo').scrollIntoView({behavior:'smooth'}); return false;">
-              🛍️ Ver productos y apartar ahora
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+              Ver productos y apartar ahora
             </a>
           </div>
         </div>
@@ -625,22 +628,22 @@
     <div class="container">
       <div class="confianza-grid">
         <div class="conf-item reveal">
-          <span class="conf-icon">🚚</span>
+          <svg class="conf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="7" width="14" height="10"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></svg>
           <h4>Envío garantizado</h4>
           <p>Trabajamos con WED Envíos, operador verificado Colombia–Venezuela.</p>
         </div>
         <div class="conf-item reveal">
-          <span class="conf-icon">📍</span>
+          <svg class="conf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
           <h4>Tracking en tiempo real</h4>
           <p>Seguimiento de tu paquete desde que sale de Colombia hasta que llega a tu puerta.</p>
         </div>
         <div class="conf-item reveal">
-          <span class="conf-icon">🛡️</span>
+          <svg class="conf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2 4 5v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V5z"/></svg>
           <h4>Mercancía asegurada</h4>
           <p>Todo envío incluye seguro de mercancía. Tu compra protegida de inicio a fin.</p>
         </div>
         <div class="conf-item reveal">
-          <span class="conf-icon">💬</span>
+          <svg class="conf-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
           <h4>Atención por WhatsApp</h4>
           <p>Respondemos en minutos. Persona real, trato directo, sin bots.</p>
         </div>
@@ -796,7 +799,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <img src="assets/logo_sin_fondo.png" alt="Cosa Nova" class="footer-logo">
+          <img src="assets/nuevo-logo-sin-trim.png" alt="Cosa Nova" class="footer-logo">
           <p>Todo en un solo lugar.<br>Colombia → Venezuela</p>
           <p class="footer-fiscal">RIF: <strong>J-50399963-2</strong><br>Aragua, Venezuela</p>
         </div>
@@ -924,7 +927,7 @@
   <!-- ══ BOTÓN FLOTANTE: APARTADO POR ABONO ═══════════════ -->
   <div class="apartado-float" id="apartado-float" onclick="abrirModalApartado()" title="Apartado por abono">
     <div class="af-badge">¡NUEVO!</div>
-    <div class="af-icon">💰</div>
+    <svg class="af-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 6V4h12v2"/></svg>
     <div class="af-texto">
       <strong>Apartado</strong>
       <span>Paga en abonos</span>
@@ -1087,6 +1090,29 @@
       }
     });
 
+    var navCategoriaSeleccionada = '';
+    function navAbrirCategoria(cat) {
+      navCategoriaSeleccionada = cat;
+      document.getElementById('navDdCategorias').style.display = 'none';
+      document.getElementById('navDdGenero').style.display = 'flex';
+      var mostrarNinos = (cat === 'Ropa' || cat === 'Calzado');
+      document.querySelectorAll('.nav-dd-genero-extra').forEach(function(el) {
+        el.style.display = mostrarNinos ? '' : 'none';
+      });
+    }
+    function volverCategoriasNav() {
+      navCategoriaSeleccionada = '';
+      document.getElementById('navDdCategorias').style.display = 'flex';
+      document.getElementById('navDdGenero').style.display = 'none';
+    }
+    function navFiltrarCategoriaGenero(genero) {
+      filtrar(navCategoriaSeleccionada);
+      var btns = document.querySelectorAll('#subcat-genero .subcat-btn');
+      for (var i = 0; i < btns.length; i++) {
+        if (btns[i].textContent.trim() === genero) { filtrarGenero(genero, btns[i]); break; }
+      }
+    }
+
     function toggleMobileMenu() {
       var menu    = document.getElementById('mobile-menu');
       var overlay = document.getElementById('mobile-menu-overlay');
@@ -1100,7 +1126,13 @@
       document.getElementById('mobile-menu').classList.remove('activo');
       document.getElementById('mobile-menu-overlay').classList.remove('activo');
       document.getElementById('nav-hamburger').classList.remove('activo');
+      document.getElementById('mobile-menu-submenu')?.classList.remove('activo');
+      document.getElementById('mobile-menu-chevron')?.classList.remove('activo');
       document.body.style.overflow = '';
+    }
+    function toggleMobileMenuSub() {
+      document.getElementById('mobile-menu-submenu')?.classList.toggle('activo');
+      document.getElementById('mobile-menu-chevron')?.classList.toggle('activo');
     }
   </script>
 </body>
