@@ -125,8 +125,8 @@ body::before {
 .nav-dropdown-panel {
   position: absolute;
   top: 100%;
-  left: 50%;
-  transform: translate(-50%, -8px);
+  left: 0;
+  transform: translateY(-8px);
   background: transparent;
   padding-top: 14px;
   min-width: 260px;
@@ -148,7 +148,7 @@ body::before {
 .nav-dropdown:hover .nav-dropdown-panel,
 .nav-dropdown-panel:hover {
   opacity: 1;
-  transform: translate(-50%, 0);
+  transform: translateY(0);
   pointer-events: auto;
 }
 .nav-dd-nivel { display: flex; flex-direction: column; gap: 4px; }
