@@ -142,20 +142,20 @@
         <a href="index.html#como-funciona">Cómo funciona</a>
         <a href="index.html#pagos">Pagos</a>
       </div>
-      <img src="assets/nuevo-logo-sin.png" alt="Cosa Nova" class="nav-logo">
+      <a href="index.html" class="nav-logo-link"><img src="assets/nuevo-logo-sin.png" alt="Cosa Nova" class="nav-logo"></a>
       <div class="nav-actions-group">
         <div class="nav-links nav-links-right">
           <a href="index.html#contacto">Contacto</a>
           <a href="index.html#resenas">Reseñas</a>
         </div>
         <button class="nav-user-btn" id="nav-user-btn" onclick="abrirAuth()">
-          <div id="nav-user-avatar" class="nav-user-avatar">U</div>
           <svg class="nav-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <div id="nav-user-avatar" class="nav-user-avatar">U</div>
           <span id="nav-user-label">Ingresar</span>
         </button>
         <button class="cart-btn" onclick="toggleCart()">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-          <span class="cart-btn-label">Carrito (<span id="cart-badge" class="cart-badge">0</span>)</span>
+          <span class="cart-btn-label">Carrito<span id="cart-badge" class="cart-badge" style="display:none">0</span></span>
         </button>
         <button class="nav-hamburger" id="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Menú">
           <span></span>
@@ -396,31 +396,6 @@
     <div class="container">
       <h2 class="section-title reveal">Nuestros Productos</h2>
       <p class="section-sub reveal">Precios actualizados con la tasa Binance del día</p>
-
-      <div class="categorias reveal" id="categorias-pills">
-        <a class="cat-btn activa" href="perfumes.html">Perfumes</a>
-        <a class="cat-btn" href="belleza.html">Belleza</a>
-        <a class="cat-btn" id="btn-ropa" href="ropa.html">Ropa</a>
-        <a class="cat-btn" href="calzado.html">Calzado</a>
-        <a class="cat-btn" href="hogar.html">Hogar</a>
-        <a class="cat-btn" href="tecnologia.html">Tecnología</a>
-      </div>
-
-      <!-- Submenú género (visible cuando Perfumes o Ropa están activos) -->
-      <div class="subcat-row" id="subcat-genero">
-        <span class="subcat-label">Género:</span>
-        <button class="subcat-btn" onclick="filtrarGenero('Hombre', this)">Hombre</button>
-        <button class="subcat-btn" onclick="filtrarGenero('Mujer', this)">Mujer</button>
-        <button class="subcat-btn" onclick="filtrarGenero('Niños', this)">Niños</button>
-        <button class="subcat-btn" onclick="filtrarGenero('Niñas', this)">Niñas</button>
-      </div>
-
-      <!-- Submenú tipo (visible sólo cuando un género está seleccionado) -->
-      <div class="subcat-row" id="subcat-tipo">
-        <span class="subcat-label">Tipo:</span>
-        <button class="subcat-btn" onclick="filtrarTipo('Jeans', this)">Jeans</button>
-      </div>
-
       <!-- Barra de búsqueda + rango de precio -->
       <div class="busqueda-row reveal">
         <div class="busqueda-input-wrap">

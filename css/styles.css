@@ -101,10 +101,11 @@ body::before {
   align-items: center;
   gap: 20px;
 }
+.nav-logo-link { justify-self: center; display: block; line-height: 0; }
 .nav-logo {
   height: 130px;
   transition: height 0.35s ease;
-  justify-self: center;
+  display: block;
 }
 .nav-logo.scrolled { height: 52px; }
 .nav-actions-group { display: flex; align-items: center; gap: 24px; justify-self: end; }
