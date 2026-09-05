@@ -54,7 +54,19 @@ document.addEventListener('DOMContentLoaded', () => {
   initAuth();
   initFirestore();
   initBusqueda();
+  initCarruselTestimonios();
 });
+
+// ─── CARRUSEL INFINITO DE RESEÑAS ──────────────────────
+function initCarruselTestimonios() {
+  const track = document.getElementById('testi-track');
+  if (!track) return;
+  // Quita la animación de "reveal" por scroll: en un carrusel que se mueve solo
+  // no tiene sentido, y así también evita que las tarjetas duplicadas queden
+  // invisibles por no haber sido observadas por el IntersectionObserver.
+  track.querySelectorAll('.testi-card').forEach(c => c.classList.remove('reveal'));
+  track.innerHTML += track.innerHTML; // duplica las tarjetas para el loop continuo
+}
 
 // ─── FIREBASE: FIRESTORE ──────────────────────────────
 function initFirestore() {
@@ -447,7 +459,32 @@ function getMainImage(p) {
   return img.startsWith('http') ? img : `assets/products/${img}`;
 }
 
-// ─── FONDO ROTATIVO DEL HERO (panel izquierdo) ────────
+// ─── FONDO ROTATIVO (paneles tipo hero, fotos reales) ──
+function montarFondoCarrusel(contenedorId, imagenes, retrasoInicialMs) {
+  const contenedor = document.getElementById(contenedorId);
+  if (!contenedor || imagenes.length === 0) return;
+
+  let indice = 0;
+  const imgA = document.createElement('img');
+  const imgB = document.createElement('img');
+  imgA.src = imagenes[0];
+  imgA.className = 'visible';
+  contenedor.appendChild(imgA);
+  contenedor.appendChild(imgB);
+  let activa = imgA, inactiva = imgB;
+
+  if (imagenes.length === 1) return;
+  setTimeout(() => {
+    setInterval(() => {
+      indice = (indice + 1) % imagenes.length;
+      inactiva.src = imagenes[indice];
+      inactiva.classList.add('visible');
+      activa.classList.remove('visible');
+      const temp = activa; activa = inactiva; inactiva = temp;
+    }, 4500);
+  }, retrasoInicialMs || 0);
+}
+
 let heroFondoCNIniciado = false;
 function iniciarFondoHeroCN(lista) {
   if (heroFondoCNIniciado) return; // solo se monta una vez, con las fotos ya cargadas
@@ -455,27 +492,8 @@ function iniciarFondoHeroCN(lista) {
   if (imagenes.length === 0) return;
   heroFondoCNIniciado = true;
 
-  const barajadas = [...imagenes].sort(() => Math.random() - 0.5);
-  const contenedor = document.getElementById('heroBgCN');
-  if (!contenedor) return;
-
-  let indice = 0;
-  const imgA = document.createElement('img');
-  const imgB = document.createElement('img');
-  imgA.src = barajadas[0];
-  imgA.className = 'visible';
-  contenedor.appendChild(imgA);
-  contenedor.appendChild(imgB);
-  let activa = imgA, inactiva = imgB;
-
-  if (barajadas.length === 1) return;
-  setInterval(() => {
-    indice = (indice + 1) % barajadas.length;
-    inactiva.src = barajadas[indice];
-    inactiva.classList.add('visible');
-    activa.classList.remove('visible');
-    const temp = activa; activa = inactiva; inactiva = temp;
-  }, 4500);
+  montarFondoCarrusel('heroBgCN', [...imagenes].sort(() => Math.random() - 0.5), 0);
+  montarFondoCarrusel('cfBgCN', [...imagenes].sort(() => Math.random() - 0.5), 2250);
 }
 
 // ─── RENDER PRODUCTOS ─────────────────────────────────
