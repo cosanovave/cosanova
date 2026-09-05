@@ -69,10 +69,8 @@ function initCategoriaPagina() {
     filtrar(window.__catInicial, btn);
   }
   if (window.__generoInicial) {
-    const btns = document.querySelectorAll('#subcat-genero .subcat-btn');
-    for (const b of btns) {
-      if (b.textContent.trim() === window.__generoInicial) { filtrarGenero(window.__generoInicial, b); break; }
-    }
+    generoActual = window.__generoInicial;
+    renderProductos(productos);
   }
 }
 
