@@ -931,7 +931,15 @@ function filtrarTipo(tipo, btn) {
 }
 
 function filtrarBusqueda(val) {
-  busqueda = val.toLowerCase().trim();
+  val = (val || '').toLowerCase().trim();
+  // El navegador a veces autocompleta este campo con un correo guardado
+  // (aunque tenga autocomplete="off"); eso no es una búsqueda real del usuario.
+  if (val.includes('@')) {
+    const input = document.getElementById('busqueda-input');
+    if (input) input.value = '';
+    val = '';
+  }
+  busqueda = val;
   renderProductos(productos);
 }
 
