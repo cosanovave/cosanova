@@ -938,6 +938,10 @@ function filtrarBusqueda(val) {
 function initBusqueda() {
   const input = document.getElementById('busqueda-input');
   if (!input) return;
+  // Evita que el autocompletado del navegador (ej. el email guardado)
+  // rellene este campo y filtre todos los productos sin que el usuario lo note.
+  input.value = '';
+  busqueda = '';
   let timer;
   input.addEventListener('input', e => {
     clearTimeout(timer);
