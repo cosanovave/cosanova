@@ -1600,7 +1600,7 @@ footer {
   .nav-links { display: none; }
   .nav-logo { height: 96px; }
   .nav-logo.scrolled { height: 40px; }
-  .nav-inner { padding: 10px 16px; gap: 10px; }
+  .nav-inner { padding: 10px 16px; gap: 10px; grid-template-columns: auto 1fr; }
   .nav-actions-group { gap: 8px; }
   .nav-user-label { display: none; }
   .cart-btn-label { font-size: 0; }
