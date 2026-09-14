@@ -229,8 +229,8 @@
           </div>
           <div class="form-admin-field" id="campo-shopify-handle" style="display:none">
             <label>Handle o link del producto en Shopify *</label>
-            <input type="text" id="prod-shopify-handle" placeholder="ej: jeans-cb-9088 (o pega el link completo del producto)">
-            <small style="color:#888;">Se busca automáticamente en tu tienda de Shopify al guardar, para conectar el precio real y el checkout. El nombre, categoría, descripción e imágenes de abajo son los que tú escribiste — no se sobrescriben.</small>
+            <input type="text" id="prod-shopify-handle" placeholder="ej: jeans-cb-9088 (o pega el link completo del producto)" onblur="precargarDesdeShopify()">
+            <small id="shopify-preview-estado" style="color:#888;">Al salir del campo, se busca en tu tienda de Shopify y se precargan nombre, categoría, descripción, imágenes y tallas (si están vacíos) — puedes editarlos después libremente.</small>
           </div>
           <div id="campos-manual-precio">
             <div class="form-admin-field">
