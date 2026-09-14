@@ -92,10 +92,16 @@ function inyectarEstilosPais() {
   document.head.appendChild(style);
 }
 
+// Los productos de Shopify siempre se ven en ambos países. Los cargados a
+// mano usan el campo 'pais_venta' (CO / VE / ambos) elegido en el admin;
+// si no lo tienen (productos antiguos, antes de este campo) se asumen de
+// Venezuela, que era el comportamiento original.
 function aplicarFiltroPais() {
-  productos = paisActual === 'CO'
-    ? productosCruda.filter(p => p.origen === 'shopify')
-    : productosCruda;
+  productos = productosCruda.filter(p => {
+    if (p.origen === 'shopify') return true;
+    const pv = p.pais_venta || 'VE';
+    return pv === 'ambos' || pv === paisActual;
+  });
   renderProductos(productos);
   renderHeroPreview(productos);
   iniciarFondoHeroCN(productos);

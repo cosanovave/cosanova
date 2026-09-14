@@ -382,6 +382,7 @@ function abrirFormProducto(id) {
     document.getElementById('prod-nom').value          = p.nom              || '';
     document.getElementById('prod-categoria').value    = p.categoria        || '';
     document.getElementById('prod-origen').value       = p.origen           || 'colombia';
+    document.getElementById('prod-pais-venta').value   = p.pais_venta       || 'VE';
     document.getElementById('prod-inv').value          = p.inv_cop          || '';
     document.getElementById('prod-precio-bs').value    = p.precio_bs        || '';
     document.getElementById('prod-precio-may').value   = p.precio_mayorista || '';
@@ -456,6 +457,7 @@ async function guardarProducto(e) {
       nom:            document.getElementById('prod-nom').value.trim(),
       categoria:      document.getElementById('prod-categoria').value,
       origen,
+      pais_venta:     document.getElementById('prod-pais-venta').value || 'VE',
       inv_cop:        origen === 'colombia' ? (parseFloat(document.getElementById('prod-inv').value) || 0) : null,
       precio_bs:      origen === 'venezuela' ? (parseFloat(document.getElementById('prod-precio-bs').value) || 0) : null,
       precio_mayorista: precioMay,
