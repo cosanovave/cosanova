@@ -221,27 +221,41 @@
             </select>
           </div>
           <div class="form-admin-field">
-            <label>Origen *</label>
-            <select id="prod-origen" onchange="toggleOrigenAdmin(this.value)">
-              <option value="colombia">🇨🇴 Colombia (COP)</option>
-              <option value="venezuela">🇻🇪 Venezuela (Bs)</option>
+            <label>Fuente del producto *</label>
+            <select id="prod-fuente" onchange="toggleFuenteAdmin(this.value)">
+              <option value="manual">📦 Lo consigo yo (manual)</option>
+              <option value="shopify">🛒 Dropshipping vía Shopify</option>
             </select>
           </div>
-          <div class="form-admin-field">
-            <label>País de venta *</label>
-            <select id="prod-pais-venta">
-              <option value="VE">🇻🇪 Solo Venezuela</option>
-              <option value="CO">🇨🇴 Solo Colombia</option>
-              <option value="ambos">🌎 Ambos países</option>
-            </select>
+          <div class="form-admin-field" id="campo-shopify-handle" style="display:none">
+            <label>Handle o link del producto en Shopify *</label>
+            <input type="text" id="prod-shopify-handle" placeholder="ej: jeans-cb-9088 (o pega el link completo del producto)">
+            <small style="color:#888;">Se busca automáticamente en tu tienda de Shopify al guardar, para conectar el precio real y el checkout. El nombre, categoría, descripción e imágenes de abajo son los que tú escribiste — no se sobrescriben.</small>
           </div>
-          <div class="form-admin-field" id="campo-inv-cop">
-            <label>Precio inventario COP *</label>
-            <input type="number" id="prod-inv" placeholder="ej: 150000" step="500">
-          </div>
-          <div class="form-admin-field" id="campo-precio-bs" style="display:none">
-            <label>Precio en Bs *</label>
-            <input type="number" id="prod-precio-bs" placeholder="ej: 250" step="1">
+          <div id="campos-manual-precio">
+            <div class="form-admin-field">
+              <label>Origen *</label>
+              <select id="prod-origen" onchange="toggleOrigenAdmin(this.value)">
+                <option value="colombia">🇨🇴 Colombia (COP)</option>
+                <option value="venezuela">🇻🇪 Venezuela (Bs)</option>
+              </select>
+            </div>
+            <div class="form-admin-field">
+              <label>País de venta *</label>
+              <select id="prod-pais-venta">
+                <option value="VE">🇻🇪 Solo Venezuela</option>
+                <option value="CO">🇨🇴 Solo Colombia</option>
+                <option value="ambos">🌎 Ambos países</option>
+              </select>
+            </div>
+            <div class="form-admin-field" id="campo-inv-cop">
+              <label>Precio inventario COP *</label>
+              <input type="number" id="prod-inv" placeholder="ej: 150000" step="500">
+            </div>
+            <div class="form-admin-field" id="campo-precio-bs" style="display:none">
+              <label>Precio en Bs *</label>
+              <input type="number" id="prod-precio-bs" placeholder="ej: 250" step="1">
+            </div>
           </div>
           <div class="form-admin-field">
             <label>Género</label>
