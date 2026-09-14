@@ -115,6 +115,14 @@ function fmt(n, dec = 2) {
 }
 
 function calcFinanzas(p) {
+  // Shopify/Dropi: usamos el precio de venta sugerido tal cual, sin aplicarle
+  // la fórmula de margen/fee — ya viene como precio final para Colombia.
+  if (p.origen === 'shopify') {
+    const pvp_usd = p.precio_shopify_usd || 0;
+    const pvp_bs  = pvp_usd * tasas.binance / (1 - FEE_VE / 100);
+    return { costo_usd: pvp_usd, pvp_usd, pvp_bs, utilidad_usd: 0, margen_pct: null };
+  }
+
   const fee = p.origen === 'venezuela' ? 0 : FEE;
   const costo_base_usd = p.origen === 'venezuela'
     ? (p.precio_bs || 0) / tasas.binance
@@ -143,9 +151,11 @@ function renderTablaProductos(lista) {
     const imgSrc = imgPrincipal
       ? (imgPrincipal.startsWith('http') ? imgPrincipal : `assets/products/${imgPrincipal}`)
       : '';
-    const costoFmt = p.origen === 'venezuela'
-      ? `Bs ${new Intl.NumberFormat('es-VE').format(p.precio_bs || 0)}`
-      : `$ ${new Intl.NumberFormat('es-CO').format(p.inv_cop || 0)} COP`;
+    const costoFmt = p.origen === 'shopify'
+      ? `Shopify · $${new Intl.NumberFormat('es-CO').format(p.precio_shopify_usd || 0)}`
+      : p.origen === 'venezuela'
+        ? `Bs ${new Intl.NumberFormat('es-VE').format(p.precio_bs || 0)}`
+        : `$ ${new Intl.NumberFormat('es-CO').format(p.inv_cop || 0)} COP`;
 
     const { costo_usd, pvp_usd, pvp_bs, utilidad_usd, margen_pct } = calcFinanzas(p);
     const utilidadClass = utilidad_usd >= 0 ? 'utilidad-pos' : 'utilidad-neg';
@@ -748,6 +758,107 @@ async function adminCerrarSesion() {
   window.location.href = 'index.html';
 }
 
+// ─── SINCRONIZACIÓN CON SHOPIFY (Storefront API) ──────
+// Trae el catálogo de la tienda Shopify (productos importados de Dropi) y
+// los escribe en la misma colección 'productos' de Firestore, marcados con
+// origen:'shopify'. No toca ni reemplaza los productos cargados a mano:
+// solo agrega/actualiza los que vienen de Shopify (id determinístico
+// 'shopify_<id>'), así una re-sincronización actualiza en vez de duplicar.
+const SHOPIFY_DOMAIN         = 'https://1jv9es-u7.myshopify.com/api/2024-10/graphql.json';
+const SHOPIFY_STOREFRONT_TOKEN = '4d189fadb58a0a64c21e5e31a18279ce';
+
+async function shopifyFetch(query, variables) {
+  const res = await fetch(SHOPIFY_DOMAIN, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Storefront-Access-Token': SHOPIFY_STOREFRONT_TOKEN,
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+  const json = await res.json();
+  if (json.errors) throw new Error(json.errors.map(e => e.message).join('; '));
+  return json.data;
+}
+
+function mapCategoriaShopify(productType) {
+  const t = (productType || '').toLowerCase();
+  if (t.includes('perfum'))                       return 'Perfumes';
+  if (t.includes('belleza') || t.includes('beaut')) return 'Belleza';
+  if (t.includes('ropa') || t.includes('cloth'))    return 'Ropa';
+  if (t.includes('calzado') || t.includes('shoe'))  return 'Calzado';
+  if (t.includes('hogar') || t.includes('home'))    return 'Hogar';
+  if (t.includes('tecno') || t.includes('tech'))    return 'Tecnologia';
+  return 'General';
+}
+
+async function sincronizarShopify() {
+  const btn    = document.getElementById('btn-sync-shopify');
+  const estado = document.getElementById('sync-shopify-estado');
+  if (btn) { btn.disabled = true; btn.textContent = 'Sincronizando...'; }
+
+  const QUERY = `
+    query Productos($cursor: String) {
+      products(first: 50, after: $cursor) {
+        pageInfo { hasNextPage endCursor }
+        edges {
+          node {
+            id
+            title
+            descriptionHtml
+            productType
+            images(first: 5) { edges { node { url } } }
+            priceRange { minVariantPrice { amount } }
+          }
+        }
+      }
+    }
+  `;
+
+  try {
+    let cursor = null;
+    let hasNext = true;
+    let total = 0;
+
+    while (hasNext) {
+      const data = await shopifyFetch(QUERY, { cursor });
+      const { edges, pageInfo } = data.products;
+
+      for (const { node } of edges) {
+        const shopifyId = node.id.split('/').pop();
+        const imagenes  = node.images.edges.map(e => e.node.url);
+        const doc_data = {
+          nom:                node.title,
+          categoria:          mapCategoriaShopify(node.productType),
+          origen:             'shopify',
+          shopify_id:         shopifyId,
+          precio_shopify_usd: parseFloat(node.priceRange.minVariantPrice.amount) || 0,
+          descripcion:        (node.descriptionHtml || '').replace(/<[^>]+>/g, '').trim(),
+          imagenes,
+          imagen:             imagenes[0] || '',
+          activo:             true,
+          updatedAt:          serverTimestamp(),
+        };
+        await setDoc(doc(db, 'productos', `shopify_${shopifyId}`), doc_data, { merge: true });
+        total++;
+        if (estado) estado.textContent = `Sincronizando... ${total} productos traídos`;
+      }
+
+      hasNext = pageInfo.hasNextPage;
+      cursor  = pageInfo.endCursor;
+    }
+
+    if (estado) estado.textContent = `✔ Sincronización completa: ${total} productos de Shopify actualizados`;
+    toastAdmin(`Shopify sincronizado: ${total} productos`);
+  } catch (err) {
+    console.error('Error sincronizando con Shopify:', err);
+    if (estado) estado.textContent = `Error al sincronizar: ${err.message}`;
+    toastAdmin('Error al sincronizar con Shopify');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⟳ Sincronizar con Shopify'; }
+  }
+}
+
 // ─── TOAST ────────────────────────────────────────────
 function toastAdmin(msg) {
   const t = document.getElementById('admin-toast');
@@ -767,5 +878,6 @@ Object.assign(window, {
   filtrarOrdenes, cambiarEstadoOrden,
   aprobarResena, eliminarResena,
   guardarTasas, adminCerrarSesion,
-  crearMayorista, revocarMayorista, togglePass, enviarResetMayorista
+  crearMayorista, revocarMayorista, togglePass, enviarResetMayorista,
+  sincronizarShopify
 });

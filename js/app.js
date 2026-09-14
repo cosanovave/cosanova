@@ -450,6 +450,14 @@ function precioMayorista(pvp_usd) {
 }
 
 function calcPrecio(p) {
+  // Shopify/Dropi: el precio ya es el de venta sugerido (final para Colombia),
+  // no se le aplica la fórmula de margen/fee de los productos cargados a mano.
+  if (p.origen === 'shopify') {
+    const pvp_usd = p.precio_shopify_usd || 0;
+    const pvp_bs  = pvp_usd * tasas.binance / (1 - FEE_VE / 100);
+    return { pvp_usd, pvp_bs };
+  }
+
   let costo_usd, fee;
   if (p.origen === 'venezuela') {
     costo_usd = (p.precio_bs || 0) / tasas.binance;
