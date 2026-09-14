@@ -195,6 +195,66 @@ function filtrarTablaProductos(busq) {
 }
 
 // ─── FORM PRODUCTO ────────────────────────────────────
+// Producto manual (lo consigue el usuario) vs producto de dropshipping vía
+// Shopify pero cuyos datos de vitrina (nombre, descripción, imágenes) se
+// escriben a mano en este mismo formulario en vez de venir de "Sincronizar
+// con Shopify". Cuando es 'shopify' se piden el handle del producto en la
+// tienda y, al guardar, se resuelve automáticamente el precio real y el id
+// de variante necesarios para el checkout — el resto de los campos (nombre,
+// categoría, descripción, imágenes) los define el usuario libremente.
+function toggleFuenteAdmin(fuente) {
+  const campoHandle = document.getElementById('campo-shopify-handle');
+  const campoManual  = document.getElementById('campos-manual-precio');
+  const inputHandle  = document.getElementById('prod-shopify-handle');
+  const inputCOP     = document.getElementById('prod-inv');
+  const inputBs      = document.getElementById('prod-precio-bs');
+  if (fuente === 'shopify') {
+    campoHandle.style.display = '';
+    campoManual.style.display = 'none';
+    inputHandle.required = true;
+    inputCOP.required = false;
+    inputBs.required  = false;
+  } else {
+    campoHandle.style.display = 'none';
+    campoManual.style.display = '';
+    inputHandle.required = false;
+    toggleOrigenAdmin(document.getElementById('prod-origen').value);
+  }
+}
+
+// Acepta tanto un handle plano ('jeans-cb-9088') como un link completo
+// (".../products/jeans-cb-9088?variant=123") y devuelve solo el handle.
+function extraerHandleShopify(valor) {
+  const v = (valor || '').trim();
+  const m = v.match(/\/products\/([^/?#]+)/);
+  return (m ? m[1] : v).trim();
+}
+
+async function obtenerDatosShopifyPorHandle(handleCrudo) {
+  const handle = extraerHandleShopify(handleCrudo);
+  if (!handle) throw new Error('Ingresa el handle o el link del producto de Shopify');
+
+  const QUERY = `
+    query ProductoPorHandle($handle: String!) {
+      productByHandle(handle: $handle) {
+        id
+        priceRange { minVariantPrice { amount } }
+        variants(first: 1) { edges { node { id } } }
+      }
+    }
+  `;
+  const data = await shopifyFetch(QUERY, { handle });
+  const p = data.productByHandle;
+  if (!p) throw new Error(`No se encontró el producto "${handle}" en la tienda de Shopify (¿está publicado en el canal "cosanova.store"?)`);
+  const variantGid = p.variants.edges[0]?.node.id || '';
+  if (!variantGid) throw new Error(`El producto "${handle}" no tiene variantes disponibles en Shopify`);
+  return {
+    shopify_id:         p.id.split('/').pop(),
+    shopify_variant_id: variantGid,
+    precio_shopify_usd: parseFloat(p.priceRange.minVariantPrice.amount) || 0,
+  };
+}
+
 function toggleOrigenAdmin(origen) {
   const campoCOP = document.getElementById('campo-inv-cop');
   const campoBs  = document.getElementById('campo-precio-bs');
@@ -381,7 +441,9 @@ function abrirFormProducto(id) {
     document.getElementById('prod-id').value        = id;
     document.getElementById('prod-nom').value          = p.nom              || '';
     document.getElementById('prod-categoria').value    = p.categoria        || '';
-    document.getElementById('prod-origen').value       = p.origen           || 'colombia';
+    document.getElementById('prod-fuente').value       = p.origen === 'shopify' ? 'shopify' : 'manual';
+    document.getElementById('prod-shopify-handle').value = p.shopify_handle || '';
+    document.getElementById('prod-origen').value       = p.origen === 'shopify' ? 'colombia' : (p.origen || 'colombia');
     document.getElementById('prod-pais-venta').value   = p.pais_venta       || 'VE';
     document.getElementById('prod-inv').value          = p.inv_cop          || '';
     document.getElementById('prod-precio-bs').value    = p.precio_bs        || '';
@@ -390,7 +452,8 @@ function abrirFormProducto(id) {
     document.getElementById('prod-subtipo').value   = p.subtipo     || '';
     document.getElementById('prod-desc').value      = p.descripcion || '';
     document.getElementById('prod-activo').checked  = p.activo !== false;
-    toggleOrigenAdmin(p.origen || 'colombia');
+    toggleFuenteAdmin(p.origen === 'shopify' ? 'shopify' : 'manual');
+    toggleOrigenAdmin(p.origen === 'shopify' ? 'colombia' : (p.origen || 'colombia'));
 
     if (p.imagenes && p.imagenes.length) {
       imagenesState = p.imagenes.map(src => ({ tipo: 'url', src }));
@@ -409,6 +472,7 @@ function abrirFormProducto(id) {
     document.getElementById('form-producto').reset();
     document.getElementById('prod-id').value = '';
     document.getElementById('prod-activo').checked = true;
+    toggleFuenteAdmin('manual');
     toggleOrigenAdmin('colombia');
     renderImagenesAdmin();
 
@@ -445,10 +509,20 @@ async function guardarProducto(e) {
     const imagenes = imagenesState.map(img => img.src);
     const imagen   = imagenes[0] || '';
 
-    const origen = document.getElementById('prod-origen').value;
-    const pvpUsdEstimado = calcPrecioAdmin(origen,
-      parseFloat(document.getElementById('prod-inv').value) || 0,
-      parseFloat(document.getElementById('prod-precio-bs').value) || 0);
+    const fuente = document.getElementById('prod-fuente').value;
+    let datosShopify = null;
+    if (fuente === 'shopify') {
+      btn.textContent = 'Buscando en Shopify...';
+      datosShopify = await obtenerDatosShopifyPorHandle(document.getElementById('prod-shopify-handle').value);
+      btn.textContent = 'Guardando...';
+    }
+
+    const origen = fuente === 'shopify' ? 'shopify' : document.getElementById('prod-origen').value;
+    const pvpUsdEstimado = fuente === 'shopify'
+      ? datosShopify.precio_shopify_usd
+      : calcPrecioAdmin(origen,
+          parseFloat(document.getElementById('prod-inv').value) || 0,
+          parseFloat(document.getElementById('prod-precio-bs').value) || 0);
     const precioMayEl = document.getElementById('prod-precio-may');
     const precioMay = precioMayEl && precioMayEl.value
       ? parseFloat(precioMayEl.value)
@@ -457,9 +531,15 @@ async function guardarProducto(e) {
       nom:            document.getElementById('prod-nom').value.trim(),
       categoria:      document.getElementById('prod-categoria').value,
       origen,
-      pais_venta:     document.getElementById('prod-pais-venta').value || 'VE',
+      pais_venta:     fuente === 'shopify' ? 'ambos' : (document.getElementById('prod-pais-venta').value || 'VE'),
       inv_cop:        origen === 'colombia' ? (parseFloat(document.getElementById('prod-inv').value) || 0) : null,
       precio_bs:      origen === 'venezuela' ? (parseFloat(document.getElementById('prod-precio-bs').value) || 0) : null,
+      ...(fuente === 'shopify' ? {
+        shopify_handle:     extraerHandleShopify(document.getElementById('prod-shopify-handle').value),
+        shopify_id:         datosShopify.shopify_id,
+        shopify_variant_id: datosShopify.shopify_variant_id,
+        precio_shopify_usd: datosShopify.precio_shopify_usd,
+      } : {}),
       precio_mayorista: precioMay,
       genero:         document.getElementById('prod-genero').value,
       subtipo:        document.getElementById('prod-subtipo').value.trim(),
@@ -882,7 +962,7 @@ Object.assign(window, {
   agregarImagenesAdmin, eliminarImagenAdmin,
   agregarTallaAdmin, eliminarTallaAdmin, actualizarTallaAdmin, agregarTallasRapido,
   agregarColorAdmin, eliminarColorAdmin, actualizarColorAdmin, agregarColoresRapido,
-  guardarProducto, toggleProductoActivo,
+  guardarProducto, toggleProductoActivo, toggleFuenteAdmin,
   confirmarEliminarProducto, filtrarTablaProductos, toggleOrigenAdmin,
   filtrarOrdenes, cambiarEstadoOrden,
   aprobarResena, eliminarResena,
