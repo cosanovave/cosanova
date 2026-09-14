@@ -53,8 +53,12 @@
       <div id="panel-productos" class="admin-panel activo">
         <div class="panel-header">
           <h1>Productos</h1>
-          <button class="btn-primary-admin" onclick="abrirFormProducto()">+ Nuevo producto</button>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-primary-admin" id="btn-sync-shopify" onclick="sincronizarShopify()" style="background:#1a7f78;">⟳ Sincronizar con Shopify</button>
+            <button class="btn-primary-admin" onclick="abrirFormProducto()">+ Nuevo producto</button>
+          </div>
         </div>
+        <p id="sync-shopify-estado" style="font-size:13px; color:#666; margin:-8px 0 12px;"></p>
 
         <div class="admin-filters">
           <input type="text" id="prod-buscar" placeholder="Buscar producto..." oninput="filtrarTablaProductos(this.value)">
