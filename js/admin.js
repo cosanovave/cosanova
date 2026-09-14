@@ -530,7 +530,7 @@ function abrirFormProducto(id) {
     document.getElementById('prod-desc').value      = p.descripcion || '';
     document.getElementById('prod-activo').checked  = p.activo !== false;
     toggleFuenteAdmin(p.origen === 'shopify' ? 'shopify' : 'manual');
-    toggleOrigenAdmin(p.origen === 'shopify' ? 'colombia' : (p.origen || 'colombia'));
+    if (p.origen !== 'shopify') toggleOrigenAdmin(p.origen || 'colombia');
 
     if (p.imagenes && p.imagenes.length) {
       imagenesState = p.imagenes.map(src => ({ tipo: 'url', src }));
