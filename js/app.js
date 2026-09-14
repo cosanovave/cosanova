@@ -69,10 +69,23 @@ document.addEventListener('DOMContentLoaded', () => {
 // cerrar la pestaña/navegador se olvida y vuelve a preguntar la próxima vez,
 // pero no molesta al navegar entre páginas dentro de la misma visita.
 function initSelectorPais() {
+  inyectarEstilosPais();
   actualizarIndicadorPais();
   if (!paisActual) {
     mostrarSelectorPais();
   }
+}
+
+function inyectarEstilosPais() {
+  if (document.getElementById('estilos-pais')) return;
+  const style = document.createElement('style');
+  style.id = 'estilos-pais';
+  style.textContent = `
+    #navDdCategorias a.nav-cat-no-disponible {
+      display: none !important;
+    }
+  `;
+  document.head.appendChild(style);
 }
 
 function aplicarFiltroPais() {
@@ -82,6 +95,22 @@ function aplicarFiltroPais() {
   renderProductos(productos);
   renderHeroPreview(productos);
   iniciarFondoHeroCN(productos);
+  actualizarMenuCategoriasPorPais();
+}
+
+// Oculta/atenúa en el menú "Productos" las categorías que no tengan ningún
+// producto disponible para el país elegido (ej. Colombia no revende los
+// perfumes cargados a mano, así que si aún no hay nada de Shopify en esa
+// categoría, no debe aparecer como opción clickeable — evita la sensación
+// de "esto está roto" al caer en una página vacía).
+function actualizarMenuCategoriasPorPais() {
+  const cont = document.getElementById('navDdCategorias');
+  if (!cont) return;
+  const disponibles = new Set(productos.map(p => p.categoria));
+  cont.querySelectorAll('a[data-cat]').forEach(a => {
+    const disponible = disponibles.has(a.dataset.cat);
+    a.classList.toggle('nav-cat-no-disponible', !disponible);
+  });
 }
 
 function actualizarIndicadorPais() {
