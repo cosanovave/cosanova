@@ -1124,7 +1124,10 @@ function actualizarCarritoUI() {
   const count   = carrito.reduce((a, x) => a + x.qty, 0);
 
   const badge = document.getElementById('cart-badge');
-  if (badge) { badge.textContent = count; }
+  if (badge) {
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'inline-flex' : 'none';
+  }
 
   const ctUsd = document.getElementById('ct-usd');
   const ctBs  = document.getElementById('ct-bs');
