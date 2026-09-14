@@ -781,15 +781,19 @@ async function shopifyFetch(query, variables) {
   return json.data;
 }
 
+// Categorías reales del sitio: Perfumes, Belleza, Ropa, Calzado, Hogar, Tecnologia.
+// 'General' NO existe como página navegable — si un producto de Shopify cae ahí,
+// no aparece en ninguna categoría. Por eso, ante la duda, cae en 'Ropa' (la más
+// genérica/común en un catálogo de moda tipo Dropi) en vez de una categoría fantasma.
 function mapCategoriaShopify(productType) {
   const t = (productType || '').toLowerCase();
-  if (t.includes('perfum'))                       return 'Perfumes';
-  if (t.includes('belleza') || t.includes('beaut')) return 'Belleza';
-  if (t.includes('ropa') || t.includes('cloth'))    return 'Ropa';
-  if (t.includes('calzado') || t.includes('shoe'))  return 'Calzado';
-  if (t.includes('hogar') || t.includes('home'))    return 'Hogar';
-  if (t.includes('tecno') || t.includes('tech'))    return 'Tecnologia';
-  return 'General';
+  if (t.includes('perfum') || t.includes('fragan'))              return 'Perfumes';
+  if (t.includes('belleza') || t.includes('beaut') || t.includes('cosmet')) return 'Belleza';
+  if (t.includes('calzado') || t.includes('shoe') || t.includes('zapat'))  return 'Calzado';
+  if (t.includes('hogar') || t.includes('home') || t.includes('decor'))   return 'Hogar';
+  if (t.includes('tecno') || t.includes('tech') || t.includes('electr'))  return 'Tecnologia';
+  // 'ropa', 'cloth', 'moda', 'fashion', o cualquier otra cosa no reconocida → Ropa
+  return 'Ropa';
 }
 
 async function sincronizarShopify() {

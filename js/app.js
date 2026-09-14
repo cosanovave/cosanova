@@ -26,7 +26,9 @@ const GAS_URL     = 'https://script.google.com/macros/s/AKfycby8oGOKP9nkwjZZ6-Il
 
 // ─── ESTADO GLOBAL ────────────────────────────────────
 let tasas           = { trm: 4200, bcv: 50, binance: 65 };
-let productos       = [];
+let productos       = [];       // lista YA filtrada por país (la que se renderiza)
+let productosCruda  = [];       // lista completa tal cual llega de Firestore, sin filtrar por país
+let paisActual      = sessionStorage.getItem('cn-pais') || null; // 'CO' | 'VE' | null (aún no elegido)
 let carrito         = JSON.parse(localStorage.getItem('cn-carrito') || '[]');
 let usuario         = null;
 let perfilUsuario   = null;
@@ -56,7 +58,81 @@ document.addEventListener('DOMContentLoaded', () => {
   initBusqueda();
   initCarruselTestimonios();
   initCategoriaPagina();
+  initSelectorPais();
 });
+
+// ─── SELECTOR DE PAÍS ──────────────────────────────────
+// Colombia: solo catálogo de Shopify (los perfumes cargados a mano están
+// pensados para la realidad de Venezuela, en Colombia se consiguen más
+// baratos localmente). Venezuela: catálogo completo (manual + Shopify).
+// Se pregunta en cada visita nueva (sessionStorage, no localStorage): al
+// cerrar la pestaña/navegador se olvida y vuelve a preguntar la próxima vez,
+// pero no molesta al navegar entre páginas dentro de la misma visita.
+function initSelectorPais() {
+  actualizarIndicadorPais();
+  if (!paisActual) {
+    mostrarSelectorPais();
+  }
+}
+
+function aplicarFiltroPais() {
+  productos = paisActual === 'CO'
+    ? productosCruda.filter(p => p.origen === 'shopify')
+    : productosCruda;
+  renderProductos(productos);
+  renderHeroPreview(productos);
+  iniciarFondoHeroCN(productos);
+}
+
+function actualizarIndicadorPais() {
+  const el = document.getElementById('nav-pais-indicador');
+  if (!el) return;
+  el.textContent = paisActual === 'CO' ? '🇨🇴 Colombia' : paisActual === 'VE' ? '🇻🇪 Venezuela' : '';
+  el.style.display = paisActual ? 'inline-flex' : 'none';
+}
+
+function cambiarPais() {
+  mostrarSelectorPais();
+}
+
+function mostrarSelectorPais() {
+  if (document.getElementById('modal-pais')) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-pais';
+  overlay.innerHTML = `
+    <style>
+      #modal-pais { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(10,10,15,0.85); backdrop-filter: blur(6px); padding: 20px; }
+      #modal-pais .mp-box { background: #fff; border-radius: 20px; padding: 40px 32px; max-width: 420px; width: 100%; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.4); }
+      #modal-pais h2 { font-size: 22px; margin-bottom: 10px; color: #111; }
+      #modal-pais p { font-size: 14px; color: #666; margin-bottom: 24px; line-height: 1.5; }
+      #modal-pais .mp-btns { display: flex; flex-direction: column; gap: 12px; }
+      #modal-pais .mp-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 16px; border-radius: 12px; border: 2px solid #e5e4e7; background: #fafafa; font-size: 16px; font-weight: 700; cursor: pointer; transition: all .15s; color: #111; }
+      #modal-pais .mp-btn:hover { border-color: #aa3bff; background: rgba(170,59,255,0.06); }
+    </style>
+    <div class="mp-box">
+      <h2>¿Desde qué país vas a comprar?</h2>
+      <p>Así te mostramos el catálogo y los precios correctos para ti.</p>
+      <div class="mp-btns">
+        <button class="mp-btn" data-pais="CO">🇨🇴 Colombia</button>
+        <button class="mp-btn" data-pais="VE">🇻🇪 Venezuela</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+
+  overlay.querySelectorAll('.mp-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      paisActual = btn.dataset.pais;
+      sessionStorage.setItem('cn-pais', paisActual);
+      overlay.remove();
+      document.body.style.overflow = '';
+      actualizarIndicadorPais();
+      aplicarFiltroPais();
+    });
+  });
+}
 
 // ─── FILTRO INICIAL DE LA PÁGINA DE CATEGORÍA ──────────
 // Las páginas de categoría (perfumes.html, ropa.html, etc.) fijan
@@ -107,12 +183,10 @@ function initFirestore() {
     where('activo', '==', true)
   );
   onSnapshot(qProd, snap => {
-    productos = snap.docs
+    productosCruda = snap.docs
       .map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
-    renderProductos(productos);
-    renderHeroPreview(productos);
-    iniciarFondoHeroCN(productos);
+    aplicarFiltroPais();
   }, err => {
     console.error('Error cargando productos desde Firestore:', err);
   });
@@ -1530,4 +1604,6 @@ Object.assign(window, {
   abrirMiCuenta, cerrarMiCuenta, cambiarTabCuenta, guardarPerfil,
   // Reseñas
   enviarResena,
+  // País
+  cambiarPais,
 });
