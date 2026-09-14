@@ -813,6 +813,7 @@ async function sincronizarShopify() {
             productType
             images(first: 5) { edges { node { url } } }
             priceRange { minVariantPrice { amount } }
+            variants(first: 1) { edges { node { id } } }
           }
         }
       }
@@ -831,11 +832,13 @@ async function sincronizarShopify() {
       for (const { node } of edges) {
         const shopifyId = node.id.split('/').pop();
         const imagenes  = node.images.edges.map(e => e.node.url);
+        const variantGid = node.variants.edges[0]?.node.id || '';
         const doc_data = {
           nom:                node.title,
           categoria:          mapCategoriaShopify(node.productType),
           origen:             'shopify',
           shopify_id:         shopifyId,
+          shopify_variant_id: variantGid,
           precio_shopify_usd: parseFloat(node.priceRange.minVariantPrice.amount) || 0,
           descripcion:        (node.descriptionHtml || '').replace(/<[^>]+>/g, '').trim(),
           imagenes,

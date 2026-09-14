@@ -23,6 +23,10 @@ const FEE_VE           = 0.3;
 const ADMIN_EMAIL      = 'cosanova.ve@gmail.com';
 const DESC_MAYORISTA   = 0.25; // 25% descuento sobre pvp_usd
 const GAS_URL     = 'https://script.google.com/macros/s/AKfycby8oGOKP9nkwjZZ6-Ilaz7HNTCxMnhHsWlswbV43-Y_luE8mJpaAl5TPa0gVA-PSBxN/exec';
+// Colombia solo vende productos de Shopify → paga siempre con el checkout
+// real de Shopify (Storefront Cart API), nunca con el flujo manual.
+const SHOPIFY_DOMAIN            = 'https://1jv9es-u7.myshopify.com/api/2024-10/graphql.json';
+const SHOPIFY_STOREFRONT_TOKEN  = '4d189fadb58a0a64c21e5e31a18279ce';
 
 // ─── ESTADO GLOBAL ────────────────────────────────────
 let tasas           = { trm: 4200, bcv: 50, binance: 65 };
@@ -1164,6 +1168,15 @@ function abrirCheckout() {
     abrirModalAuth();
     return mostrarToast('Inicia sesión para continuar tu compra');
   }
+  // Colombia: siempre Shopify (solo vende productos de Shopify). Venezuela:
+  // siempre el flujo manual, sin importar el origen del producto (Dropi no
+  // envía a Venezuela, el reenvío lo hace el usuario por su cuenta).
+  if (paisActual === 'CO') {
+    toggleCart();
+    irACheckoutShopify();
+    return;
+  }
+
   toggleCart();
   const modal = document.getElementById('checkout-modal');
   modal.classList.add('abierto');
@@ -1182,6 +1195,57 @@ function abrirCheckout() {
     set('co-cedula', perfilUsuario.cedula);
     set('co-ciudad', perfilUsuario.ciudad);
     set('co-dir',    perfilUsuario.direccion);
+  }
+}
+
+// Crea un carrito real en Shopify (Storefront Cart API) con los productos
+// del carrito local y redirige al checkout oficial de Shopify (pago con
+// tarjeta, PSE, etc. según lo que la tienda tenga configurado). Solo se usa
+// para Colombia, ya que esa página solo vende productos de origen Shopify.
+async function irACheckoutShopify() {
+  if (carrito.length === 0) return mostrarToast('Tu carrito está vacío');
+
+  mostrarToast('Redirigiendo al pago seguro de Shopify...');
+
+  try {
+    const lines = carrito.map(item => {
+      const prod = productosCruda.find(p => p.id === item.id);
+      if (!prod || !prod.shopify_variant_id) {
+        throw new Error(`"${item.nom}" ya no está disponible`);
+      }
+      return { merchandiseId: prod.shopify_variant_id, quantity: item.qty };
+    });
+
+    const MUTATION = `
+      mutation CartCreate($lines: [CartLineInput!]!) {
+        cartCreate(input: { lines: $lines }) {
+          cart { checkoutUrl }
+          userErrors { message }
+        }
+      }
+    `;
+
+    const res = await fetch(SHOPIFY_DOMAIN, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Storefront-Access-Token': SHOPIFY_STOREFRONT_TOKEN,
+      },
+      body: JSON.stringify({ query: MUTATION, variables: { lines } }),
+    });
+    const json = await res.json();
+    if (json.errors) throw new Error(json.errors.map(e => e.message).join('; '));
+
+    const { cart, userErrors } = json.data.cartCreate;
+    if (userErrors && userErrors.length) throw new Error(userErrors.map(e => e.message).join('; '));
+
+    carrito = [];
+    guardarCarrito();
+    actualizarCarritoUI();
+    window.location.href = cart.checkoutUrl;
+  } catch (err) {
+    console.error('Error creando checkout de Shopify:', err);
+    mostrarToast('No se pudo iniciar el pago: ' + err.message);
   }
 }
 
@@ -1612,7 +1676,7 @@ function actualizarBannerMayorista() {
 // ─── EXPONER FUNCIONES AL DOM ─────────────────────────
 Object.assign(window, {
   // Carrito
-  toggleCart, abrirCheckout, cerrarCheckout, irPaso, validarPaso1,
+  toggleCart, abrirCheckout, irACheckoutShopify, cerrarCheckout, irPaso, validarPaso1,
   cambiarQty, agregarAlCarrito, actualizarCarritoUI,
   // Checkout
   seleccionarMetodo, copiar, previewCaptura, enviarPedido,
