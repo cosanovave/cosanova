@@ -122,12 +122,12 @@
           <div class="nav-dropdown-panel" onmouseleave="volverNivelProductos()">
             <div class="nav-dropdown-panel-inner">
               <div class="nav-dd-nivel" id="navDdCategorias">
-                <a href="#" onclick="event.preventDefault(); abrirGeneroProductos('perfumes')">Perfumes</a>
-                <a href="belleza.html">Belleza | Cuidado personal</a>
-                <a href="#" onclick="event.preventDefault(); abrirGeneroProductos('ropa')">Ropa</a>
-                <a href="#" onclick="event.preventDefault(); abrirGeneroProductos('calzado')">Calzado</a>
-                <a href="hogar.html">Hogar</a>
-                <a href="tecnologia.html">Tecnología</a>
+                <a href="#" data-cat="Perfumes" onclick="event.preventDefault(); abrirGeneroProductos('perfumes')">Perfumes</a>
+                <a href="belleza.html" data-cat="Belleza">Belleza | Cuidado personal</a>
+                <a href="#" data-cat="Ropa" onclick="event.preventDefault(); abrirGeneroProductos('ropa')">Ropa</a>
+                <a href="#" data-cat="Calzado" onclick="event.preventDefault(); abrirGeneroProductos('calzado')">Calzado</a>
+                <a href="hogar.html" data-cat="Hogar">Hogar</a>
+                <a href="tecnologia.html" data-cat="Tecnologia">Tecnología</a>
               </div>
               <div class="nav-dd-nivel" id="navDdGenero" style="display:none">
                 <button type="button" class="nav-dd-volver" onclick="volverNivelProductos()">‹ Volver</button>
