@@ -238,21 +238,98 @@ async function obtenerDatosShopifyPorHandle(handleCrudo) {
     query ProductoPorHandle($handle: String!) {
       productByHandle(handle: $handle) {
         id
+        title
+        descriptionHtml
+        productType
+        images(first: 10) { edges { node { url } } }
         priceRange { minVariantPrice { amount } }
-        variants(first: 1) { edges { node { id } } }
+        variants(first: 100) {
+          edges {
+            node {
+              id
+              priceV2 { amount }
+              selectedOptions { name value }
+            }
+          }
+        }
       }
     }
   `;
   const data = await shopifyFetch(QUERY, { handle });
   const p = data.productByHandle;
   if (!p) throw new Error(`No se encontró el producto "${handle}" en la tienda de Shopify (¿está publicado en el canal "cosanova.store"?)`);
-  const variantGid = p.variants.edges[0]?.node.id || '';
-  if (!variantGid) throw new Error(`El producto "${handle}" no tiene variantes disponibles en Shopify`);
+  const variantes = p.variants.edges.map(e => e.node);
+  if (!variantes.length) throw new Error(`El producto "${handle}" no tiene variantes disponibles en Shopify`);
+
+  // Si el producto tiene una opción de talla/size en Shopify, guardamos el
+  // mapa talla → variant id para que el checkout compre la variante exacta
+  // que el cliente elige en nuestro sitio (no siempre la primera).
+  const porTalla = {};
+  variantes.forEach(v => {
+    const opt = v.selectedOptions.find(o => /talla|size/i.test(o.name)) || v.selectedOptions[0];
+    if (opt) porTalla[opt.value.trim().toUpperCase()] = v.id;
+  });
+
   return {
-    shopify_id:         p.id.split('/').pop(),
-    shopify_variant_id: variantGid,
-    precio_shopify_usd: parseFloat(p.priceRange.minVariantPrice.amount) || 0,
+    shopify_id:            p.id.split('/').pop(),
+    shopify_variant_id:    variantes[0].id,
+    shopify_talla_variantes: porTalla,
+    precio_shopify_usd:    parseFloat(p.priceRange.minVariantPrice.amount) || 0,
+    titulo:                p.title,
+    descripcion:           (p.descriptionHtml || '').replace(/<[^>]+>/g, '').trim(),
+    imagenes:              p.images.edges.map(e => e.node.url),
+    categoriaSugerida:     mapCategoriaShopify(p.productType),
+    tallasDisponibles:     Object.keys(porTalla),
   };
+}
+
+// Se dispara al salir del campo "handle" (o clic en el botón de precargar):
+// trae los datos reales del producto desde Shopify y rellena el formulario
+// como punto de partida editable — no bloquea que el usuario los cambie
+// después, solo evita que tenga que escribirlos desde cero.
+let precargaShopifyEnCurso = false;
+async function precargarDesdeShopify() {
+  const fuente = document.getElementById('prod-fuente').value;
+  if (fuente !== 'shopify') return;
+  const handleInput = document.getElementById('prod-shopify-handle');
+  const handle = handleInput.value.trim();
+  if (!handle || precargaShopifyEnCurso) return;
+
+  precargaShopifyEnCurso = true;
+  const estado = document.getElementById('shopify-preview-estado');
+  if (estado) { estado.textContent = 'Buscando en Shopify...'; estado.style.color = '#888'; }
+
+  try {
+    const datos = await obtenerDatosShopifyPorHandle(handle);
+
+    const nomEl = document.getElementById('prod-nom');
+    if (!nomEl.value.trim()) nomEl.value = datos.titulo;
+
+    const descEl = document.getElementById('prod-desc');
+    if (!descEl.value.trim()) descEl.value = datos.descripcion;
+
+    const catEl = document.getElementById('prod-categoria');
+    if (!catEl.value) catEl.value = datos.categoriaSugerida;
+
+    if (!imagenesState.length && datos.imagenes.length) {
+      imagenesState = datos.imagenes.map(src => ({ tipo: 'url', src }));
+      renderImagenesAdmin();
+    }
+
+    if (!tallasState.length && datos.tallasDisponibles.length > 1) {
+      tallasState = datos.tallasDisponibles.map(talla => ({ talla, precio: '' }));
+      renderTallasAdmin();
+    }
+
+    if (estado) {
+      estado.textContent = `✔ "${datos.titulo}" · $${datos.precio_shopify_usd} USD · ${datos.tallasDisponibles.length} variante(s)`;
+      estado.style.color = '#2e7d32';
+    }
+  } catch (err) {
+    if (estado) { estado.textContent = '✗ ' + err.message; estado.style.color = '#c62828'; }
+  } finally {
+    precargaShopifyEnCurso = false;
+  }
 }
 
 function toggleOrigenAdmin(origen) {
@@ -538,6 +615,7 @@ async function guardarProducto(e) {
         shopify_handle:     extraerHandleShopify(document.getElementById('prod-shopify-handle').value),
         shopify_id:         datosShopify.shopify_id,
         shopify_variant_id: datosShopify.shopify_variant_id,
+        shopify_talla_variantes: datosShopify.shopify_talla_variantes,
         precio_shopify_usd: datosShopify.precio_shopify_usd,
       } : {}),
       precio_mayorista: precioMay,
@@ -962,7 +1040,7 @@ Object.assign(window, {
   agregarImagenesAdmin, eliminarImagenAdmin,
   agregarTallaAdmin, eliminarTallaAdmin, actualizarTallaAdmin, agregarTallasRapido,
   agregarColorAdmin, eliminarColorAdmin, actualizarColorAdmin, agregarColoresRapido,
-  guardarProducto, toggleProductoActivo, toggleFuenteAdmin,
+  guardarProducto, toggleProductoActivo, toggleFuenteAdmin, precargarDesdeShopify,
   confirmarEliminarProducto, filtrarTablaProductos, toggleOrigenAdmin,
   filtrarOrdenes, cambiarEstadoOrden,
   aprobarResena, eliminarResena,

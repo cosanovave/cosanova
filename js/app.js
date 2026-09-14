@@ -1222,7 +1222,9 @@ async function irACheckoutShopify() {
       if (!prod || !prod.shopify_variant_id) {
         throw new Error(`"${item.nom}" ya no está disponible`);
       }
-      return { merchandiseId: prod.shopify_variant_id, quantity: item.qty };
+      const tallaKey = (item.talla || '').trim().toUpperCase();
+      const variantId = (tallaKey && prod.shopify_talla_variantes?.[tallaKey]) || prod.shopify_variant_id;
+      return { merchandiseId: variantId, quantity: item.qty };
     });
 
     const MUTATION = `
