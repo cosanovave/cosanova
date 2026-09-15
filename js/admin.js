@@ -306,8 +306,27 @@ async function obtenerDatosShopifyPorHandle(handleCrudo) {
     descripcion:           (p.descriptionHtml || '').replace(/<[^>]+>/g, '').trim(),
     imagenes:              p.images.edges.map(e => e.node.url),
     categoriaSugerida:     mapCategoriaShopify(p.productType),
-    tallasDisponibles:     Object.keys(porTalla),
+    // Si Shopify no tiene variantes reales por talla (proveedores tipo Dropi
+    // suelen vender todas las tallas bajo una sola referencia), se intentan
+    // detectar las tallas mencionadas en el texto de la descripción como
+    // respaldo — no quedan ligadas a una variante real, así que el checkout
+    // sigue comprando la única variante que existe, sin importar cuál elija
+    // el cliente.
+    tallasDisponibles: Object.keys(porTalla).length > 1
+      ? Object.keys(porTalla)
+      : extraerTallasDeTexto((p.descriptionHtml || '').replace(/<[^>]+>/g, ' ')),
   };
+}
+
+// Busca listas de tallas tipo "6/8/10/12/14/16" o "S-M-L-XL" dentro de un
+// texto libre (la descripción del producto en Shopify).
+function extraerTallasDeTexto(texto) {
+  if (!texto) return [];
+  const numerico = texto.match(/\b\d{1,3}(?:\s*[\/\-,]\s*\d{1,3}){1,9}\b/);
+  if (numerico) return numerico[0].split(/[\/\-,]/).map(s => s.trim()).filter(Boolean);
+  const letras = texto.match(/\b(?:XS|S|M|L|XL|XXL)(?:\s*[\/\-,]\s*(?:XS|S|M|L|XL|XXL)){1,6}\b/i);
+  if (letras) return letras[0].split(/[\/\-,]/).map(s => s.trim().toUpperCase()).filter(Boolean);
+  return [];
 }
 
 // Se dispara al salir del campo "handle" (o clic en el botón de precargar):
@@ -619,6 +638,9 @@ async function guardarProducto(e) {
     if (fuente === 'shopify') {
       btn.textContent = 'Buscando en Shopify...';
       datosShopify = await obtenerDatosShopifyPorHandle(document.getElementById('prod-shopify-handle').value);
+      if (!tallasState.length && datosShopify.tallasDisponibles.length > 1) {
+        tallasState = datosShopify.tallasDisponibles.map(talla => ({ talla, precio: '' }));
+      }
       btn.textContent = 'Guardando...';
     }
 
