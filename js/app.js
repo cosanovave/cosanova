@@ -923,6 +923,16 @@ function seleccionarTalla(btn, talla, valor, origen) {
   const card = btn.closest('.producto-card');
   card.querySelectorAll('.talla-btn').forEach(b => b.classList.remove('activa'));
   btn.classList.add('activa');
+  card.dataset.tallaSel = talla;
+
+  // Shopify/Dropi: el precio es fijo por producto, no varía según la talla
+  // elegida (una sola variante para todas las tallas) — el precio que ya
+  // está en la tarjeta (data-pvp-usd) es el correcto, no hay que tocarlo.
+  if (origen === 'shopify') {
+    actualizarBotonCarritoCard(card);
+    return;
+  }
+
   const esMay = esMayoristaActivo();
   const { pvp_usd, pvp_bs } = calcPrecio({ origen, inv_cop: valor, precio_bs: valor });
   const pvp_may = precioMayorista(pvp_usd);
@@ -940,13 +950,20 @@ function seleccionarTalla(btn, talla, valor, origen) {
     card.querySelector('.precio-bs').innerHTML  = `<strong>Bs. ${fmt(pvp_bs, 0)}</strong>`;
   }
   card.dataset.pvpUsd   = precioFinal;
-  card.dataset.tallaSel = talla;
   actualizarBotonCarritoCard(card);
 }
 
 function seleccionarTallaModal(btn, talla, valor, origen) {
   document.querySelectorAll('#mp-tallas-btns .talla-btn').forEach(b => b.classList.remove('activa'));
   btn.classList.add('activa');
+  mpEstado.talla = talla;
+
+  // Shopify/Dropi: precio fijo, no varía por talla — no recalcular.
+  if (origen === 'shopify') {
+    actualizarBotonCarritoModal();
+    return;
+  }
+
   const esMay = esMayoristaActivo();
   const { pvp_usd, pvp_bs } = calcPrecio({ origen, inv_cop: valor, precio_bs: valor });
   const pvp_may = precioMayorista(pvp_usd);
@@ -1306,7 +1323,7 @@ function cerrarCheckout() {
   modal.style.display = 'none';
 }
 
-function validarPaso1() {
+async function validarPaso1() {
   const nom    = document.getElementById('co-nom')?.value.trim();
   const email  = document.getElementById('co-email')?.value.trim();
   const tel    = document.getElementById('co-tel')?.value.trim();
@@ -1325,6 +1342,21 @@ function validarPaso1() {
     });
     return;
   }
+
+  // Guarda estos datos en el perfil (cuentas antiguas o creadas con Google
+  // no los tenían) para que la próxima compra no vuelva a pedirlos.
+  if (usuario && (!perfilUsuario || perfilUsuario.nombre !== nom || perfilUsuario.telefono !== tel ||
+      perfilUsuario.cedula !== cedula || perfilUsuario.ciudad !== ciudad || perfilUsuario.direccion !== dir)) {
+    try {
+      await setDoc(doc(db, 'usuarios', usuario.uid), {
+        nombre: nom, telefono: tel, cedula, ciudad, direccion: dir
+      }, { merge: true });
+      perfilUsuario = { ...(perfilUsuario || {}), nombre: nom, telefono: tel, cedula, ciudad, direccion: dir };
+    } catch (e) {
+      console.error('No se pudo guardar el perfil:', e);
+    }
+  }
+
   irPaso(2);
 }
 
