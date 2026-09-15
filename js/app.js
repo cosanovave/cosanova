@@ -1123,11 +1123,11 @@ function actualizarCarritoUI() {
   const totalBs = total * tasas.binance / (1 - FEE_VE / 100);
   const count   = carrito.reduce((a, x) => a + x.qty, 0);
 
-  const badge = document.getElementById('cart-badge');
-  if (badge) {
+  [document.getElementById('cart-badge'), document.getElementById('mobile-cart-badge')].forEach(badge => {
+    if (!badge) return;
     badge.textContent = count;
     badge.style.display = count > 0 ? 'inline-flex' : 'none';
-  }
+  });
 
   const ctUsd = document.getElementById('ct-usd');
   const ctBs  = document.getElementById('ct-bs');
