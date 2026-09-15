@@ -571,7 +571,13 @@ function calcPrecio(p) {
   // Shopify/Dropi: el precio ya es el de venta sugerido (final para Colombia),
   // no se le aplica la fórmula de margen/fee de los productos cargados a mano.
   if (p.origen === 'shopify') {
-    const pvp_usd = p.precio_shopify_usd || 0;
+    // El precio real y fijo es el COP de Shopify; el USD se recalcula en
+    // vivo con la TRM actual (igual que los productos manuales), en vez de
+    // usar precio_shopify_usd que quedó congelado con la TRM del momento
+    // en que se sincronizó el producto.
+    const pvp_usd = p.precio_shopify_cop
+      ? p.precio_shopify_cop / tasas.trm
+      : (p.precio_shopify_usd || 0);
     const pvp_bs  = pvp_usd * tasas.binance / (1 - FEE_VE / 100);
     return { pvp_usd, pvp_bs };
   }

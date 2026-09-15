@@ -118,7 +118,11 @@ function calcFinanzas(p) {
   // Shopify/Dropi: usamos el precio de venta sugerido tal cual, sin aplicarle
   // la fórmula de margen/fee — ya viene como precio final para Colombia.
   if (p.origen === 'shopify') {
-    const pvp_usd = p.precio_shopify_usd || 0;
+    // USD recalculado en vivo con la TRM actual a partir del COP real de
+    // Shopify, no el valor congelado de cuando se sincronizó el producto.
+    const pvp_usd = p.precio_shopify_cop
+      ? p.precio_shopify_cop / tasas.trm
+      : (p.precio_shopify_usd || 0);
     const pvp_bs  = pvp_usd * tasas.binance / (1 - FEE_VE / 100);
     // El costo real es lo que cobra el proveedor (Dropi), no el precio de
     // venta de Shopify — si aún no se ha escrito, no hay forma de saber la
