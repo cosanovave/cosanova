@@ -232,6 +232,11 @@
             <input type="text" id="prod-shopify-handle" placeholder="ej: jeans-cb-9088 (o pega el link completo del producto)" onblur="precargarDesdeShopify()">
             <small id="shopify-preview-estado" style="color:#888;">Al salir del campo, se busca en tu tienda de Shopify y se precargan nombre, categoría, descripción, imágenes y tallas (si están vacíos) — puedes editarlos después libremente.</small>
           </div>
+          <div class="form-admin-field" id="campo-costo-proveedor" style="display:none">
+            <label>Costo del proveedor (COP)</label>
+            <input type="number" id="prod-costo-proveedor" placeholder="ej: 60000 (lo que te deja Dropi)" step="500">
+            <small style="color:#888;">Opcional. El precio de venta lo trae Shopify automáticamente — esto es solo para calcular tu utilidad real en la tabla de productos.</small>
+          </div>
           <div id="campos-manual-precio">
             <div class="form-admin-field">
               <label>Origen *</label>
