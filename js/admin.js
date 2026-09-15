@@ -120,7 +120,14 @@ function calcFinanzas(p) {
   if (p.origen === 'shopify') {
     const pvp_usd = p.precio_shopify_usd || 0;
     const pvp_bs  = pvp_usd * tasas.binance / (1 - FEE_VE / 100);
-    return { costo_usd: pvp_usd, pvp_usd, pvp_bs, utilidad_usd: 0, margen_pct: null };
+    // El costo real es lo que cobra el proveedor (Dropi), no el precio de
+    // venta de Shopify — si aún no se ha escrito, no hay forma de saber la
+    // utilidad real todavía.
+    const tieneCosto = !!p.costo_proveedor_cop;
+    const costo_usd  = tieneCosto ? p.costo_proveedor_cop / tasas.trm : pvp_usd;
+    const utilidad_usd = tieneCosto ? pvp_usd - costo_usd : 0;
+    const margen_pct   = tieneCosto && pvp_usd > 0 ? (utilidad_usd / pvp_usd) * 100 : null;
+    return { costo_usd, pvp_usd, pvp_bs, utilidad_usd, margen_pct };
   }
 
   const fee = p.origen === 'venezuela' ? 0 : FEE;
@@ -152,7 +159,9 @@ function renderTablaProductos(lista) {
       ? (imgPrincipal.startsWith('http') ? imgPrincipal : `assets/products/${imgPrincipal}`)
       : '';
     const costoFmt = p.origen === 'shopify'
-      ? `Shopify · $${new Intl.NumberFormat('es-CO').format(p.precio_shopify_usd || 0)}`
+      ? (p.costo_proveedor_cop
+          ? `Dropi · $${new Intl.NumberFormat('es-CO').format(p.costo_proveedor_cop)} COP`
+          : `Shopify · sin costo registrado`)
       : p.origen === 'venezuela'
         ? `Bs ${new Intl.NumberFormat('es-VE').format(p.precio_bs || 0)}`
         : `$ ${new Intl.NumberFormat('es-CO').format(p.inv_cop || 0)} COP`;
@@ -205,18 +214,21 @@ function filtrarTablaProductos(busq) {
 function toggleFuenteAdmin(fuente) {
   const campoHandle = document.getElementById('campo-shopify-handle');
   const campoManual  = document.getElementById('campos-manual-precio');
+  const campoCosto   = document.getElementById('campo-costo-proveedor');
   const inputHandle  = document.getElementById('prod-shopify-handle');
   const inputCOP     = document.getElementById('prod-inv');
   const inputBs      = document.getElementById('prod-precio-bs');
   if (fuente === 'shopify') {
     campoHandle.style.display = '';
     campoManual.style.display = 'none';
+    campoCosto.style.display = '';
     inputHandle.required = true;
     inputCOP.required = false;
     inputBs.required  = false;
   } else {
     campoHandle.style.display = 'none';
     campoManual.style.display = '';
+    campoCosto.style.display = 'none';
     inputHandle.required = false;
     toggleOrigenAdmin(document.getElementById('prod-origen').value);
   }
@@ -531,6 +543,7 @@ function abrirFormProducto(id) {
     document.getElementById('prod-categoria').value    = p.categoria        || '';
     document.getElementById('prod-fuente').value       = p.origen === 'shopify' ? 'shopify' : 'manual';
     document.getElementById('prod-shopify-handle').value = p.shopify_handle || '';
+    document.getElementById('prod-costo-proveedor').value = p.costo_proveedor_cop || '';
     document.getElementById('prod-origen').value       = p.origen === 'shopify' ? 'colombia' : (p.origen || 'colombia');
     document.getElementById('prod-pais-venta').value   = p.pais_venta       || 'VE';
     document.getElementById('prod-inv').value          = p.inv_cop          || '';
@@ -629,6 +642,7 @@ async function guardarProducto(e) {
         shopify_talla_variantes: datosShopify.shopify_talla_variantes,
         precio_shopify_usd: datosShopify.precio_shopify_usd,
         precio_shopify_cop: datosShopify.precio_shopify_cop,
+        costo_proveedor_cop: parseFloat(document.getElementById('prod-costo-proveedor').value) || 0,
       } : {}),
       precio_mayorista: precioMay,
       genero:         document.getElementById('prod-genero').value,
