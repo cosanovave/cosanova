@@ -1687,6 +1687,15 @@ footer {
    ══════════════════════════════════════════════════════ */
 
 /* Botón en nav */
+/* El apartado (pago en abonos) solo aplica al flujo manual de Venezuela;
+   Colombia paga siempre completo vía checkout de Shopify. */
+body.pais-co .apartado-section,
+body.pais-co .apartado-float,
+body.pais-co .chip-apartado,
+body.pais-co .anuncio-apartado {
+  display: none !important;
+}
+
 .cart-btn {
   position: relative;
   background: none;
