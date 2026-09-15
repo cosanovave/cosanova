@@ -242,7 +242,7 @@ async function obtenerDatosShopifyPorHandle(handleCrudo) {
         descriptionHtml
         productType
         images(first: 10) { edges { node { url } } }
-        priceRange { minVariantPrice { amount } }
+        priceRange { minVariantPrice { amount currencyCode } }
         variants(first: 100) {
           edges {
             node {
@@ -270,11 +270,22 @@ async function obtenerDatosShopifyPorHandle(handleCrudo) {
     if (opt) porTalla[opt.value.trim().toUpperCase()] = v.id;
   });
 
+  // La tienda de Shopify factura en COP, no en USD — si el precio viene en
+  // COP lo convertimos con la TRM configurada en el admin para que el sitio
+  // siga mostrando precios en USD/Bs de forma coherente con el resto del
+  // catálogo (el checkout real en Shopify sigue cobrando en COP igual).
+  const montoShopify = parseFloat(p.priceRange.minVariantPrice.amount) || 0;
+  const monedaShopify = p.priceRange.minVariantPrice.currencyCode;
+  const precioUsd = monedaShopify === 'COP' ? montoShopify / (tasas.trm || 4200) : montoShopify;
+
   return {
     shopify_id:            p.id.split('/').pop(),
     shopify_variant_id:    variantes[0].id,
     shopify_talla_variantes: porTalla,
-    precio_shopify_usd:    parseFloat(p.priceRange.minVariantPrice.amount) || 0,
+    precio_shopify_usd:    parseFloat(precioUsd.toFixed(2)),
+    // Precio real en COP tal cual lo cobra Shopify — Colombia lo muestra
+    // directo (sin convertir), Venezuela usa el equivalente en USD/Bs.
+    precio_shopify_cop:    monedaShopify === 'COP' ? montoShopify : Math.round(montoShopify * (tasas.trm || 4200)),
     titulo:                p.title,
     descripcion:           (p.descriptionHtml || '').replace(/<[^>]+>/g, '').trim(),
     imagenes:              p.images.edges.map(e => e.node.url),
@@ -617,6 +628,7 @@ async function guardarProducto(e) {
         shopify_variant_id: datosShopify.shopify_variant_id,
         shopify_talla_variantes: datosShopify.shopify_talla_variantes,
         precio_shopify_usd: datosShopify.precio_shopify_usd,
+        precio_shopify_cop: datosShopify.precio_shopify_cop,
       } : {}),
       precio_mayorista: precioMay,
       genero:         document.getElementById('prod-genero').value,
@@ -972,7 +984,7 @@ async function sincronizarShopify() {
             descriptionHtml
             productType
             images(first: 5) { edges { node { url } } }
-            priceRange { minVariantPrice { amount } }
+            priceRange { minVariantPrice { amount currencyCode } }
             variants(first: 1) { edges { node { id } } }
           }
         }
@@ -993,13 +1005,17 @@ async function sincronizarShopify() {
         const shopifyId = node.id.split('/').pop();
         const imagenes  = node.images.edges.map(e => e.node.url);
         const variantGid = node.variants.edges[0]?.node.id || '';
+        const montoShopify  = parseFloat(node.priceRange.minVariantPrice.amount) || 0;
+        const monedaShopify = node.priceRange.minVariantPrice.currencyCode;
+        const precioUsd = monedaShopify === 'COP' ? montoShopify / (tasas.trm || 4200) : montoShopify;
         const doc_data = {
           nom:                node.title,
           categoria:          mapCategoriaShopify(node.productType),
           origen:             'shopify',
           shopify_id:         shopifyId,
           shopify_variant_id: variantGid,
-          precio_shopify_usd: parseFloat(node.priceRange.minVariantPrice.amount) || 0,
+          precio_shopify_usd: parseFloat(precioUsd.toFixed(2)),
+          precio_shopify_cop: monedaShopify === 'COP' ? montoShopify : Math.round(montoShopify * (tasas.trm || 4200)),
           descripcion:        (node.descriptionHtml || '').replace(/<[^>]+>/g, '').trim(),
           imagenes,
           imagen:             imagenes[0] || '',

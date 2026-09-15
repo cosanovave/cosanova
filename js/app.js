@@ -708,7 +708,17 @@ function cardHTML(p, mini = false) {
   const pvp_may_bs = pvp_may * tasas.binance / (1 - FEE_VE / 100);
   const precioCarrito = esMay ? pvp_may : pvp_usd;
 
-  const preciosHTML = esMay
+  // El USD/Bs con protección de devaluación es solo para Venezuela. Colombia
+  // paga en COP directo por Shopify, así que se muestra el precio real en
+  // pesos (sin conversión ni recargo) en vez de dólares.
+  const esCO = paisActual === 'CO' && p.origen === 'shopify';
+  const precioCop = p.precio_shopify_cop || Math.round(pvp_usd * tasas.trm);
+
+  const preciosHTML = esCO
+    ? `<div class="producto-precios">
+        <div class="precio-usd"><span>$ </span>${fmt(precioCop, 0)} <span>COP</span></div>
+      </div>`
+    : esMay
     ? `<div class="producto-precios">
         <div class="precio-retail-tachado">$ ${fmt(pvp_usd)} USD</div>
         <div class="precio-mayorista-tag">$ ${fmt(pvp_may)} USD <span class="badge-may">−25%</span></div>
@@ -789,12 +799,25 @@ function abrirProducto(id) {
   const mpUsdEl = document.getElementById('mp-usd');
   const mpBsEl  = document.getElementById('mp-bs');
   const mpRetailEl = document.getElementById('mp-retail-tachado');
+  const mpMonedaEl = document.getElementById('mp-moneda');
 
-  if (esMay) {
+  const esCO = paisActual === 'CO' && p.origen === 'shopify';
+
+  if (esCO) {
+    const precioCop = p.precio_shopify_cop || Math.round(pvp_usd * tasas.trm);
+    if (mpRetailEl) mpRetailEl.style.display = 'none';
+    if (mpMonedaEl) mpMonedaEl.textContent = 'COP';
+    if (mpUsdEl) mpUsdEl.textContent = fmt(precioCop, 0);
+    if (mpBsEl)  { mpBsEl.textContent = ''; mpBsEl.closest('.precio-bs')?.style.setProperty('display', 'none'); }
+  } else if (esMay) {
+    if (mpMonedaEl) mpMonedaEl.textContent = 'USD';
+    if (mpBsEl) mpBsEl.closest('.precio-bs')?.style.removeProperty('display');
     if (mpRetailEl) { mpRetailEl.textContent = `$ ${fmt(pvp_usd)} USD`; mpRetailEl.style.display = 'block'; }
     if (mpUsdEl) mpUsdEl.innerHTML = `$ ${fmt(pvp_may)} USD <span class="badge-may">−25%</span>`;
     if (mpBsEl)  mpBsEl.textContent = 'Bs. ' + fmt(pvp_may_bs, 0);
   } else {
+    if (mpMonedaEl) mpMonedaEl.textContent = 'USD';
+    if (mpBsEl) mpBsEl.closest('.precio-bs')?.style.removeProperty('display');
     if (mpRetailEl) mpRetailEl.style.display = 'none';
     if (mpUsdEl) mpUsdEl.textContent = fmt(pvp_usd);
     if (mpBsEl)  mpBsEl.textContent  = 'Bs. ' + fmt(pvp_bs, 0);
