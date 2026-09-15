@@ -1603,8 +1603,12 @@ footer {
   .nav-inner { padding: 10px 16px; gap: 10px; grid-template-columns: auto 1fr; }
   .nav-actions-group { gap: 8px; }
   #nav-user-label { display: none; }
-  .cart-btn-label { font-size: 0; }
-  .cart-btn-label .cart-badge { font-size: 11px; margin-left: 0; }
+  .cart-btn { display: none; }
+  .mobile-menu-cart-link {
+    display: flex;
+    align-items: center;
+    font-weight: 700;
+  }
   #nav-pais-indicador { padding: 6px 8px !important; font-size: 12px; white-space: nowrap; }
   .nav-user-btn, .cart-btn { padding: 6px; }
 
