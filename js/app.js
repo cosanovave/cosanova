@@ -128,6 +128,7 @@ function actualizarIndicadorPais() {
   if (!el) return;
   el.textContent = paisActual === 'CO' ? '🇨🇴 Colombia' : paisActual === 'VE' ? '🇻🇪 Venezuela' : '';
   el.style.display = paisActual ? 'inline-flex' : 'none';
+  document.body.classList.toggle('pais-co', paisActual === 'CO');
 }
 
 function cambiarPais() {
@@ -380,10 +381,14 @@ async function loginConGoogle() {
 }
 
 async function registrarUsuario() {
-  const nom   = document.getElementById('reg-nom')?.value.trim();
-  const email = document.getElementById('reg-email')?.value.trim();
-  const pass  = document.getElementById('reg-pass')?.value;
-  if (!nom || !email || !pass) return mostrarErrorAuth('reg-error', 'Completa todos los campos');
+  const nom     = document.getElementById('reg-nom')?.value.trim();
+  const email   = document.getElementById('reg-email')?.value.trim();
+  const pass    = document.getElementById('reg-pass')?.value;
+  const tel     = document.getElementById('reg-tel')?.value.trim();
+  const cedula  = document.getElementById('reg-cedula')?.value.trim();
+  const ciudad  = document.getElementById('reg-ciudad')?.value.trim();
+  const dir     = document.getElementById('reg-dir')?.value.trim();
+  if (!nom || !email || !pass || !tel || !cedula || !ciudad || !dir) return mostrarErrorAuth('reg-error', 'Completa todos los campos');
   if (pass.length < 6)          return mostrarErrorAuth('reg-error', 'La contraseña debe tener al menos 6 caracteres');
   const btn = document.getElementById('btn-registro');
   if (btn) { btn.disabled = true; btn.textContent = 'Creando cuenta...'; }
@@ -392,7 +397,7 @@ async function registrarUsuario() {
     await updateProfile(cred.user, { displayName: nom });
     await setDoc(doc(db, 'usuarios', cred.user.uid), {
       nombre: nom, email,
-      telefono: '', cedula: '', ciudad: '', direccion: '',
+      telefono: tel, cedula, ciudad, direccion: dir,
       esAdmin: email === ADMIN_EMAIL,
       createdAt: serverTimestamp()
     });
@@ -1195,7 +1200,9 @@ function abrirCheckout() {
   modoApartado = false; abonoApartado = 0;
   seleccionarTipoOrden('completo');
 
-  // Pre-rellenar con datos del perfil si el usuario está autenticado
+  // Pre-rellenar con datos del perfil si el usuario está autenticado. Si el
+  // perfil ya tiene todo (se pidió una sola vez al registrarse), no hace
+  // falta volver a preguntar: se salta directo al paso 2.
   if (perfilUsuario) {
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
     set('co-nom',    perfilUsuario.nombre);
@@ -1204,6 +1211,10 @@ function abrirCheckout() {
     set('co-cedula', perfilUsuario.cedula);
     set('co-ciudad', perfilUsuario.ciudad);
     set('co-dir',    perfilUsuario.direccion);
+
+    const completo = perfilUsuario.nombre && perfilUsuario.telefono &&
+      perfilUsuario.cedula && perfilUsuario.ciudad && perfilUsuario.direccion;
+    if (completo) irPaso(2);
   }
 }
 
