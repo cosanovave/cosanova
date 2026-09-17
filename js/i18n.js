@@ -159,6 +159,7 @@ export const TRAD_EN = {
   "Elige talla y color": "Choose size and color",
   "Inicia sesión para continuar tu compra": "Sign in to continue your purchase",
   "¡Pedido enviado!": "Order sent!",
+  "Sin descripción disponible.": "No description available.",
   "Completa todos los campos antes de continuar": "Please complete all fields before continuing",
   "Completa todos los datos del cliente": "Please complete all customer details",
   "Error al enviar reseña. Intenta de nuevo.": "Error submitting review. Please try again.",
@@ -263,4 +264,17 @@ export function idiomaGuardado() {
 
 export function traducir(texto) {
   return idiomaActual === 'en' ? (TRAD_EN[texto] || texto) : texto;
+}
+
+// Nombre/descripción de producto: usa la versión en inglés que el admin
+// haya escrito a mano (nom_en / descripcion_en); si no existe, cae de
+// vuelta al texto en español en vez de dejarlo vacío.
+export function nombreProducto(p) {
+  if (idiomaActual === 'en' && p.nom_en) return p.nom_en;
+  return p.nom || '';
+}
+
+export function descripcionProducto(p) {
+  if (idiomaActual === 'en' && p.descripcion_en) return p.descripcion_en;
+  return p.descripcion || '';
 }

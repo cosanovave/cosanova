@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════
 
 import { db, auth } from './firebase-config.js';
-import { aplicarIdioma, toggleIdioma, idiomaGuardado, traducir } from './i18n.js';
+import { aplicarIdioma, toggleIdioma, idiomaGuardado, traducir, nombreProducto, descripcionProducto } from './i18n.js';
 
 import {
   collection, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
@@ -701,13 +701,14 @@ function cardHTML(p, mini = false) {
   const { pvp_usd, pvp_bs } = calcPrecio(p);
   const tallas  = parsearTallas(p.tallas, p);
   const colores = parsearColores(p.colores);
-  const nomEsc  = (p.nom || '').replace(/'/g, "\\'");
-  const nomAttr = (p.nom || '').replace(/"/g, '&quot;');
+  const nombre  = nombreProducto(p);
+  const nomEsc  = nombre.replace(/'/g, "\\'");
+  const nomAttr = nombre.replace(/"/g, '&quot;');
   const enWish  = wishlist.has(p.id);
   const imgSrc  = getMainImage(p);
 
   const imgHTML = imgSrc
-    ? `<img src="${imgSrc}" alt="${p.nom}" class="producto-img" onerror="this.parentElement.innerHTML='<div class=\\'producto-img-placeholder\\'>${iconoCategoria(p.categoria)}</div>'">`
+    ? `<img src="${imgSrc}" alt="${nombre}" class="producto-img" onerror="this.parentElement.innerHTML='<div class=\\'producto-img-placeholder\\'>${iconoCategoria(p.categoria)}</div>'">`
     : `<div class="producto-img-placeholder">${iconoCategoria(p.categoria)}</div>`;
 
   const tallasHTML = tallas.length > 0 ? `
@@ -775,7 +776,7 @@ function cardHTML(p, mini = false) {
       </div>
       <div class="producto-body">
         <span class="producto-cat">${p.categoria}</span>
-        <h3 class="producto-nom producto-nom-link" onclick="abrirProducto('${p.id}')">${p.nom}</h3>
+        <h3 class="producto-nom producto-nom-link" onclick="abrirProducto('${p.id}')">${nombre}</h3>
         <span class="chip-apartado">💰 Apartado disponible</span>
         ${preciosHTML}
         ${tallasHTML}
@@ -801,7 +802,7 @@ function renderHeroPreview(lista) {
     return `<div class="hero-prev-card" onclick="document.getElementById('catalogo').scrollIntoView({behavior:'smooth'})">
       ${imgHTML}
       <div class="hero-prev-info">
-        <div class="hero-prev-nom">${p.nom}</div>
+        <div class="hero-prev-nom">${nombreProducto(p)}</div>
         <div class="hero-prev-precio">$ ${fmt(pvp.pvp_usd)} USD</div>
       </div>
     </div>`;
@@ -823,8 +824,8 @@ function abrirProducto(id) {
   const pvp_may_bs = pvp_may * tasas.binance / (1 - FEE_VE / 100);
 
   document.getElementById('mp-cat').textContent  = p.categoria;
-  document.getElementById('mp-nom').textContent  = p.nom;
-  document.getElementById('mp-desc').textContent = p.descripcion || 'Sin descripción disponible.';
+  document.getElementById('mp-nom').textContent  = nombreProducto(p);
+  document.getElementById('mp-desc').textContent = descripcionProducto(p) || traducir('Sin descripción disponible.');
 
   const mpUsdEl = document.getElementById('mp-usd');
   const mpBsEl  = document.getElementById('mp-bs');
@@ -868,7 +869,7 @@ function abrirProducto(id) {
     : null;
 
   if (mainSrc) {
-    img.src = mainSrc; img.alt = p.nom;
+    img.src = mainSrc; img.alt = nombreProducto(p);
     img.style.display = 'block'; phld.style.display = 'none';
   } else {
     img.style.display = 'none';
@@ -896,7 +897,7 @@ function abrirProducto(id) {
     mpHeart.onclick     = () => toggleWishlist(id);
   }
 
-  const nomEsc    = (p.nom || '').replace(/'/g, "\\'");
+  const nomEsc    = nombreProducto(p).replace(/'/g, "\\'");
   const tallas    = parsearTallas(p.tallas, p);
   const colores   = parsearColores(p.colores);
   const mpTallas  = document.getElementById('mp-tallas');

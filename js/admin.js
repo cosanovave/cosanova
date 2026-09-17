@@ -566,6 +566,7 @@ function abrirFormProducto(id) {
     document.getElementById('form-prod-titulo').textContent = 'Editar producto';
     document.getElementById('prod-id').value        = id;
     document.getElementById('prod-nom').value          = p.nom              || '';
+    document.getElementById('prod-nom-en').value       = p.nom_en           || '';
     document.getElementById('prod-categoria').value    = p.categoria        || '';
     document.getElementById('prod-fuente').value       = p.origen === 'shopify' ? 'shopify' : 'manual';
     document.getElementById('prod-shopify-handle').value = p.shopify_handle || '';
@@ -579,6 +580,7 @@ function abrirFormProducto(id) {
     document.getElementById('prod-genero').value    = p.genero      || '';
     document.getElementById('prod-subtipo').value   = p.subtipo     || '';
     document.getElementById('prod-desc').value      = p.descripcion || '';
+    document.getElementById('prod-desc-en').value   = p.descripcion_en || '';
     document.getElementById('prod-activo').checked  = p.activo !== false;
     toggleFuenteAdmin(p.origen === 'shopify' ? 'shopify' : 'manual');
     if (p.origen !== 'shopify') toggleOrigenAdmin(p.origen || 'colombia');
@@ -660,6 +662,7 @@ async function guardarProducto(e) {
       : parseFloat((pvpUsdEstimado * 0.75).toFixed(2));
     const data = {
       nom:            document.getElementById('prod-nom').value.trim(),
+      nom_en:         document.getElementById('prod-nom-en').value.trim(),
       categoria:      document.getElementById('prod-categoria').value,
       origen,
       pais_venta:     fuente === 'shopify' ? 'ambos' : (document.getElementById('prod-pais-venta').value || 'VE'),
@@ -681,6 +684,7 @@ async function guardarProducto(e) {
       tallas:         serializeTallas(tallasState),
       colores:        serializeColores(coloresState),
       descripcion:    document.getElementById('prod-desc').value.trim(),
+      descripcion_en: document.getElementById('prod-desc-en').value.trim(),
       imagenes,
       imagen,
       activo:         document.getElementById('prod-activo').checked,
