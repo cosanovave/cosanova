@@ -98,7 +98,13 @@ function inyectarEstilosPais() {
 // Venezuela, que era el comportamiento original.
 function aplicarFiltroPais() {
   productos = productosCruda.filter(p => {
-    if (p.origen === 'shopify') return true;
+    if (p.origen === 'shopify') {
+      // EEUU no vende productos de Dropi (dropshipping Colombia/Venezuela);
+      // solo lo que se marque explícitamente como "otro proveedor". Los
+      // productos antiguos sin este campo se asumen Dropi por seguridad.
+      if (paisActual === 'US' && (p.proveedor || 'dropi') === 'dropi') return false;
+      return true;
+    }
     const pv = p.pais_venta || 'VE';
     return pv === 'ambos' || pv === paisActual;
   });
@@ -123,12 +129,19 @@ function actualizarMenuCategoriasPorPais() {
   });
 }
 
+// Colombia y Estados Unidos comparten el mismo modelo: catálogo solo de
+// Shopify, checkout real de Shopify, sin apartado (eso es solo Venezuela).
+function esPaisSoloShopify(pais) {
+  return pais === 'CO' || pais === 'US';
+}
+
 function actualizarIndicadorPais() {
   const el = document.getElementById('nav-pais-indicador');
   if (!el) return;
-  el.textContent = paisActual === 'CO' ? '🇨🇴 Colombia' : paisActual === 'VE' ? '🇻🇪 Venezuela' : '';
+  const nombres = { CO: '🇨🇴 Colombia', VE: '🇻🇪 Venezuela', US: '🇺🇸 United States' };
+  el.textContent = nombres[paisActual] || '';
   el.style.display = paisActual ? 'inline-flex' : 'none';
-  document.body.classList.toggle('pais-co', paisActual === 'CO');
+  document.body.classList.toggle('pais-co', esPaisSoloShopify(paisActual));
 }
 
 function cambiarPais() {
@@ -156,6 +169,7 @@ function mostrarSelectorPais() {
       <div class="mp-btns">
         <button class="mp-btn" data-pais="CO">🇨🇴 Colombia</button>
         <button class="mp-btn" data-pais="VE">🇻🇪 Venezuela</button>
+        <button class="mp-btn" data-pais="US">🇺🇸 United States</button>
       </div>
     </div>
   `;
@@ -716,13 +730,20 @@ function cardHTML(p, mini = false) {
 
   // El USD/Bs con protección de devaluación es solo para Venezuela. Colombia
   // paga en COP directo por Shopify, así que se muestra el precio real en
-  // pesos (sin conversión ni recargo) en vez de dólares.
+  // pesos (sin conversión ni recargo) en vez de dólares. EEUU paga también
+  // por Shopify pero en USD real (dólar de mercado, sin la protección
+  // cambiaria que es un tema exclusivo de la devaluación del bolívar).
   const esCO = paisActual === 'CO' && p.origen === 'shopify';
+  const esUS = paisActual === 'US' && p.origen === 'shopify';
   const precioCop = p.precio_shopify_cop || Math.round(pvp_usd * tasas.trm);
 
   const preciosHTML = esCO
     ? `<div class="producto-precios">
         <div class="precio-usd"><span>$ </span>${fmt(precioCop, 0)} <span>COP</span></div>
+      </div>`
+    : esUS
+    ? `<div class="producto-precios">
+        <div class="precio-usd"><span>$ </span>${fmt(pvp_usd)} <span>USD</span></div>
       </div>`
     : esMay
     ? `<div class="producto-precios">
@@ -808,12 +829,18 @@ function abrirProducto(id) {
   const mpMonedaEl = document.getElementById('mp-moneda');
 
   const esCO = paisActual === 'CO' && p.origen === 'shopify';
+  const esUS = paisActual === 'US' && p.origen === 'shopify';
 
   if (esCO) {
     const precioCop = p.precio_shopify_cop || Math.round(pvp_usd * tasas.trm);
     if (mpRetailEl) mpRetailEl.style.display = 'none';
     if (mpMonedaEl) mpMonedaEl.textContent = 'COP';
     if (mpUsdEl) mpUsdEl.textContent = fmt(precioCop, 0);
+    if (mpBsEl)  { mpBsEl.textContent = ''; mpBsEl.closest('.precio-bs')?.style.setProperty('display', 'none'); }
+  } else if (esUS) {
+    if (mpRetailEl) mpRetailEl.style.display = 'none';
+    if (mpMonedaEl) mpMonedaEl.textContent = 'USD';
+    if (mpUsdEl) mpUsdEl.textContent = fmt(pvp_usd);
     if (mpBsEl)  { mpBsEl.textContent = ''; mpBsEl.closest('.precio-bs')?.style.setProperty('display', 'none'); }
   } else if (esMay) {
     if (mpMonedaEl) mpMonedaEl.textContent = 'USD';
@@ -1228,10 +1255,10 @@ function abrirCheckout() {
     abrirModalAuth();
     return mostrarToast('Inicia sesión para continuar tu compra');
   }
-  // Colombia: siempre Shopify (solo vende productos de Shopify). Venezuela:
-  // siempre el flujo manual, sin importar el origen del producto (Dropi no
-  // envía a Venezuela, el reenvío lo hace el usuario por su cuenta).
-  if (paisActual === 'CO') {
+  // Colombia y EEUU: siempre Shopify (solo venden productos de Shopify).
+  // Venezuela: siempre el flujo manual, sin importar el origen del producto
+  // (Dropi no envía a Venezuela, el reenvío lo hace el usuario por su cuenta).
+  if (esPaisSoloShopify(paisActual)) {
     toggleCart();
     irACheckoutShopify();
     return;

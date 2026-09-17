@@ -219,6 +219,7 @@ function toggleFuenteAdmin(fuente) {
   const campoHandle = document.getElementById('campo-shopify-handle');
   const campoManual  = document.getElementById('campos-manual-precio');
   const campoCosto   = document.getElementById('campo-costo-proveedor');
+  const campoProv    = document.getElementById('campo-proveedor-shopify');
   const inputHandle  = document.getElementById('prod-shopify-handle');
   const inputCOP     = document.getElementById('prod-inv');
   const inputBs      = document.getElementById('prod-precio-bs');
@@ -226,6 +227,7 @@ function toggleFuenteAdmin(fuente) {
     campoHandle.style.display = '';
     campoManual.style.display = 'none';
     campoCosto.style.display = '';
+    campoProv.style.display = '';
     inputHandle.required = true;
     inputCOP.required = false;
     inputBs.required  = false;
@@ -233,6 +235,7 @@ function toggleFuenteAdmin(fuente) {
     campoHandle.style.display = 'none';
     campoManual.style.display = '';
     campoCosto.style.display = 'none';
+    campoProv.style.display = 'none';
     inputHandle.required = false;
     toggleOrigenAdmin(document.getElementById('prod-origen').value);
   }
@@ -567,6 +570,7 @@ function abrirFormProducto(id) {
     document.getElementById('prod-fuente').value       = p.origen === 'shopify' ? 'shopify' : 'manual';
     document.getElementById('prod-shopify-handle').value = p.shopify_handle || '';
     document.getElementById('prod-costo-proveedor').value = p.costo_proveedor_cop || '';
+    document.getElementById('prod-proveedor-shopify').value = p.proveedor || 'dropi';
     document.getElementById('prod-origen').value       = p.origen === 'shopify' ? 'colombia' : (p.origen || 'colombia');
     document.getElementById('prod-pais-venta').value   = p.pais_venta       || 'VE';
     document.getElementById('prod-inv').value          = p.inv_cop          || '';
@@ -669,6 +673,7 @@ async function guardarProducto(e) {
         precio_shopify_usd: datosShopify.precio_shopify_usd,
         precio_shopify_cop: datosShopify.precio_shopify_cop,
         costo_proveedor_cop: parseFloat(document.getElementById('prod-costo-proveedor').value) || 0,
+        proveedor: document.getElementById('prod-proveedor-shopify').value || 'dropi',
       } : {}),
       precio_mayorista: precioMay,
       genero:         document.getElementById('prod-genero').value,
@@ -1054,6 +1059,7 @@ async function sincronizarShopify() {
           origen:             'shopify',
           shopify_id:         shopifyId,
           shopify_variant_id: variantGid,
+          proveedor:          'dropi',
           precio_shopify_usd: parseFloat(precioUsd.toFixed(2)),
           precio_shopify_cop: monedaShopify === 'COP' ? montoShopify : Math.round(montoShopify * (tasas.trm || 4200)),
           descripcion:        (node.descriptionHtml || '').replace(/<[^>]+>/g, '').trim(),
