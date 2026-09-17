@@ -1696,6 +1696,12 @@ body.pais-co .anuncio-apartado {
   display: none !important;
 }
 
+/* El banner de envío Colombia→Venezuela y apartado no aplica a Colombia/EEUU
+   (que compran por Shopify, sin ese envío ni el pago en abonos). */
+body.pais-co #anuncio-bar {
+  display: none !important;
+}
+
 .cart-btn {
   position: relative;
   background: none;
