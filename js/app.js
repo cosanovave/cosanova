@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════
 
 import { db, auth } from './firebase-config.js';
+import { aplicarIdioma, toggleIdioma, idiomaGuardado, traducir } from './i18n.js';
 
 import {
   collection, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
@@ -63,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCarruselTestimonios();
   initCategoriaPagina();
   initSelectorPais();
+  aplicarIdioma(idiomaGuardado());
 });
 
 // ─── SELECTOR DE PAÍS ──────────────────────────────────
@@ -691,6 +693,7 @@ function renderProductos(lista) {
     el.style.transitionDelay = `${i * 0.06}s`;
     observerReveal?.observe(el);
   });
+  aplicarIdioma(idiomaGuardado());
 }
 
 // ─── HTML TARJETA PRODUCTO ────────────────────────────
@@ -1046,9 +1049,9 @@ function parsearColores(colorStr) {
 
 // ─── SELECCIÓN TALLA/COLOR ────────────────────────────
 function mensajeSeleccionPendiente(faltaTalla, faltaColor) {
-  if (faltaTalla && faltaColor) return 'Elige talla y color';
-  if (faltaTalla) return 'Elige una talla';
-  if (faltaColor) return 'Elige un color';
+  if (faltaTalla && faltaColor) return traducir('Elige talla y color');
+  if (faltaTalla) return traducir('Elige una talla');
+  if (faltaColor) return traducir('Elige un color');
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Agregar';
 }
 
@@ -1236,6 +1239,7 @@ function actualizarCarritoUI() {
       <div class="ci-total">$${fmt(item.pvp_usd * item.qty)}</div>
     </div>`;
   }).join('');
+  aplicarIdioma(idiomaGuardado());
 }
 
 function toggleCart() {
@@ -1692,7 +1696,7 @@ function cerrarModalApartado() {
 function mostrarToast(msg) {
   const t = document.getElementById('toast');
   if (!t) return;
-  t.textContent = msg; t.classList.add('visible');
+  t.textContent = traducir(msg); t.classList.add('visible');
   setTimeout(() => t.classList.remove('visible'), 3000);
 }
 
@@ -1809,4 +1813,6 @@ Object.assign(window, {
   enviarResena,
   // País
   cambiarPais,
+  // Idioma
+  toggleIdioma,
 });
