@@ -186,6 +186,11 @@ function mostrarSelectorPais() {
       document.body.style.overflow = '';
       actualizarIndicadorPais();
       aplicarFiltroPais();
+      // Estados Unidos entra en inglés por defecto; Colombia/Venezuela en
+      // español. Solo aplica si el usuario no eligió idioma antes a mano.
+      if (!localStorage.getItem('cn-idioma-manual')) {
+        aplicarIdioma(paisActual === 'US' ? 'en' : 'es');
+      }
     });
   });
 }

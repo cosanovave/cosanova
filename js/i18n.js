@@ -255,6 +255,7 @@ export function aplicarIdioma(idioma) {
 }
 
 export function toggleIdioma() {
+  localStorage.setItem('cn-idioma-manual', '1');
   aplicarIdioma(idiomaActual === 'en' ? 'es' : 'en');
 }
 
