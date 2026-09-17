@@ -76,7 +76,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/android-chrome-192x192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 
-  <link rel="stylesheet" href="css/styles.css?v=2">
+  <link rel="stylesheet" href="css/styles.css?v=5">
   <link rel="stylesheet" href="css/auth.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
@@ -99,7 +99,7 @@
       <span class="anuncio-sep">·</span>
       <span>📦 Tracking en tiempo real</span>
       <span class="anuncio-sep">·</span>
-      <span>💰 ¡NUEVO! Apartado por abono — reserva con el 50%</span>
+      <span class="anuncio-apartado">💰 ¡NUEVO! Apartado por abono — reserva con el 50%</span>
       <span class="anuncio-sep">·</span>
       <span>🚚 Envío Colombia → Venezuela en 7 días hábiles</span>
       <span class="anuncio-sep">·</span>
@@ -109,7 +109,7 @@
       <span class="anuncio-sep">·</span>
       <span>📦 Tracking en tiempo real</span>
       <span class="anuncio-sep">·</span>
-      <span>💰 ¡NUEVO! Apartado por abono — reserva con el 50%</span>
+      <span class="anuncio-apartado">💰 ¡NUEVO! Apartado por abono — reserva con el 50%</span>
     </div>
   </div>
 
@@ -148,6 +148,7 @@
           <a href="index.html#contacto">Contacto</a>
           <a href="index.html#resenas">Reseñas</a>
         </div>
+        <button class="nav-user-btn" id="nav-idioma-btn" onclick="toggleIdioma()" style="margin-right:6px;">🌐 EN</button>
         <button class="nav-user-btn" id="nav-pais-indicador" onclick="cambiarPais()" style="display:none; margin-right:6px;"></button>
         <button class="nav-user-btn" id="nav-user-btn" onclick="abrirAuth()">
           <svg class="nav-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -172,6 +173,7 @@
   <div id="mobile-menu" class="mobile-menu" role="navigation">
     <button class="mobile-menu-close" onclick="cerrarMobileMenu()" aria-label="Cerrar menú">×</button>
 
+    <a href="#" class="mobile-menu-cart-link" onclick="cerrarMobileMenu(); toggleCart(); return false;">🛒 Carrito<span id="mobile-cart-badge" class="cart-badge" style="display:none;margin-left:6px;">0</span></a>
     <button type="button" class="mobile-menu-toggle-sub" onclick="toggleMobileMenuSub()">
       🛍️ Productos <span class="mobile-menu-chevron" id="mobile-menu-chevron">›</span>
     </button>
@@ -366,7 +368,7 @@
           </div>
           <div class="mp-precios">
             <div class="precio-retail-tachado" id="mp-retail-tachado" style="display:none"></div>
-            <div class="precio-usd"><span>$ </span><span id="mp-usd"></span> <span>USD</span></div>
+            <div class="precio-usd"><span>$ </span><span id="mp-usd"></span> <span id="mp-moneda">USD</span></div>
             <div class="precio-bs"><strong id="mp-bs"></strong></div>
           </div>
           <div class="mp-actions">
@@ -667,6 +669,22 @@
         <div class="form-field">
           <label>Contraseña *</label>
           <input type="password" id="reg-pass" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div class="form-field">
+          <label>Teléfono *</label>
+          <input type="tel" id="reg-tel" placeholder="ej: 04241234567">
+        </div>
+        <div class="form-field">
+          <label>Cédula / Documento *</label>
+          <input type="text" id="reg-cedula" placeholder="ej: V-12345678">
+        </div>
+        <div class="form-field">
+          <label>Ciudad *</label>
+          <input type="text" id="reg-ciudad" placeholder="ej: Maracay">
+        </div>
+        <div class="form-field">
+          <label>Dirección de entrega *</label>
+          <input type="text" id="reg-dir" placeholder="Dirección completa">
         </div>
         <div id="reg-error" class="auth-error" style="display:none"></div>
         <button class="btn-co" id="btn-registro" onclick="registrarUsuario()">Crear cuenta →</button>
