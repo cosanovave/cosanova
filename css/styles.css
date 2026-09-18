@@ -1707,7 +1707,8 @@ body.pais-co #anuncio-bar {
 body.pais-co .tasas-bar,
 body.pais-co #pagos,
 body.pais-co .nav-link-pagos,
-body.pais-co .footer-fiscal {
+body.pais-co .footer-fiscal,
+body.pais-co #footer-copy-ubicacion {
   display: none !important;
 }
 
