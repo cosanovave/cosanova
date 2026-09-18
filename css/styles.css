@@ -1706,7 +1706,8 @@ body.pais-co #anuncio-bar {
    son solo para Venezuela — Colombia/EEUU pagan directo por Shopify. */
 body.pais-co .tasas-bar,
 body.pais-co #pagos,
-body.pais-co .nav-link-pagos {
+body.pais-co .nav-link-pagos,
+body.pais-co .footer-fiscal {
   display: none !important;
 }
 
