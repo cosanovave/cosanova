@@ -1702,6 +1702,14 @@ body.pais-co #anuncio-bar {
   display: none !important;
 }
 
+/* La tasa Bs/USDT y los métodos de pago manuales (USDT, Zelle, Bolívares)
+   son solo para Venezuela — Colombia/EEUU pagan directo por Shopify. */
+body.pais-co .tasas-bar,
+body.pais-co #pagos,
+body.pais-co .nav-link-pagos {
+  display: none !important;
+}
+
 .cart-btn {
   position: relative;
   background: none;
