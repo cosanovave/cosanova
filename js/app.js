@@ -144,6 +144,43 @@ function actualizarIndicadorPais() {
   el.textContent = nombres[paisActual] || '';
   el.style.display = paisActual ? 'inline-flex' : 'none';
   document.body.classList.toggle('pais-co', esPaisSoloShopify(paisActual));
+  actualizarContenidoPorPais();
+}
+
+// Textos de marketing que mencionan explícitamente el envío Colombia→Venezuela
+// o el pago en bolívares solo tienen sentido para Venezuela; para Colombia/
+// EEUU (que compran por Shopify) se cambian por una versión genérica y
+// coherente. Se llama tras aplicarIdioma() para que también se traduzcan.
+const CONTENIDO_PAIS = {
+  VE: {
+    'hero-badge-envio-tit':  '7 días hábiles',
+    'hero-badge-envio-sub':  'Entrega Colombia → Venezuela',
+    'hero-sub-txt':          'Perfumes · Belleza · Ropa y más — envío seguro en 7 días hábiles.',
+    'paso1-desc':            'Explora nuestro catálogo y encuentra lo que necesitas. Precios en USD con equivalente en bolívares.',
+    'paso2-desc':            'USDT, Zelle o transferencia en bolívares. Tú eliges cómo pagar desde Venezuela.',
+    'paso3-desc':            'Enviamos desde Colombia. Tu paquete llega en 7 días hábiles con seguimiento en tiempo real.',
+    'testi-sub':             'Venezolanos que ya compran con nosotros',
+    'footer-tagline-ruta':   'Colombia → Venezuela',
+  },
+  OTRO: {
+    'hero-badge-envio-tit':  'Pago seguro',
+    'hero-badge-envio-sub':  'Checkout oficial de Shopify',
+    'hero-sub-txt':          'Perfumes, belleza, ropa y más — compra 100% segura.',
+    'paso1-desc':            'Explora nuestro catálogo y encuentra lo que necesitas.',
+    'paso2-desc':            'Pago seguro con tarjeta a través del checkout oficial de Shopify.',
+    'paso3-desc':            'Recibe tu pedido directo del proveedor, con seguimiento de envío.',
+    'testi-sub':             'Clientes que ya compran con nosotros',
+    'footer-tagline-ruta':   '',
+  },
+};
+
+function actualizarContenidoPorPais() {
+  const set = CONTENIDO_PAIS[paisActual === 'VE' ? 'VE' : 'OTRO'];
+  Object.entries(set).forEach(([id, texto]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = texto;
+  });
+  aplicarIdioma(idiomaGuardado());
 }
 
 function cambiarPais() {

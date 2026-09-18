@@ -149,6 +149,13 @@ export const TRAD_EN = {
   "Enviamos desde Colombia. Tu paquete llega en 7 días hábiles con seguimiento en tiempo real.": "We ship from Colombia. Your package arrives in 7 business days with real-time tracking.",
   "Todo en un solo lugar.": "Everything in one place.",
   "Colombia → Venezuela": "Colombia → Venezuela",
+  "Pago seguro": "Secure payment",
+  "Checkout oficial de Shopify": "Official Shopify checkout",
+  "Perfumes, belleza, ropa y más — compra 100% segura.": "Perfumes, beauty, clothing and more — 100% secure shopping.",
+  "Explora nuestro catálogo y encuentra lo que necesitas.": "Browse our catalog and find what you need.",
+  "Pago seguro con tarjeta a través del checkout oficial de Shopify.": "Secure card payment through Shopify's official checkout.",
+  "Recibe tu pedido directo del proveedor, con seguimiento de envío.": "Receive your order directly from the supplier, with shipment tracking.",
+  "Clientes que ya compran con nosotros": "Customers who already shop with us",
   "Garantías": "Warranty",
   "Precios incluyen IVA. Sujeto a disponibilidad de stock. Tiempos de entrega estimados, no garantizados.": "Prices include VAT. Subject to stock availability. Delivery times are estimates, not guaranteed.",
 
