@@ -633,9 +633,22 @@ function calcPrecio(p) {
     // vivo con la TRM actual (igual que los productos manuales), en vez de
     // usar precio_shopify_usd que quedó congelado con la TRM del momento
     // en que se sincronizó el producto.
-    const pvp_usd = p.precio_shopify_cop
-      ? p.precio_shopify_cop / tasas.trm
-      : (p.precio_shopify_usd || 0);
+    const copBase = p.precio_shopify_cop || (p.precio_shopify_usd || 0) * tasas.trm;
+    let copFinal = copBase;
+
+    // Venezuela: Dropi no envía ahí, así que el usuario reenvía por su cuenta
+    // desde Colombia vía WED Envíos. Se suma el mismo flete+seguro que ya
+    // usan los productos manuales — tarifa plana porque el paquete siempre
+    // se arma en 2.99kg (primer tramo, Maracay/Valencia/PAP) para mantener
+    // el costo más bajo. Colombia y EEUU no llevan este recargo.
+    if (paisActual === 'VE') {
+      const FLETE_WED_PAP_PLANO = 22800;
+      const declarado = p.costo_proveedor_cop || copBase;
+      const seguro = declarado * 0.05;
+      copFinal = copBase + FLETE_WED_PAP_PLANO + seguro;
+    }
+
+    const pvp_usd = copFinal / tasas.trm;
     const pvp_bs  = pvp_usd * tasas.binance / (1 - FEE_VE / 100);
     return { pvp_usd, pvp_bs };
   }
