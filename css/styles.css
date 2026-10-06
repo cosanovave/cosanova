@@ -1355,13 +1355,39 @@ section { padding: 80px 0; }
 }
 
 .precio-mayorista-tag {
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--azul);
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
 }
+
+/* Precios por tramo que ve el mayorista (tarjeta y modal) */
+.tramos-may {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.12);
+}
+.tramos-may-modal { text-decoration: none; color: inherit; font-size: inherit; margin-bottom: 0; }
+.precio-may-nota { font-size: 12px; color: #888; }
+
+/* Aviso de tramo en el carrito */
+.cart-may-info {
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.3);
+  color: #14532d;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+.ci-precio-antes { text-decoration: line-through; color: #999; margin-right: 4px; }
 
 .badge-may {
   background: #16a34a;
