@@ -571,12 +571,12 @@ function abrirFormProducto(id) {
     document.getElementById('prod-fuente').value       = p.origen === 'shopify' ? 'shopify' : 'manual';
     document.getElementById('prod-shopify-handle').value = p.shopify_handle || '';
     document.getElementById('prod-costo-proveedor').value = p.costo_proveedor_cop || '';
+    document.getElementById('prod-envio-interno').value   = p.envio_interno_cop || '';
     document.getElementById('prod-proveedor-shopify').value = p.proveedor || 'dropi';
     document.getElementById('prod-origen').value       = p.origen === 'shopify' ? 'colombia' : (p.origen || 'colombia');
     document.getElementById('prod-pais-venta').value   = p.pais_venta       || 'VE';
     document.getElementById('prod-inv').value          = p.inv_cop          || '';
     document.getElementById('prod-precio-bs').value    = p.precio_bs        || '';
-    document.getElementById('prod-precio-may').value   = p.precio_mayorista || '';
     document.getElementById('prod-genero').value    = p.genero      || '';
     document.getElementById('prod-subtipo').value   = p.subtipo     || '';
     document.getElementById('prod-desc').value      = p.descripcion || '';
@@ -651,15 +651,6 @@ async function guardarProducto(e) {
     }
 
     const origen = fuente === 'shopify' ? 'shopify' : document.getElementById('prod-origen').value;
-    const pvpUsdEstimado = fuente === 'shopify'
-      ? datosShopify.precio_shopify_usd
-      : calcPrecioAdmin(origen,
-          parseFloat(document.getElementById('prod-inv').value) || 0,
-          parseFloat(document.getElementById('prod-precio-bs').value) || 0);
-    const precioMayEl = document.getElementById('prod-precio-may');
-    const precioMay = precioMayEl && precioMayEl.value
-      ? parseFloat(precioMayEl.value)
-      : parseFloat((pvpUsdEstimado * 0.75).toFixed(2));
     const data = {
       nom:            document.getElementById('prod-nom').value.trim(),
       nom_en:         document.getElementById('prod-nom-en').value.trim(),
@@ -676,9 +667,9 @@ async function guardarProducto(e) {
         precio_shopify_usd: datosShopify.precio_shopify_usd,
         precio_shopify_cop: datosShopify.precio_shopify_cop,
         costo_proveedor_cop: parseFloat(document.getElementById('prod-costo-proveedor').value) || 0,
+        envio_interno_cop:   parseFloat(document.getElementById('prod-envio-interno').value) || 0,
         proveedor: document.getElementById('prod-proveedor-shopify').value || 'dropi',
       } : {}),
-      precio_mayorista: precioMay,
       genero:         document.getElementById('prod-genero').value,
       subtipo:        document.getElementById('prod-subtipo').value.trim(),
       tallas:         serializeTallas(tallasState),
@@ -744,7 +735,7 @@ function renderTablaOrdenes(lista) {
     return `<tr>
       <td class="td-id">#${o.id.slice(-6).toUpperCase()}</td>
       <td><strong>${o.nombre}</strong><br><span class="td-sub">${o.email}</span></td>
-      <td class="td-prods">${o.productos}</td>
+      <td class="td-prods">${o.productos}${o.mayorista ? `<br><span class="td-sub">🏪 Mayorista · ${o.unidades || '?'} u. · ${o.descuento_mayorista_pct ? '−' + o.descuento_mayorista_pct + '%' : 'sin tramo (precio normal)'}${o.tipo_orden === 'Apartado' ? ' · saldo al recibir' : ''}</span>` : ''}</td>
       <td><strong>$${o.total_usd}</strong></td>
       <td>${o.metodo_pago || '—'}</td>
       <td>

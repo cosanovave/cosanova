@@ -22,7 +22,17 @@ const MARGEN           = 30;
 const FEE              = 2;
 const FEE_VE           = 0.3;
 const ADMIN_EMAIL      = 'cosanova.ve@gmail.com';
-const DESC_MAYORISTA   = 0.25; // 25% descuento sobre pvp_usd
+// Descuento mayorista por tramos según el TOTAL de unidades del carrito
+// (se pueden combinar productos). Ordenados de mayor a menor mínimo.
+const TRAMOS_MAYORISTA = [
+  { min: 12, desc: 0.15 },
+  { min: 6,  desc: 0.12 },
+];
+// Ganancia mínima que debe quedar en cada venta mayorista: el precio con
+// descuento nunca baja de costo / (1 − este margen). Protege sobre todo a los
+// productos de Shopify/Dropi, cuyo margen depende de cada producto.
+const MARGEN_MIN_MAYORISTA = 15;
+const FLETE_WED_PAP_PLANO  = 22800; // COP, tarifa plana WED Envíos (0–2.99 kg)
 const GAS_URL     = 'https://script.google.com/macros/s/AKfycby8oGOKP9nkwjZZ6-Ilaz7HNTCxMnhHsWlswbV43-Y_luE8mJpaAl5TPa0gVA-PSBxN/exec';
 // Colombia solo vende productos de Shopify → paga siempre con el checkout
 // real de Shopify (Storefront Cart API), nunca con el flujo manual.
@@ -285,6 +295,7 @@ function initFirestore() {
       .map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
     aplicarFiltroPais();
+    migrarCarritoAntiguo();
   }, err => {
     console.error('Error cargando productos desde Firestore:', err);
   });
@@ -304,6 +315,7 @@ function initAuth() {
     actualizarUIAuth(user);
     actualizarBannerMayorista();
     renderProductos(productos);
+    actualizarCarritoUI();
   });
 }
 
@@ -621,8 +633,74 @@ function esMayoristaActivo() {
   return !!(perfilUsuario && perfilUsuario.esMayorista);
 }
 
-function precioMayorista(pvp_usd) {
-  return pvp_usd * (1 - DESC_MAYORISTA);
+// El precio mayorista solo existe en el flujo de Venezuela: Colombia y EEUU
+// pagan en el checkout de Shopify, que no conoce estos descuentos.
+function mayoristaAplica() {
+  return esMayoristaActivo() && !esPaisSoloShopify(paisActual);
+}
+
+// Descuento del tramo que corresponde a `unidades` (0 si no llega al mínimo).
+function descuentoMayorista(unidades) {
+  const tramo = TRAMOS_MAYORISTA.find(t => unidades >= t.min);
+  return tramo ? tramo.desc : 0;
+}
+
+// Precio mínimo por unidad para mayoristas (USD). Sin costo conocido no hay
+// forma de proteger el margen, así que el piso es el precio normal (sin
+// descuento) en vez de arriesgar vender por debajo del costo.
+function pisoMayorista(p, valorTalla) {
+  if (!p) return Infinity;
+  const factor = 1 / (1 - MARGEN_MIN_MAYORISTA / 100);
+  if (p.origen === 'shopify') {
+    if (!p.costo_proveedor_cop) return calcPrecio(p).pvp_usd;
+    const costoCop = p.costo_proveedor_cop + (p.envio_interno_cop || 0)
+      + FLETE_WED_PAP_PLANO + p.costo_proveedor_cop * 0.05;
+    return costoCop / tasas.trm * factor;
+  }
+  const valor = valorTalla ?? (p.origen === 'venezuela' ? p.precio_bs : p.inv_cop);
+  const costo_usd = p.origen === 'venezuela'
+    ? (valor || 0) / tasas.binance
+    : (valor || 0) / tasas.trm * (1 + FEE / 100);
+  return costo_usd * factor;
+}
+
+// Precio unitario con el descuento del tramo, sin bajar del piso ni subir
+// del precio normal.
+function precioConDescuento(pvp_usd, piso_usd, desc) {
+  if (!desc) return pvp_usd;
+  return Math.min(pvp_usd, Math.max(pvp_usd * (1 - desc), piso_usd));
+}
+
+// Bloque de precios que ve un mayorista en tarjetas y modal: precio normal
+// más el precio de cada tramo (con el % real, que puede ser menor si el piso
+// lo limita).
+function tramosHTML(pvp_usd, piso_usd) {
+  // Si el piso iguala dos tramos, se muestra solo el primero.
+  let pctAnterior = 0;
+  const filas = [...TRAMOS_MAYORISTA].reverse().map(t => {
+    const precio = precioConDescuento(pvp_usd, piso_usd, t.desc);
+    const pct = Math.round((1 - precio / pvp_usd) * 100);
+    if (pct <= pctAnterior) return '';
+    pctAnterior = pct;
+    return `<div class="precio-mayorista-tag">$ ${fmt(precio)} <span class="badge-may">−${pct}% desde ${t.min} u.</span></div>`;
+  }).join('');
+  return filas || '<div class="precio-may-nota">Sin descuento mayorista en este producto</div>';
+}
+
+function preciosMayoristaHTML(pvp_usd, piso_usd) {
+  const pvp_bs = pvp_usd * tasas.binance / (1 - FEE_VE / 100);
+  return `<div class="precio-usd"><span>$ </span>${fmt(pvp_usd)} <span>USD</span></div>
+    <div class="precio-bs"><strong>Bs. ${fmt(pvp_bs, 0)}</strong></div>
+    <div class="tramos-may">${tramosHTML(pvp_usd, piso_usd)}</div>`;
+}
+
+// En el modal reutiliza el hueco de "precio tachado" para listar los tramos.
+function mostrarTramosModal(el, pvp_usd, piso_usd) {
+  if (!el) return;
+  el.className = 'tramos-may tramos-may-modal';
+  el.innerHTML = tramosHTML(pvp_usd, piso_usd);
+  el.style.display = 'block';
+  el.parentElement?.appendChild(el); // debajo del precio normal
 }
 
 function calcPrecio(p) {
@@ -642,7 +720,6 @@ function calcPrecio(p) {
     // se arma en 2.99kg (primer tramo, Maracay/Valencia/PAP) para mantener
     // el costo más bajo. Colombia y EEUU no llevan este recargo.
     if (paisActual === 'VE') {
-      const FLETE_WED_PAP_PLANO = 22800;
       const declarado = p.costo_proveedor_cop || copBase;
       const seguro = declarado * 0.05;
       copFinal = copBase + FLETE_WED_PAP_PLANO + seguro;
@@ -782,10 +859,10 @@ function cardHTML(p, mini = false) {
       </div>
     </div>` : '';
 
-  const esMay = esMayoristaActivo();
-  const pvp_may = precioMayorista(pvp_usd);
-  const pvp_may_bs = pvp_may * tasas.binance / (1 - FEE_VE / 100);
-  const precioCarrito = esMay ? pvp_may : pvp_usd;
+  // El carrito guarda siempre el precio normal: el descuento mayorista se
+  // calcula en el carrito según el total de unidades.
+  const esMay = mayoristaAplica();
+  const precioCarrito = pvp_usd;
 
   // El USD/Bs con protección de devaluación es solo para Venezuela. Colombia
   // paga en COP directo por Shopify, así que se muestra el precio real en
@@ -805,11 +882,7 @@ function cardHTML(p, mini = false) {
         <div class="precio-usd"><span>$ </span>${fmt(pvp_usd)} <span>USD</span></div>
       </div>`
     : esMay
-    ? `<div class="producto-precios">
-        <div class="precio-retail-tachado">$ ${fmt(pvp_usd)} USD</div>
-        <div class="precio-mayorista-tag">$ ${fmt(pvp_may)} USD <span class="badge-may">−25%</span></div>
-        <div class="precio-bs precio-bs-may"><strong>Bs. ${fmt(pvp_may_bs, 0)}</strong></div>
-      </div>`
+    ? `<div class="producto-precios precios-may">${preciosMayoristaHTML(pvp_usd, pisoMayorista(p))}</div>`
     : `<div class="producto-precios">
         <div class="precio-usd"><span>$ </span>${fmt(pvp_usd)} <span>USD</span></div>
         <div class="precio-bs"><strong>Bs. ${fmt(pvp_bs, 0)}</strong></div>
@@ -874,9 +947,7 @@ function abrirProducto(id) {
   if (!p) return;
 
   const { pvp_usd, pvp_bs } = calcPrecio(p);
-  const esMay = esMayoristaActivo();
-  const pvp_may = precioMayorista(pvp_usd);
-  const pvp_may_bs = pvp_may * tasas.binance / (1 - FEE_VE / 100);
+  const esMay = mayoristaAplica();
 
   document.getElementById('mp-cat').textContent  = p.categoria;
   document.getElementById('mp-nom').textContent  = nombreProducto(p);
@@ -904,9 +975,9 @@ function abrirProducto(id) {
   } else if (esMay) {
     if (mpMonedaEl) mpMonedaEl.textContent = 'USD';
     if (mpBsEl) mpBsEl.closest('.precio-bs')?.style.removeProperty('display');
-    if (mpRetailEl) { mpRetailEl.textContent = `$ ${fmt(pvp_usd)} USD`; mpRetailEl.style.display = 'block'; }
-    if (mpUsdEl) mpUsdEl.innerHTML = `$ ${fmt(pvp_may)} USD <span class="badge-may">−25%</span>`;
-    if (mpBsEl)  mpBsEl.textContent = 'Bs. ' + fmt(pvp_may_bs, 0);
+    if (mpUsdEl) mpUsdEl.textContent = fmt(pvp_usd);
+    if (mpBsEl)  mpBsEl.textContent  = 'Bs. ' + fmt(pvp_bs, 0);
+    mostrarTramosModal(mpRetailEl, pvp_usd, pisoMayorista(p));
   } else {
     if (mpMonedaEl) mpMonedaEl.textContent = 'USD';
     if (mpBsEl) mpBsEl.closest('.precio-bs')?.style.removeProperty('display');
@@ -962,7 +1033,7 @@ function abrirProducto(id) {
 
   mpEstado = {
     id, nom: nomEsc, cat: p.categoria,
-    pvp_usd: esMay ? pvp_may : pvp_usd,
+    pvp_usd,
     necesitaTalla: tallas.length > 0, necesitaColor: colores.length > 0,
     talla: '', color: ''
   };
@@ -1019,23 +1090,12 @@ function seleccionarTalla(btn, talla, valor, origen) {
     return;
   }
 
-  const esMay = esMayoristaActivo();
   const { pvp_usd, pvp_bs } = calcPrecio({ origen, inv_cop: valor, precio_bs: valor });
-  const pvp_may = precioMayorista(pvp_usd);
-  const pvp_may_bs = pvp_may * tasas.binance / (1 - FEE_VE / 100);
-  const precioFinal = esMay ? pvp_may : pvp_usd;
-  if (esMay) {
-    const retEl = card.querySelector('.precio-retail-tachado');
-    const mayEl = card.querySelector('.precio-mayorista-tag');
-    const bsEl  = card.querySelector('.precio-bs-may');
-    if (retEl) retEl.textContent = `$ ${fmt(pvp_usd)} USD`;
-    if (mayEl) mayEl.innerHTML   = `$ ${fmt(pvp_may)} USD <span class="badge-may">−25%</span>`;
-    if (bsEl)  bsEl.innerHTML    = `<strong>Bs. ${fmt(pvp_may_bs, 0)}</strong>`;
-  } else {
-    card.querySelector('.precio-usd').innerHTML = `<span>$ </span>${fmt(pvp_usd)} <span>USD</span>`;
-    card.querySelector('.precio-bs').innerHTML  = `<strong>Bs. ${fmt(pvp_bs, 0)}</strong>`;
-  }
-  card.dataset.pvpUsd   = precioFinal;
+  card.querySelector('.precio-usd').innerHTML = `<span>$ </span>${fmt(pvp_usd)} <span>USD</span>`;
+  card.querySelector('.precio-bs').innerHTML  = `<strong>Bs. ${fmt(pvp_bs, 0)}</strong>`;
+  const tramosEl = card.querySelector('.tramos-may');
+  if (tramosEl) tramosEl.innerHTML = tramosHTML(pvp_usd, pisoMayorista({ origen, inv_cop: valor, precio_bs: valor }, valor));
+  card.dataset.pvpUsd   = pvp_usd;
   actualizarBotonCarritoCard(card);
 }
 
@@ -1050,21 +1110,14 @@ function seleccionarTallaModal(btn, talla, valor, origen) {
     return;
   }
 
-  const esMay = esMayoristaActivo();
   const { pvp_usd, pvp_bs } = calcPrecio({ origen, inv_cop: valor, precio_bs: valor });
-  const pvp_may = precioMayorista(pvp_usd);
-  const pvp_may_bs = pvp_may * tasas.binance / (1 - FEE_VE / 100);
-  const mpRetEl = document.getElementById('mp-retail-tachado');
-  if (esMay) {
-    if (mpRetEl) mpRetEl.textContent = `$ ${fmt(pvp_usd)} USD`;
-    document.getElementById('mp-usd').innerHTML = `$ ${fmt(pvp_may)} USD <span class="badge-may">−25%</span>`;
-    document.getElementById('mp-bs').textContent = 'Bs. ' + fmt(pvp_may_bs, 0);
-    mpEstado.pvp_usd = pvp_may;
-  } else {
-    document.getElementById('mp-usd').textContent = fmt(pvp_usd);
-    document.getElementById('mp-bs').textContent  = 'Bs. ' + fmt(pvp_bs, 0);
-    mpEstado.pvp_usd = pvp_usd;
+  document.getElementById('mp-usd').textContent = fmt(pvp_usd);
+  document.getElementById('mp-bs').textContent  = 'Bs. ' + fmt(pvp_bs, 0);
+  if (mayoristaAplica()) {
+    mostrarTramosModal(document.getElementById('mp-retail-tachado'), pvp_usd,
+      pisoMayorista({ origen, inv_cop: valor, precio_bs: valor }, valor));
   }
+  mpEstado.pvp_usd = pvp_usd;
   mpEstado.talla = talla;
   actualizarBotonCarritoModal();
 }
@@ -1234,11 +1287,53 @@ function guardarCarrito() {
   localStorage.setItem('cn-carrito', JSON.stringify(carrito));
 }
 
+// Piso mayorista de una línea del carrito (USD por unidad). Para productos
+// manuales con precio por talla usa el costo de esa talla.
+function pisoDeLinea(id, talla) {
+  const p = productosCruda.find(x => x.id === id);
+  if (!p) return Infinity;
+  const t = talla && p.origen !== 'shopify' ? parsearTallas(p.tallas, p).find(x => x.talla === talla) : null;
+  return pisoMayorista(p, t ? t.valor : undefined);
+}
+
+// Unidades totales y descuento del tramo que alcanza el carrito.
+function estadoMayoristaCarrito() {
+  const unidades = carrito.reduce((a, x) => a + x.qty, 0);
+  const desc = mayoristaAplica() ? descuentoMayorista(unidades) : 0;
+  return { unidades, desc };
+}
+
+function precioLinea(item, desc) {
+  return precioConDescuento(item.pvp_usd, item.piso_usd ?? Infinity, desc);
+}
+
+function totalCarrito() {
+  const { desc } = estadoMayoristaCarrito();
+  return carrito.reduce((a, x) => a + precioLinea(x, desc) * x.qty, 0);
+}
+
+// Carritos guardados antes de los tramos mayoristas: no tienen piso y, si
+// eran de un mayorista, su precio ya venía con el 25% fijo. Se recalculan
+// con el precio normal actual en cuanto llegan los productos.
+function migrarCarritoAntiguo() {
+  let cambio = false;
+  carrito.forEach(item => {
+    if (item.piso_usd !== undefined) return;
+    const p = productosCruda.find(x => x.id === item.id);
+    if (!p) return;
+    const t = item.talla && p.origen !== 'shopify' ? parsearTallas(p.tallas, p).find(x => x.talla === item.talla) : null;
+    item.pvp_usd = t ? calcPrecio({ origen: p.origen, inv_cop: t.valor, precio_bs: t.valor }).pvp_usd : calcPrecio(p).pvp_usd;
+    item.piso_usd = pisoDeLinea(item.id, item.talla);
+    cambio = true;
+  });
+  if (cambio) { guardarCarrito(); actualizarCarritoUI(); }
+}
+
 function agregarAlCarrito(nom, pvp_usd, cat, talla, id, color) {
   talla = talla || ''; color = color || '';
   const idx = carrito.findIndex(x => x.nom === nom && (x.talla || '') === talla && (x.color || '') === color);
   if (idx >= 0) carrito[idx].qty++;
-  else carrito.push({ id: id || '', nom, pvp_usd: parseFloat(pvp_usd), cat, talla, color, qty: 1 });
+  else carrito.push({ id: id || '', nom, pvp_usd: parseFloat(pvp_usd), piso_usd: pisoDeLinea(id, talla), cat, talla, color, qty: 1 });
   guardarCarrito();
   actualizarCarritoUI();
   const detalle = [talla, color].filter(Boolean).join(' / ');
@@ -1255,10 +1350,37 @@ function cambiarQty(nom, talla, color, delta) {
   actualizarCarritoUI();
 }
 
+// Aviso del carrito para mayoristas: tramo alcanzado o cuántas unidades
+// faltan para el siguiente.
+function infoMayoristaCarrito(unidades, desc) {
+  let el = document.getElementById('cart-may-info');
+  if (!mayoristaAplica() || carrito.length === 0) { if (el) el.style.display = 'none'; return; }
+  if (!el) {
+    const totales = document.querySelector('.cart-footer .cart-totales');
+    if (!totales) return;
+    el = document.createElement('div');
+    el.id = 'cart-may-info';
+    el.className = 'cart-may-info';
+    totales.parentElement.insertBefore(el, totales);
+  }
+  const siguiente = [...TRAMOS_MAYORISTA].reverse().find(t => unidades < t.min);
+  const partes = [];
+  if (desc) partes.push(`<strong>🏪 Precio mayorista aplicado: −${Math.round(desc * 100)}%</strong> (${unidades} unidades)`);
+  else partes.push(`<strong>🏪 Precio mayorista desde ${TRAMOS_MAYORISTA[TRAMOS_MAYORISTA.length - 1].min} unidades</strong>`);
+  if (siguiente) {
+    const faltan = siguiente.min - unidades;
+    partes.push(`Agrega ${faltan} unidad${faltan === 1 ? '' : 'es'} más para obtener −${Math.round(siguiente.desc * 100)}%. Puedes combinar productos.`);
+  }
+  el.innerHTML = partes.join('<br>');
+  el.style.display = 'block';
+}
+
 function actualizarCarritoUI() {
-  const total   = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
+  const { unidades, desc } = estadoMayoristaCarrito();
+  const total   = totalCarrito();
   const totalBs = total * tasas.binance / (1 - FEE_VE / 100);
-  const count   = carrito.reduce((a, x) => a + x.qty, 0);
+  const count   = unidades;
+  infoMayoristaCarrito(unidades, desc);
 
   [document.getElementById('cart-badge'), document.getElementById('mobile-cart-badge')].forEach(badge => {
     if (!badge) return;
@@ -1282,17 +1404,21 @@ function actualizarCarritoUI() {
     const te = (item.talla || '').replace(/'/g, "\\'");
     const ce = (item.color || '').replace(/'/g, "\\'");
     const detalle = [item.talla, item.color].filter(Boolean).join(' / ');
+    const unit = precioLinea(item, desc);
+    const precioHTML = unit < item.pvp_usd
+      ? `<span class="ci-precio-antes">$${fmt(item.pvp_usd)}</span> $${fmt(unit)} c/u`
+      : `$${fmt(unit)} c/u`;
     return `<div class="cart-item">
       <div class="ci-info">
         <div class="ci-nom">${item.nom}${detalle ? ' <span class="ci-talla">('+detalle+')</span>' : ''}</div>
-        <div class="ci-precio">$${fmt(item.pvp_usd)} c/u</div>
+        <div class="ci-precio">${precioHTML}</div>
       </div>
       <div class="ci-controles">
         <button class="ci-btn" onclick="cambiarQty('${ne}','${te}','${ce}',-1)">−</button>
         <span class="ci-qty">${item.qty}</span>
         <button class="ci-btn" onclick="cambiarQty('${ne}','${te}','${ce}',1)">+</button>
       </div>
-      <div class="ci-total">$${fmt(item.pvp_usd * item.qty)}</div>
+      <div class="ci-total">$${fmt(unit * item.qty)}</div>
     </div>`;
   }).join('');
   aplicarIdioma(idiomaGuardado());
@@ -1466,7 +1592,7 @@ function seleccionarMetodo(metodo) {
 }
 
 function mostrarDatosPago(metodo) {
-  const totalCompleto = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
+  const totalCompleto = totalCarrito();
   const monto   = modoApartado ? abonoApartado : totalCompleto;
   const montoBs = monto * tasas.binance / (1 - FEE_VE / 100);
   const etiq    = modoApartado ? 'Abono' : 'Monto exacto';
@@ -1476,7 +1602,7 @@ function mostrarDatosPago(metodo) {
   const bannerAp = modoApartado ? `
     <div class="dato-pago-row" style="background:rgba(233,30,99,0.07);border-radius:8px;padding:8px 12px;margin-bottom:6px;">
       <span style="color:#E91E63;font-weight:700;">💰 Pago de Apartado</span>
-      <strong style="color:#E91E63;">Saldo: $${fmt(totalCompleto - abonoApartado)} USD en 15 días</strong>
+      <strong style="color:#E91E63;">Saldo: $${fmt(totalCompleto - abonoApartado)} USD ${esMayoristaActivo() ? 'al recibir tu pedido' : 'en 15 días'}</strong>
     </div>` : '';
 
   if (metodo === 'usdt') {
@@ -1538,8 +1664,9 @@ async function enviarPedido() {
   if (!capturaArchivo && !capturaB64)
     return mostrarToast('Sube la captura del comprobante');
 
-  const total   = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
+  const total   = totalCarrito();
   const totalBs = total * tasas.binance / (1 - FEE_VE / 100);
+  const { unidades, desc: descMay } = estadoMayoristaCarrito();
   const prods   = carrito.map(x => {
     const detalle = [x.talla, x.color].filter(Boolean).join(' / ');
     return `${x.nom}${detalle ? ' ['+detalle+']' : ''} x${x.qty}`;
@@ -1568,7 +1695,10 @@ async function enviarPedido() {
       uid: usuario.uid,
       nombre: nom, email, telefono: tel, cedula, ciudad, direccion: dir,
       productos: prods,
-      productosDetalle: carrito.map(x => ({ id: x.id||'', nom: x.nom, pvp_usd: x.pvp_usd, qty: x.qty, talla: x.talla||'', color: x.color||'', cat: x.cat })),
+      productosDetalle: carrito.map(x => ({ id: x.id||'', nom: x.nom, pvp_usd: precioLinea(x, descMay), pvp_normal_usd: x.pvp_usd, qty: x.qty, talla: x.talla||'', color: x.color||'', cat: x.cat })),
+      mayorista:   esMayoristaActivo(),
+      descuento_mayorista_pct: descMay ? Math.round(descMay * 100) : 0,
+      unidades,
       total_usd: fmt(total), total_bs: fmt(totalBs, 0),
       metodo_pago: metodoSeleccionado === 'usdt' ? 'USDT (Binance Pay)' : 'Pago Móvil BDV',
       tipo_orden:  modoApartado ? 'Apartado' : 'Completo',
@@ -1588,7 +1718,7 @@ async function enviarPedido() {
       body:    JSON.stringify({
         action:      'notificarPedido',
         num:         ordenRef.id.slice(-6).toUpperCase(),
-        tipo_orden:  ordenData.tipo_orden,
+        tipo_orden:  ordenData.tipo_orden + (ordenData.mayorista ? ` · Mayorista${descMay ? ' −' + ordenData.descuento_mayorista_pct + '%' : ' (sin tramo)'}` : ''),
         nombre:      ordenData.nombre,
         telefono:    ordenData.telefono,
         ciudad:      ordenData.ciudad,
@@ -1613,7 +1743,10 @@ async function enviarPedido() {
     document.getElementById('ok-num').textContent = (modoApartado ? 'Apartado #AP-' : 'Orden #CN-') + orderNum;
     const msgEl    = document.getElementById('ok-msg');
     const tiempoEl = document.getElementById('ok-tiempo');
-    if (modoApartado) {
+    if (modoApartado && ordenData.mayorista) {
+      if (msgEl)    msgEl.textContent = 'Verificaremos tu abono y te confirmaremos por WhatsApp. El 50% restante lo pagas al recibir tu pedido.';
+      if (tiempoEl) tiempoEl.innerHTML = 'Entrega estimada: <strong>7 días hábiles</strong>';
+    } else if (modoApartado) {
       if (msgEl)    msgEl.textContent = 'Verificaremos tu abono y te confirmaremos la reserva por WhatsApp. Tienes 15 días para completar el pago restante.';
       if (tiempoEl) tiempoEl.innerHTML = 'Tu producto queda reservado por <strong>15 días corridos</strong>.';
     } else {
@@ -1641,7 +1774,7 @@ function seleccionarTipoOrden(tipo) {
   const infoBox = document.getElementById('apartado-info-box');
   if (!infoBox) return;
   if (modoApartado) {
-    const total    = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
+    const total    = totalCarrito();
     const minAbono = total * 0.5;
     abonoApartado  = minAbono;
     infoBox.style.display = 'flex';
@@ -1667,7 +1800,7 @@ function seleccionarTipoOrden(tipo) {
 }
 
 function actualizarAbono(input) {
-  const total    = carrito.reduce((a, x) => a + x.pvp_usd * x.qty, 0);
+  const total    = totalCarrito();
   const minAbono = total * 0.5;
   const val      = parseFloat(input.value) || 0;
   const errorEl  = document.getElementById('abono-error');
