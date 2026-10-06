@@ -155,6 +155,11 @@
         <div class="panel-header">
           <h1>Mayoristas</h1>
         </div>
+        <p style="max-width:640px;color:#666;font-size:13.5px;margin:-8px 0 20px;line-height:1.55">
+          Descuento según el total de unidades del carrito (se pueden combinar productos): <strong>12% desde 6 unidades</strong> y <strong>15% desde 12</strong>. Con menos de 6 unidades pagan precio normal.
+          El precio nunca baja de un 15% de ganancia sobre el costo; en productos de Shopify sin "costo del proveedor" no hay descuento.
+          En apartados, el mayorista paga el 50% al pedir y el resto al recibir. Solo aplica en Venezuela.
+        </p>
 
         <!-- Crear nuevo mayorista -->
         <div class="admin-card" style="max-width:480px;margin-bottom:32px">
@@ -239,7 +244,10 @@
           <div class="form-admin-field" id="campo-costo-proveedor" style="display:none">
             <label>Costo del proveedor (COP)</label>
             <input type="number" id="prod-costo-proveedor" placeholder="ej: 60000 (lo que te deja Dropi)" step="500">
-            <small style="color:#888;">Opcional. El precio de venta lo trae Shopify automáticamente — esto es solo para calcular tu utilidad real en la tabla de productos.</small>
+            <small style="color:#888;">Necesario para mayoristas: sin este costo el producto se vende a precio normal (sin descuento mayorista). También calcula tu utilidad real en la tabla de productos.</small>
+            <label style="margin-top:10px">Envío interno Colombia (COP)</label>
+            <input type="number" id="prod-envio-interno" placeholder="ej: 12000 (proveedor → oficina WED)" step="500">
+            <small style="color:#888;">Lo que pagas por llevar el producto del proveedor a la oficina de WED Envíos. Se suma al costo para que el descuento mayorista nunca deje menos del 15% de ganancia. Déjalo vacío si no lo pagas tú.</small>
           </div>
           <div class="form-admin-field" id="campo-proveedor-shopify" style="display:none">
             <label>Proveedor *</label>
@@ -333,10 +341,6 @@
               <button type="button" class="btn-add-img" onclick="document.getElementById('prod-img-file').click()">+ Agregar imágenes</button>
               <input type="file" id="prod-img-file" accept="image/*" multiple style="display:none" onchange="agregarImagenesAdmin(this)">
             </div>
-          </div>
-          <div class="form-admin-field">
-            <label>Precio mayorista USD <small style="color:#888">(auto −25%, editable)</small></label>
-            <input type="number" id="prod-precio-may" placeholder="Se calcula automáticamente" step="0.01" min="0">
           </div>
           <div class="form-admin-field">
             <label>Activo</label>
