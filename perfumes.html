@@ -186,9 +186,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="mobile-menu-submenu" id="mobile-menu-submenu">
       <div class="mobile-menu-submenu-inner">
         <a href="perfumes.html">Perfumes</a>
+        <div class="mm-generos"><a href="perfumes.html?genero=Mujer">Mujer</a><a href="perfumes.html?genero=Hombre">Hombre</a></div>
         <a href="belleza.html">Belleza | Cuidado personal</a>
         <a href="ropa.html">Ropa</a>
+        <div class="mm-generos"><a href="ropa.html?genero=Mujer">Mujer</a><a href="ropa.html?genero=Hombre">Hombre</a><a href="ropa.html?genero=Niñas">Niñas</a><a href="ropa.html?genero=Niños">Niños</a></div>
         <a href="calzado.html">Calzado</a>
+        <div class="mm-generos"><a href="calzado.html?genero=Mujer">Mujer</a><a href="calzado.html?genero=Hombre">Hombre</a><a href="calzado.html?genero=Niñas">Niñas</a><a href="calzado.html?genero=Niños">Niños</a></div>
         <a href="hogar.html">Hogar</a>
         <a href="tecnologia.html">Tecnología</a>
       </div>
@@ -420,6 +423,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
           <span id="precio-display">$0 – +$500 USD</span>
         </div>
+      </div>
+
+      <!-- Filtro por sexo (lo controla filtrarGenero en app.js) -->
+      <div class="subcat-row visible" id="subcat-genero" role="group" aria-label="Filtrar por sexo">
+        <span class="subcat-label">Sexo:</span>
+        <button type="button" class="subcat-btn activa" data-genero="" onclick="filtrarGenero('', this)">Todos</button>
+        <button type="button" class="subcat-btn" data-genero="Mujer" onclick="filtrarGenero('Mujer', this)">Mujer</button>
+        <button type="button" class="subcat-btn" data-genero="Hombre" onclick="filtrarGenero('Hombre', this)">Hombre</button>
       </div>
 
       <div id="productos-grid" class="productos-grid">
