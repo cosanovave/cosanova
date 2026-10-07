@@ -256,6 +256,7 @@ function initCategoriaPagina() {
     generoActual = window.__generoInicial;
     renderProductos(productos);
   }
+  marcarGeneroActivo(generoActual);
 }
 
 // ─── CARRUSEL INFINITO DE RESEÑAS ──────────────────────
@@ -723,6 +724,14 @@ function calcPrecio(p) {
       const declarado = p.costo_proveedor_cop || copBase;
       const seguro = declarado * 0.05;
       copFinal = copBase + FLETE_WED_PAP_PLANO + seguro;
+      // Con costo de proveedor conocido, el precio de Venezuela deja al menos
+      // el mismo margen que los productos manuales sobre el costo puesto
+      // (Dropi + envío interno + flete + seguro). Nunca baja del precio
+      // anterior. Colombia sigue con el precio de Shopify tal cual.
+      if (p.costo_proveedor_cop) {
+        const costoPuesto = p.costo_proveedor_cop + (p.envio_interno_cop || 0) + FLETE_WED_PAP_PLANO + seguro;
+        copFinal = Math.max(copFinal, costoPuesto / (1 - MARGEN / 100));
+      }
     }
 
     const pvp_usd = copFinal / tasas.trm;
@@ -1225,12 +1234,24 @@ function filtrar(cat, btnEl) {
   document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function marcarGeneroActivo(genero) {
+  document.querySelectorAll('#subcat-genero .subcat-btn').forEach(b =>
+    b.classList.toggle('activa', (b.dataset.genero || '') === (genero || '')));
+}
+
 function filtrarGenero(genero, btn) {
-  generoActual = genero; subtipoActual = '';
-  document.querySelectorAll('#subcat-genero .subcat-btn').forEach(b => b.classList.remove('activa'));
-  btn.classList.add('activa');
+  generoActual = genero || ''; subtipoActual = '';
+  marcarGeneroActivo(generoActual);
   document.querySelectorAll('#subcat-tipo .subcat-btn').forEach(b => b.classList.remove('activa'));
-  document.getElementById('subcat-tipo').classList.toggle('visible', categoriaActual === 'Ropa');
+  document.getElementById('subcat-tipo')?.classList.toggle('visible', categoriaActual === 'Ropa');
+  // En las páginas de categoría, deja el sexo en la URL para poder compartir
+  // el enlace o volver atrás sin perder el filtro.
+  if (window.__catInicial) {
+    const url = new URL(window.location.href);
+    if (generoActual) url.searchParams.set('genero', generoActual);
+    else url.searchParams.delete('genero');
+    history.replaceState(null, '', url);
+  }
   renderProductos(productos);
 }
 
