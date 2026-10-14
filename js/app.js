@@ -43,7 +43,7 @@ const SHOPIFY_STOREFRONT_TOKEN  = '4d189fadb58a0a64c21e5e31a18279ce';
 let tasas           = { trm: 4200, bcv: 50, binance: 65 };
 let productos       = [];       // lista YA filtrada por país (la que se renderiza)
 let productosCruda  = [];       // lista completa tal cual llega de Firestore, sin filtrar por país
-let paisActual      = sessionStorage.getItem('cn-pais') || null; // 'CO' | 'VE' | null (aún no elegido)
+let paisActual      = paisDesdeEnlace() || sessionStorage.getItem('cn-pais') || null; // 'CO' | 'VE' | 'US' | null (aún no elegido)
 let carrito         = JSON.parse(localStorage.getItem('cn-carrito') || '[]');
 let usuario         = null;
 let perfilUsuario   = null;
@@ -89,7 +89,19 @@ function initSelectorPais() {
   actualizarIndicadorPais();
   if (!paisActual) {
     mostrarSelectorPais();
+  } else if (paisDesdeEnlace() && !localStorage.getItem('cn-idioma-manual')) {
+    aplicarIdioma(paisActual === 'US' ? 'en' : 'es');
   }
+}
+
+// Enlaces con el país ya elegido (ej. cosanova.store/?pais=CO en la bio de
+// Instagram o en anuncios): se salta el selector y queda guardado para el
+// resto de la visita, igual que si lo hubiera elegido a mano.
+function paisDesdeEnlace() {
+  const p = (new URLSearchParams(location.search).get('pais') || '').toUpperCase();
+  if (!['CO', 'VE', 'US'].includes(p)) return null;
+  sessionStorage.setItem('cn-pais', p);
+  return p;
 }
 
 function inyectarEstilosPais() {
