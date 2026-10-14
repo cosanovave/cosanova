@@ -136,6 +136,7 @@ function aplicarFiltroPais() {
   renderHeroPreview(productos);
   iniciarFondoHeroCN(productos);
   actualizarMenuCategoriasPorPais();
+  actualizarCarritoUI(); // la moneda del carrito depende del país y del COP de cada producto
 }
 
 // Oculta/atenúa en el menú "Productos" las categorías que no tengan ningún
@@ -1432,10 +1433,16 @@ function actualizarCarritoUI() {
     badge.style.display = count > 0 ? 'inline-flex' : 'none';
   });
 
+  // Colombia paga en COP por Shopify: el carrito muestra pesos, sin Bs.
+  // EEUU solo USD. Los Bs son exclusivos de Venezuela.
+  const enCOP = paisActual === 'CO';
   const ctUsd = document.getElementById('ct-usd');
   const ctBs  = document.getElementById('ct-bs');
-  if (ctUsd) ctUsd.textContent = '$' + fmt(total) + ' USD';
+  const totalCop = carrito.reduce((s, item) => s + copDeLinea(item) * item.qty, 0);
+  if (ctUsd) ctUsd.textContent = enCOP ? '$' + fmt(totalCop, 0) + ' COP' : '$' + fmt(total) + ' USD';
   if (ctBs)  ctBs.textContent  = 'Bs. ' + fmt(totalBs, 0);
+  const ctBsRow = ctBs?.closest('.ct-bs-row');
+  if (ctBsRow) ctBsRow.style.display = esPaisSoloShopify(paisActual) ? 'none' : '';
 
   const lista = document.getElementById('cart-items');
   if (!lista) return;
@@ -1449,7 +1456,9 @@ function actualizarCarritoUI() {
     const ce = (item.color || '').replace(/'/g, "\\'");
     const detalle = [item.talla, item.color].filter(Boolean).join(' / ');
     const unit = precioLinea(item, desc);
-    const precioHTML = unit < item.pvp_usd
+    const precioHTML = enCOP
+      ? `$${fmt(copDeLinea(item), 0)} c/u`
+      : unit < item.pvp_usd
       ? `<span class="ci-precio-antes">$${fmt(item.pvp_usd)}</span> $${fmt(unit)} c/u`
       : `$${fmt(unit)} c/u`;
     return `<div class="cart-item">
@@ -1462,10 +1471,17 @@ function actualizarCarritoUI() {
         <span class="ci-qty">${item.qty}</span>
         <button class="ci-btn" onclick="cambiarQty('${ne}','${te}','${ce}',1)">+</button>
       </div>
-      <div class="ci-total">$${fmt(unit * item.qty)}</div>
+      <div class="ci-total">$${enCOP ? fmt(copDeLinea(item) * item.qty, 0) : fmt(unit * item.qty)}</div>
     </div>`;
   }).join('');
   aplicarIdioma(idiomaGuardado());
+}
+
+// Precio en COP de una línea del carrito: el COP fijo de Shopify si el
+// producto ya cargó; si no, el USD guardado convertido con la TRM.
+function copDeLinea(item) {
+  const p = productosCruda.find(x => x.id === item.id);
+  return (p && p.precio_shopify_cop) || Math.round(item.pvp_usd * tasas.trm);
 }
 
 function toggleCart() {
