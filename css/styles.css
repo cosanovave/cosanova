@@ -1523,7 +1523,13 @@ footer {
   transition: transform 0.35s cubic-bezier(0.22,1,0.36,1);
   box-shadow: -8px 0 40px rgba(0,0,0,0.18);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
+/* Sin esto, al abrir "Productos" el flex aplasta los elementos para que
+   quepan en la pantalla (se cortaba después de Ropa) en vez de dejar
+   desplazar el menú. */
+.mobile-menu > * { flex-shrink: 0; }
 .mobile-menu.activo { transform: translateX(0); }
 
 .mobile-menu-close {
