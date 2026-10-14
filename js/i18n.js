@@ -160,6 +160,11 @@ export const TRAD_EN = {
   "Pago seguro con tarjeta a través del checkout oficial de Shopify.": "Secure card payment through Shopify's official checkout.",
   "Recibe tu pedido directo del proveedor, con seguimiento de envío.": "Receive your order directly from the supplier, with shipment tracking.",
   "Clientes que ya compran con nosotros": "Customers who already shop with us",
+  "Pagas al recibir": "Pay on delivery",
+  "Contraentrega en toda Colombia": "Cash on delivery across Colombia",
+  "Todo en un solo lugar — pagas en efectivo cuando te llega.": "Everything in one place — pay cash when it arrives.",
+  "Pagas en efectivo cuando recibes tu pedido. Antes de enviarlo te confirmamos por WhatsApp.": "Pay cash when you receive your order. We confirm it with you on WhatsApp before shipping.",
+  "Te llega a tu casa en 2 a 5 días hábiles, con seguimiento de envío.": "Delivered to your door in 2 to 5 business days, with shipment tracking.",
   "Garantías": "Warranty",
   "Precios incluyen IVA. Sujeto a disponibilidad de stock. Tiempos de entrega estimados, no garantizados.": "Prices include VAT. Subject to stock availability. Delivery times are estimates, not guaranteed.",
 

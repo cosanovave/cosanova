@@ -184,6 +184,17 @@ const CONTENIDO_PAIS = {
     'testi-sub':             'Venezolanos que ya compran con nosotros',
     'footer-tagline-ruta':   'Colombia → Venezuela',
   },
+  // Colombia: pago contraentrega (Dropi), confirmación por WhatsApp.
+  CO: {
+    'hero-badge-envio-tit':  'Pagas al recibir',
+    'hero-badge-envio-sub':  'Contraentrega en toda Colombia',
+    'hero-sub-txt':          'Todo en un solo lugar — pagas en efectivo cuando te llega.',
+    'paso1-desc':            'Explora nuestro catálogo y encuentra lo que necesitas.',
+    'paso2-desc':            'Pagas en efectivo cuando recibes tu pedido. Antes de enviarlo te confirmamos por WhatsApp.',
+    'paso3-desc':            'Te llega a tu casa en 2 a 5 días hábiles, con seguimiento de envío.',
+    'testi-sub':             'Clientes que ya compran con nosotros',
+    'footer-tagline-ruta':   '',
+  },
   OTRO: {
     'hero-badge-envio-tit':  'Pago seguro',
     'hero-badge-envio-sub':  'Checkout oficial de Shopify',
@@ -197,7 +208,7 @@ const CONTENIDO_PAIS = {
 };
 
 function actualizarContenidoPorPais() {
-  const set = CONTENIDO_PAIS[paisActual === 'VE' ? 'VE' : 'OTRO'];
+  const set = CONTENIDO_PAIS[CONTENIDO_PAIS[paisActual] ? paisActual : 'OTRO'];
   Object.entries(set).forEach(([id, texto]) => {
     const el = document.getElementById(id);
     if (el) el.textContent = texto;
