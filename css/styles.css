@@ -1782,6 +1782,13 @@ body.pais-co #footer-copy-ubicacion {
   display: none !important;
 }
 
+/* Las reseñas son de clientes de Venezuela; en Colombia aún no hay ventas,
+   así que no se muestran para no confundir. */
+body.pais-colombia #testimonios,
+body.pais-colombia #resenas {
+  display: none !important;
+}
+
 .cart-btn {
   position: relative;
   background: none;
