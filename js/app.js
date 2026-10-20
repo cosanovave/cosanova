@@ -1030,9 +1030,16 @@ function renderHeroPreview(lista) {
 }
 
 // ─── MODAL DETALLE PRODUCTO ───────────────────────────
+// Eventos de comercio para Google Analytics (ver producto, carrito, pago),
+// para saber en qué paso se pierden los visitantes.
+function medir(evento, datos) {
+  try { if (typeof window.gtag === 'function') window.gtag('event', evento, Object.assign({ pais: paisActual || '' }, datos || {})); } catch (e) {}
+}
+
 function abrirProducto(id) {
   const p = productos.find(x => x.id === id);
   if (!p) return;
+  medir('view_item', { item_id: id, item_name: p.nom, item_category: p.categoria });
 
   const { pvp_usd, pvp_bs } = calcPrecio(p);
   const esMay = mayoristaAplica();
@@ -1430,6 +1437,7 @@ function migrarCarritoAntiguo() {
 }
 
 function agregarAlCarrito(nom, pvp_usd, cat, talla, id, color) {
+  medir('add_to_cart', { item_id: id || '', item_name: nom, item_category: cat });
   talla = talla || ''; color = color || '';
   const idx = carrito.findIndex(x => x.nom === nom && (x.talla || '') === talla && (x.color || '') === color);
   if (idx >= 0) carrito[idx].qty++;
@@ -1598,6 +1606,7 @@ function abrirCheckout() {
 // tarjeta, PSE, etc. según lo que la tienda tenga configurado). Solo se usa
 // para Colombia, ya que esa página solo vende productos de origen Shopify.
 async function irACheckoutShopify() {
+  medir('begin_checkout', { items: carrito.length });
   if (carrito.length === 0) return mostrarToast('Tu carrito está vacío');
 
   mostrarToast('Redirigiendo al pago seguro de Shopify...');
