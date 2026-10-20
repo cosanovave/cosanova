@@ -137,6 +137,7 @@ function aplicarFiltroPais() {
   iniciarFondoHeroCN(productos);
   actualizarMenuCategoriasPorPais();
   actualizarCarritoUI(); // la moneda del carrito depende del país y del COP de cada producto
+  abrirProductoDesdeEnlace();
 }
 
 // Oculta/atenúa en el menú "Productos" las categorías que no tengan ningún
@@ -180,6 +181,7 @@ function actualizarIndicadorPais() {
   el.textContent = nombres[paisActual] || '';
   el.style.display = paisActual ? 'inline-flex' : 'none';
   document.body.classList.toggle('pais-co', esPaisSoloShopify(paisActual));
+  document.body.classList.toggle('pais-colombia', paisActual === 'CO');
   actualizarContenidoPorPais();
 }
 
@@ -222,12 +224,52 @@ const CONTENIDO_PAIS = {
 };
 
 function actualizarContenidoPorPais() {
+  ajustarIdentidadColombia();
   const set = CONTENIDO_PAIS[CONTENIDO_PAIS[paisActual] ? paisActual : 'OTRO'];
   Object.entries(set).forEach(([id, texto]) => {
     const el = document.getElementById(id);
     if (el) el.textContent = texto;
   });
   aplicarIdioma(idiomaGuardado());
+}
+
+// Colombia tiene su propia identidad (correo, redes) y no usa la tasa
+// Binance ni el RIF venezolano: se ajustan pie de página, subtítulos de
+// categoría y el botón principal. Los originales se guardan para volver
+// a ellos si el visitante cambia a otro país.
+function ajustarIdentidadColombia() {
+  const co = paisActual === 'CO';
+  const swap = (el, attr, valCo) => {
+    const k = 'orig' + attr;
+    if (el.dataset[k] === undefined) el.dataset[k] = attr === 'text' ? el.textContent : el.getAttribute(attr);
+    const v = co ? valCo : el.dataset[k];
+    if (attr === 'text') el.textContent = v; else el.setAttribute(attr, v);
+  };
+  document.querySelectorAll('footer a[href^="mailto:cosanova.ve"]').forEach(a => { swap(a, 'href', 'mailto:cosanova.col@gmail.com'); swap(a, 'text', 'cosanova.col@gmail.com'); });
+  document.querySelectorAll('footer a[href*="instagram.com/cosanova.ve"]').forEach(a => { swap(a, 'href', 'https://instagram.com/cosanova.col'); swap(a, 'text', 'Instagram @cosanova.col'); });
+  document.querySelectorAll('footer a[href*="tiktok.com/@cosanova.ve"]').forEach(a => { swap(a, 'href', 'https://tiktok.com/@cosanova.col'); swap(a, 'text', 'TikTok @cosanova.col'); });
+  const pie = document.querySelector('.footer-bottom p');
+  if (pie) {
+    if (pie.dataset.orightml === undefined) pie.dataset.orightml = pie.innerHTML;
+    pie.innerHTML = co ? '© 2026 Cosa Nova · Colombia · cosanova.col@gmail.com' : pie.dataset.orightml;
+  }
+  document.querySelectorAll('.section-sub').forEach(el => {
+    if (el.dataset.origtext === undefined && !/tasa Binance/i.test(el.textContent)) return;
+    swap(el, 'text', 'Pagas al recibir · Envío gratis a toda Colombia');
+  });
+  const btn = document.querySelector('.hero-btns .btn-primary');
+  if (btn) swap(btn, 'href', 'belleza.html');
+}
+
+// Enlace directo a un producto (?p=<id>), para anuncios: abre su ficha en
+// cuanto llegan los productos. Solo una vez por visita.
+let productoEnlaceAbierto = false;
+function abrirProductoDesdeEnlace() {
+  if (productoEnlaceAbierto) return;
+  const id = new URLSearchParams(location.search).get('p');
+  if (!id || !productos.some(x => x.id === id)) return;
+  productoEnlaceAbierto = true;
+  setTimeout(() => abrirProducto(id), 300);
 }
 
 function cambiarPais() {
@@ -1455,7 +1497,8 @@ function actualizarCarritoUI() {
   if (ctUsd) ctUsd.textContent = enCOP ? '$' + fmt(totalCop, 0) + ' COP' : '$' + fmt(total) + ' USD';
   if (ctBs)  ctBs.textContent  = 'Bs. ' + fmt(totalBs, 0);
   const ctBsRow = ctBs?.closest('.ct-bs-row');
-  if (ctBsRow) ctBsRow.style.display = esPaisSoloShopify(paisActual) ? 'none' : '';
+  if (ctBsRow) ctBsRow.style.display = (esPaisSoloShopify(paisActual) && !enCOP) ? 'none' : '';
+  if (ctBs && enCOP) ctBs.textContent = 'Envío gratis · Pagas al recibir';
 
   const lista = document.getElementById('cart-items');
   if (!lista) return;
