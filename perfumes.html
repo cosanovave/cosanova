@@ -120,7 +120,7 @@
 
   <link rel="stylesheet" href="css/styles.css?v=16">
   <link rel="stylesheet" href="css/auth.css?v=1">
-  <link rel="stylesheet" href="css/elegante.css?v=13">
+  <link rel="stylesheet" href="css/elegante.css?v=16">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
 </head>
@@ -212,6 +212,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <span id="nav-user-label">Ingresar</span>
         </button>
       </div>
+    </div>
+    <!-- Categorías siempre visibles. Las que no tienen productos en el país del
+         visitante se ocultan (actualizarMenuCategoriasPorPais en js/app.js). -->
+    <div class="nav-cats" id="nav-cats" aria-label="Categorías">
+      <a href="belleza.html" data-cat="Belleza">Belleza</a>
+      <a href="hogar.html" data-cat="Hogar">Hogar</a>
+      <a href="tecnologia.html" data-cat="Tecnologia">Tecnología</a>
+      <a href="perfumes.html" data-cat="Perfumes">Perfumes</a>
+      <a href="ropa.html" data-cat="Ropa">Ropa</a>
+      <a href="calzado.html" data-cat="Calzado">Calzado</a>
     </div>
   </nav>
 
