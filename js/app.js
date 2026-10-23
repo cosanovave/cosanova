@@ -43,7 +43,7 @@ const SHOPIFY_STOREFRONT_TOKEN  = '4d189fadb58a0a64c21e5e31a18279ce';
 let tasas           = { trm: 4200, bcv: 50, binance: 65 };
 let productos       = [];       // lista YA filtrada por país (la que se renderiza)
 let productosCruda  = [];       // lista completa tal cual llega de Firestore, sin filtrar por país
-let paisActual      = paisDesdeEnlace() || sessionStorage.getItem('cn-pais') || null; // 'CO' | 'VE' | 'US' | null (aún no elegido)
+let paisActual      = paisDesdeEnlace() || sessionStorage.getItem('cn-pais') || paisDetectado(); // 'CO' | 'VE' | 'US'
 let carrito         = JSON.parse(localStorage.getItem('cn-carrito') || '[]');
 let usuario         = null;
 let perfilUsuario   = null;
@@ -87,11 +87,26 @@ document.addEventListener('DOMContentLoaded', () => {
 function initSelectorPais() {
   inyectarEstilosPais();
   actualizarIndicadorPais();
-  if (!paisActual) {
-    mostrarSelectorPais();
-  } else if (paisDesdeEnlace() && !localStorage.getItem('cn-idioma-manual')) {
+  // Ya no se muestra el selector al entrar: el país sale del enlace (?pais=),
+  // de la elección de esta visita o de la zona horaria del navegador.
+  if (!localStorage.getItem('cn-idioma-manual')) {
     aplicarIdioma(paisActual === 'US' ? 'en' : 'es');
   }
+}
+
+// País según la zona horaria y el idioma del navegador (sin pedir permisos
+// ni llamar a servicios externos). Si no se reconoce, se usa Colombia.
+function paisDetectado() {
+  let zona = '';
+  try { zona = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+  const idiomas = (navigator.languages || [navigator.language || '']).join(',').toLowerCase();
+  let p = 'CO';
+  if (zona === 'America/Bogota') p = 'CO';
+  else if (zona === 'America/Caracas') p = 'VE';
+  else if (idiomas.includes('es-ve')) p = 'VE';
+  else if (/^(America\/(New_York|Chicago|Denver|Phoenix|Los_Angeles|Anchorage|Detroit|Boise|Indiana|Kentucky|North_Dakota|Menominee|Juneau|Sitka|Nome|Metlakatla|Yakutat|Adak)|Pacific\/Honolulu)/.test(zona)) p = 'US';
+  sessionStorage.setItem('cn-pais', p);
+  return p;
 }
 
 // Enlaces con el país ya elegido (ej. cosanova.store/?pais=CO en la bio de
