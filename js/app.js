@@ -389,10 +389,13 @@ function initFirestore() {
     productosCruda = snap.docs
       .map(d => ({ id: d.id, ...d.data() }))
       .sort((a, b) => (a.nom || '').localeCompare(b.nom || ''));
+    productosListos = true;
     aplicarFiltroPais();
     migrarCarritoAntiguo();
   }, err => {
     console.error('Error cargando productos desde Firestore:', err);
+    productosListos = true;
+    renderProductos(productos);
   });
 }
 
@@ -897,10 +900,31 @@ function iniciarFondoHeroCN(lista) {
 }
 
 // ─── RENDER PRODUCTOS ─────────────────────────────────
+// ─── CARGA: LOGO ANIMADO ──────────────────────────────
+// Mientras llegan los productos se muestra el logo llenándose y palpitando,
+// en lugar de "No hay productos en esta categoría aún".
+let productosListos = false;
+function loaderLogoHTML() {
+  return `<div class="cargando-logo" role="status" aria-label="Cargando productos">
+      <div class="cl-logo">
+        <img src="assets/nuevo-logo-sin-trim.png" alt="" class="cl-base">
+        <img src="assets/nuevo-logo-sin-trim.png" alt="" class="cl-lleno">
+      </div>
+    </div>`;
+}
+function mostrarCargandoLogo() {
+  const grid = document.getElementById('productos-grid');
+  if (grid && !grid.querySelector('.cargando-logo')) grid.innerHTML = loaderLogoHTML();
+  const sinProd = document.getElementById('sin-productos');
+  if (sinProd) sinProd.style.display = 'none';
+}
+mostrarCargandoLogo();
+
 function renderProductos(lista) {
   const grid    = document.getElementById('productos-grid');
   const sinProd = document.getElementById('sin-productos');
   if (!grid) return;
+  if (!productosListos) return mostrarCargandoLogo();
 
   let filtrados = categoriaActual === 'todas' ? lista : lista.filter(p => p.categoria === categoriaActual);
   if (generoActual)  filtrados = filtrados.filter(p => p.genero  === generoActual);

@@ -233,6 +233,7 @@ export const TRAD_EN = {
   "Cargando...": "Loading...",
   "Cargando productos...": "Loading products...",
   "No hay productos en esta categoría aún.": "No products in this category yet.",
+  "Muy pronto tendremos productos aquí.": "More products coming soon.",
   "Sin productos": "No products",
   "Talla:": "Size:",
   "Color:": "Color:",
