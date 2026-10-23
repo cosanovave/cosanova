@@ -1061,7 +1061,9 @@ function abrirProducto(id) {
 
   document.getElementById('mp-cat').textContent  = p.categoria;
   document.getElementById('mp-nom').textContent  = nombreProducto(p);
-  document.getElementById('mp-desc').textContent = descripcionProducto(p) || traducir('Sin descripción disponible.');
+  // Cada viñeta (•) en su propia línea para que la ficha se lea limpia.
+  document.getElementById('mp-desc').textContent = (descripcionProducto(p) || traducir('Sin descripción disponible.'))
+    .replace(/\s*•\s*/g, '\n• ').trim();
 
   const mpUsdEl = document.getElementById('mp-usd');
   const mpBsEl  = document.getElementById('mp-bs');
