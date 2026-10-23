@@ -1,0 +1,385 @@
+/* ══════════════════════════════════════════════════════
+   COSA NOVA · CAPA ELEGANTE (minimalista)
+   Se carga después de styles.css y solo ajusta la apariencia.
+   Para volver al diseño anterior basta con quitar el <link> de este archivo.
+   ══════════════════════════════════════════════════════ */
+
+:root {
+  --el-tinta:  #141414;
+  --el-texto:  #2b2b2b;
+  --el-suave:  #77736d;
+  --el-linea:  #e7e4de;
+  --el-fondo:  #ffffff;
+  --el-papel:  #f6f4f0;
+  --el-serif:  'Cormorant Garamond', Georgia, serif;
+}
+
+/* ── Base ─────────────────────────────────────────── */
+body {
+  background: var(--el-fondo) !important;
+  color: var(--el-texto);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+body::before { display: none !important; }        /* sin patrón de rombos */
+section { background: transparent; }
+section::before, section::after { background-image: none !important; }
+
+.reveal { transform: translateY(12px); }
+
+/* ── Barra de anuncios y navegación ───────────────── */
+#anuncio-bar {
+  background: var(--el-tinta) !important;
+  border-bottom: 0 !important;
+}
+#anuncio-bar, #anuncio-bar * { color: #f4f1ea !important; font-weight: 400 !important; letter-spacing: .06em; }
+
+#navbar {
+  background: rgba(255,255,255,0.96) !important;
+  box-shadow: none !important;
+  border-bottom: 1px solid var(--el-linea) !important;
+}
+.nav-hamburger {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.nav-user-btn { letter-spacing: .14em; font-weight: 400; }
+
+/* ── Portada ──────────────────────────────────────── */
+.hero-panel-cn-texto { background: var(--el-fondo) !important; }
+.hero-panel-cn-texto .hero-titulo,
+.hero-titulo {
+  font-family: var(--el-serif) !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.5px !important;
+  line-height: 1.02 !important;
+  color: var(--el-tinta) !important;
+}
+.hero-panel-cn-texto .gold,
+.hero-titulo .gold { color: var(--el-suave) !important; font-weight: 500 !important; font-style: italic; }
+.hero-sub { color: var(--el-suave) !important; font-weight: 300; }
+
+.hero-trust-cn { gap: 0 !important; border-top: 1px solid var(--el-linea); }
+.hero-trust-cn .hero-badge,
+.hero-badge {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--el-linea) !important;
+  border-radius: 0 !important;
+  padding: 14px 8px 14px 0 !important;
+}
+.hero-badge strong { color: var(--el-tinta) !important; font-weight: 500 !important; letter-spacing: .02em; }
+.hero-badge span { color: var(--el-suave) !important; }
+.hero-badge-icon { opacity: .7; }
+
+.hero-pedido-custom { border-color: var(--el-linea) !important; color: var(--el-suave) !important; }
+.hero-pedido-custom strong { color: var(--el-tinta) !important; font-weight: 500; }
+
+/* ── Botones ──────────────────────────────────────── */
+.btn-primary,
+.hero-panel-cn-texto .hero-btns .btn-primary,
+.btn-carrito,
+.btn-pagar,
+.btn-co {
+  background: var(--el-tinta) !important;
+  color: #fff !important;
+  border: 1px solid var(--el-tinta) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+  letter-spacing: .16em !important;
+  text-transform: uppercase !important;
+  transform: none !important;
+}
+.btn-primary:hover,
+.btn-carrito:hover:not(:disabled),
+.btn-pagar:hover,
+.btn-co:hover { background: #fff !important; color: var(--el-tinta) !important; opacity: 1 !important; }
+.btn-carrito svg { width: 15px; height: 15px; }
+.btn-carrito:disabled,
+.btn-talla-pendiente {
+  background: #fff !important;
+  color: var(--el-suave) !important;
+  border-color: var(--el-linea) !important;
+  letter-spacing: .06em !important;
+  text-transform: none !important;
+}
+.btn-wa {
+  background: transparent !important;
+  color: var(--el-tinta) !important;
+  border: 1px solid var(--el-tinta) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-weight: 500 !important;
+  font-size: 12px !important;
+  letter-spacing: .16em !important;
+  text-transform: uppercase;
+}
+.btn-wa:hover { background: var(--el-tinta) !important; color: #fff !important; }
+
+/* ── Buscador y filtros ───────────────────────────── */
+input[type="text"], input[type="search"], input[type="email"], input[type="tel"], input[type="password"], select, textarea {
+  border-radius: 0 !important;
+  border-color: var(--el-linea) !important;
+  box-shadow: none !important;
+  background: #fff !important;
+}
+.cat-btn {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--el-suave) !important;
+  font-weight: 400 !important;
+  letter-spacing: .08em;
+}
+.cat-btn.activo, .cat-btn.active, .cat-btn:hover {
+  color: var(--el-tinta) !important;
+  border-bottom-color: var(--el-tinta) !important;
+  background: transparent !important;
+}
+
+/* ── Tarjetas de producto ─────────────────────────── */
+.producto-card {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.producto-card:hover { transform: none !important; box-shadow: none !important; }
+.producto-img-wrap { background: var(--el-papel); overflow: hidden; position: relative; }
+.producto-img {
+  aspect-ratio: 1 / 1 !important;
+  object-fit: contain !important;
+  background: var(--el-papel) !important;
+  mix-blend-mode: multiply;               /* los fondos blancos de las fotos se funden */
+  padding: 6%;
+  transition: transform .6s ease;
+}
+.producto-card:hover .producto-img { transform: scale(1.03); }
+.producto-img-placeholder { aspect-ratio: 1 / 1 !important; background: var(--el-papel) !important; color: var(--el-linea) !important; }
+.producto-img-overlay { display: none !important; }
+
+.producto-body { padding: 16px 2px 8px !important; text-align: left; }
+.producto-cat {
+  background: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  color: var(--el-suave) !important;
+  font-weight: 400 !important;
+  font-size: 10px !important;
+  letter-spacing: .18em !important;
+  margin-bottom: 6px !important;
+}
+.producto-nom {
+  font-family: var(--el-serif);
+  font-size: 20px !important;
+  font-weight: 500 !important;
+  color: var(--el-tinta) !important;
+  line-height: 1.2 !important;
+  margin-bottom: 6px !important;
+}
+.producto-precios { margin-bottom: 14px !important; }
+.precio-usd {
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  color: var(--el-texto) !important;
+  letter-spacing: .02em;
+}
+.precio-usd span { font-size: 15px !important; font-weight: 400 !important; color: var(--el-texto) !important; }
+.precio-usd span:last-child { font-size: 11px !important; color: var(--el-suave) !important; letter-spacing: .1em; }
+.producto-card .btn-carrito { padding: 12px !important; margin-top: auto; }
+
+.wishlist-heart {
+  background: rgba(255,255,255,.9) !important;
+  box-shadow: none !important;
+  border: 1px solid var(--el-linea) !important;
+  filter: grayscale(1);
+}
+.wishlist-heart.activo { filter: none; }
+
+.talla-btn, .color-btn {
+  border-radius: 0 !important;
+  border: 1px solid var(--el-linea) !important;
+  background: #fff !important;
+  font-weight: 400 !important;
+  box-shadow: none !important;
+}
+.talla-btn.activo, .talla-btn.active, .talla-btn.seleccionada,
+.color-btn.activo, .color-btn.active, .color-btn.seleccionado {
+  border-color: var(--el-tinta) !important;
+  color: var(--el-tinta) !important;
+}
+
+/* ── Ficha de producto (modal) ────────────────────── */
+.modal-producto { background: rgba(20,20,20,.55) !important; backdrop-filter: blur(2px) !important; }
+.modal-producto-box {
+  border-radius: 0 !important;
+  max-width: 960px !important;
+  box-shadow: 0 30px 80px rgba(0,0,0,.18) !important;
+}
+.modal-producto-close {
+  background: transparent !important;
+  color: var(--el-tinta) !important;
+  font-weight: 300;
+  font-size: 28px !important;
+  border-radius: 0 !important;
+}
+.mp-img-wrap { border-radius: 0 !important; background: var(--el-papel) !important; }
+.mp-img { mix-blend-mode: multiply; padding: 6%; }
+.mp-thumbnails { background: var(--el-papel) !important; padding: 10px 14px !important; gap: 8px !important; }
+.mp-thumb { border-radius: 0 !important; border: 1px solid transparent !important; opacity: .6; mix-blend-mode: multiply; }
+.mp-thumb.activo, .mp-thumb.active, .mp-thumb:hover { opacity: 1; border-color: var(--el-tinta) !important; }
+.mp-info { padding: 48px 44px !important; }
+.mp-nom {
+  font-family: var(--el-serif) !important;
+  font-size: 34px !important;
+  font-weight: 500 !important;
+  line-height: 1.1 !important;
+  color: var(--el-tinta) !important;
+  margin-bottom: 14px !important;
+}
+.mp-precios {
+  background: none !important;
+  border: 0 !important;
+  border-top: 1px solid var(--el-linea) !important;
+  border-radius: 0 !important;
+  padding: 18px 0 0 !important;
+  margin: 0 0 22px !important;
+}
+.mp-precios .precio-usd, .mp-precios .precio-usd span { font-size: 22px !important; color: var(--el-tinta) !important; }
+.mp-precios .precio-usd span#mp-moneda { font-size: 12px !important; color: var(--el-suave) !important; letter-spacing: .12em; }
+.mp-desc {
+  font-size: 14px !important;
+  line-height: 1.75 !important;
+  color: var(--el-suave) !important;
+  font-weight: 300;
+  white-space: pre-line;
+  margin-bottom: 26px !important;
+}
+.mp-actions { gap: 10px !important; }
+.mp-actions .btn-carrito { flex: 1; padding: 16px !important; }
+.mp-actions .wishlist-heart { border-radius: 0 !important; }
+
+/* ── Carrito ──────────────────────────────────────── */
+.cart-overlay { background: rgba(20,20,20,.35) !important; backdrop-filter: none !important; }
+.cart-drawer { box-shadow: -20px 0 60px rgba(0,0,0,.08) !important; }
+.cart-header {
+  background: #fff !important;
+  color: var(--el-tinta) !important;
+  border-bottom: 1px solid var(--el-linea) !important;
+  padding: 26px 28px !important;
+}
+.cart-header h3 {
+  font-family: var(--el-serif);
+  font-weight: 500 !important;
+  font-size: 26px !important;
+}
+.cart-close { color: var(--el-tinta) !important; font-weight: 300; }
+.cart-items-list { padding: 8px 28px !important; }
+.cart-item { border-bottom: 1px solid var(--el-linea) !important; padding: 20px 0 !important; }
+.ci-nom { font-family: var(--el-serif); font-size: 18px !important; font-weight: 500 !important; color: var(--el-tinta) !important; }
+.ci-precio { color: var(--el-suave) !important; font-size: 12px !important; }
+.ci-btn { border-radius: 0 !important; border-color: var(--el-linea) !important; width: 26px !important; height: 26px !important; font-size: 14px !important; }
+.ci-btn:hover { border-color: var(--el-tinta) !important; color: var(--el-tinta) !important; }
+.ci-qty { font-weight: 400 !important; }
+.ci-total { font-weight: 400 !important; color: var(--el-tinta) !important; }
+.cart-footer { background: #fff !important; border-top: 1px solid var(--el-linea) !important; padding: 24px 28px 28px !important; }
+.cart-totales div { color: var(--el-suave) !important; letter-spacing: .04em; }
+.cart-totales strong { color: var(--el-tinta) !important; font-weight: 500 !important; font-size: 20px !important; }
+.cart-totales div:not(:first-child),
+.cart-totales div:not(:first-child) * { color: var(--el-suave) !important; font-weight: 400 !important; font-size: 12px !important; }
+.btn-pagar { padding: 18px !important; border-bottom-width: 1px !important; }
+.cart-badge { background: var(--el-tinta) !important; color: #fff !important; }
+
+/* ── Avisos y botón flotante ──────────────────────── */
+.toast {
+  background: var(--el-tinta) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-weight: 400 !important;
+  letter-spacing: .04em;
+}
+.wa-float {
+  width: 52px !important; height: 52px !important;
+  animation: none !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,.12) !important;
+}
+
+/* ── Pie de página ────────────────────────────────── */
+footer { background: var(--el-tinta) !important; }
+
+/* ── Celular ──────────────────────────────────────── */
+@media (max-width: 640px) {
+  .producto-nom { font-size: 17px !important; }
+  .precio-usd, .precio-usd span { font-size: 14px !important; }
+  .producto-card .btn-carrito { font-size: 11px !important; letter-spacing: .12em !important; padding: 11px 6px !important; }
+  .mp-info { padding: 28px 22px 32px !important; }
+  .mp-nom { font-size: 28px !important; }
+  .cart-items-list { padding: 4px 20px !important; }
+  .cart-header, .cart-footer { padding-left: 20px !important; padding-right: 20px !important; }
+}
+
+/* ── Ajustes finos ────────────────────────────────── */
+/* Números normales (la serif usa números antiguos y el "1" parece una "ı"). */
+body, .producto-nom, .mp-nom, .ci-nom, .hero-titulo, .cart-header h3 { font-variant-numeric: lining-nums; }
+
+/* El corazón de la ficha va junto al botón, no encima de la ×. */
+.mp-actions { display: flex; align-items: stretch; }
+.mp-actions .wishlist-heart {
+  position: static !important;
+  width: 54px; height: auto;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Filtro de precio: en Colombia está en USD y confunde; se oculta. */
+body.pais-colombia .precio-rango { display: none !important; }
+.precio-rango input[type="range"] { accent-color: var(--el-tinta); }
+#precio-display { color: var(--el-tinta) !important; font-weight: 400 !important; }
+.busqueda-input-wrap input { border-radius: 0 !important; }
+
+/* En el celular la ficha ocupa toda la pantalla y el botón de compra queda siempre a la vista. */
+@media (max-width: 640px) {
+  .modal-producto { padding: 0 !important; }
+  .modal-producto-box { max-height: 100vh !important; height: 100%; }
+  .mp-actions {
+    position: sticky; bottom: 0; z-index: 5;
+    background: #fff;
+    padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--el-linea);
+  }
+}
+
+/* ── Menú lateral ─────────────────────────────────── */
+/* Se abría detrás de la barra superior y tapaba Carrito y Productos: ahora va encima. */
+.mobile-menu-overlay { z-index: 1150 !important; }
+.mobile-menu { z-index: 1200 !important; }
+.mobile-menu .mm-icon { display: none !important; }
+.mobile-menu a, .mobile-menu-toggle-sub, .mobile-menu-cart-link {
+  font-family: var(--el-serif) !important;
+  font-size: 20px !important;
+  font-weight: 500 !important;
+  color: var(--el-tinta) !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  gap: 8px;
+}
+.mobile-menu-toggle-sub .mobile-menu-chevron { margin-left: auto; }
+.mobile-menu a:hover { color: var(--el-suave) !important; padding-left: 0 !important; }
+.mobile-menu-submenu a { font-size: 17px !important; color: var(--el-suave) !important; }
+.mobile-menu-submenu .mm-generos a { font-family: 'Inter', sans-serif !important; font-size: 12px !important; letter-spacing: .08em; }
+.mobile-menu .mobile-menu-wa {
+  background: var(--el-tinta) !important;
+  color: #fff !important;
+  border-radius: 0 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 12px !important;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  justify-content: center !important;
+}
