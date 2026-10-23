@@ -174,6 +174,16 @@ function actualizarMenuCategoriasPorPais() {
   // Menú móvil: mismo criterio (con sus accesos por sexo). Mientras no
   // hayan llegado los productos no se oculta nada.
   if (!productosCruda.length) return;
+
+  // Barra de categorías visible: oculta las vacías, marca la página actual
+  // y recalcula el alto del encabezado (la barra puede cambiar de tamaño).
+  document.querySelectorAll('#nav-cats a[data-cat]').forEach(a => {
+    a.classList.toggle('vacia', !disponibles.has(a.dataset.cat));
+    a.classList.toggle('activa', a.dataset.cat === window.__catInicial);
+  });
+  document.documentElement.classList.add('cats-listas');
+  ajustarAlturaNavCN();
+
   const CAT_PAGINA = { perfumes: 'Perfumes', belleza: 'Belleza', ropa: 'Ropa', calzado: 'Calzado', hogar: 'Hogar', tecnologia: 'Tecnologia' };
   document.querySelectorAll('.mobile-menu-submenu-inner > a').forEach(a => {
     const pagina = (a.getAttribute('href') || '').replace('.html', '');

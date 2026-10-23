@@ -240,6 +240,7 @@ export const TRAD_EN = {
   "Llega en 2 a 5 días hábiles": "Arrives in 2 to 5 business days",
   "Ver productos con envío gratis": "Shop with free shipping",
   "Preguntas frecuentes": "Frequently asked questions",
+  "Belleza": "Beauty",
   "Sin productos": "No products",
   "Talla:": "Size:",
   "Color:": "Color:",
