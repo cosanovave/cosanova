@@ -383,3 +383,54 @@ body.pais-colombia .precio-rango { display: none !important; }
   text-transform: uppercase;
   justify-content: center !important;
 }
+
+/* ── Carga de productos: logo que se llena y palpita ─ */
+.loading-productos .loader-spin, .loading-productos p { display: none !important; }
+.cargando-logo {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 320px;
+}
+.cl-logo { position: relative; width: 170px; animation: cl-palpita 1.1s ease-in-out .75s infinite; }
+.cl-logo img { display: block; width: 100%; height: auto; }
+.cl-base { opacity: .12; filter: grayscale(1); }
+.cl-lleno {
+  position: absolute; inset: 0;
+  clip-path: inset(100% 0 0 0);
+  animation: cl-llenar .7s cubic-bezier(.6,0,.3,1) forwards;
+}
+@keyframes cl-llenar { to { clip-path: inset(0 0 0 0); } }
+@keyframes cl-palpita { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.06); opacity: .75; } }
+@media (prefers-reduced-motion: reduce) {
+  .cl-logo { animation: none; }
+  .cl-lleno { animation: none; clip-path: none; }
+}
+@media (max-width: 640px) { .cl-logo { width: 130px; } .cargando-logo { min-height: 240px; } }
+
+/* ── Filtro por sexo, mensaje vacío y recuadro final ─ */
+.subcat-label { color: var(--el-suave) !important; font-weight: 400 !important; letter-spacing: .18em; font-size: 10px !important; }
+.subcat-btn {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid transparent !important;
+  border-radius: 0 !important;
+  color: var(--el-suave) !important;
+  font-weight: 400 !important;
+  letter-spacing: .06em;
+  padding: 6px 10px !important;
+}
+.subcat-btn:hover, .subcat-btn.activa {
+  background: transparent !important;
+  color: var(--el-tinta) !important;
+  border-bottom-color: var(--el-tinta) !important;
+}
+.sin-productos p { font-family: var(--el-serif); font-size: 22px; color: var(--el-suave); }
+.patron-rombos { background-image: none !important; }
+.cta-box {
+  background: var(--el-papel) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.cta-box h2 { font-family: var(--el-serif); font-weight: 500 !important; color: var(--el-tinta) !important; }
+.cta-box p { color: var(--el-suave) !important; font-weight: 300; }
