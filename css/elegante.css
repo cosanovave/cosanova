@@ -267,7 +267,10 @@ input[type="text"], input[type="search"], input[type="email"], input[type="tel"]
 
 /* ── Carrito ──────────────────────────────────────── */
 .cart-overlay { background: rgba(20,20,20,.35) !important; backdrop-filter: none !important; }
-.cart-drawer { box-shadow: -20px 0 60px rgba(0,0,0,.08) !important; }
+/* La sombra solo con el panel abierto: cerrado se asomaba como una franja
+   blanca en el borde derecho de la pantalla. */
+.cart-drawer, .mobile-menu { box-shadow: none !important; }
+.cart-drawer.abierto, .mobile-menu.activo { box-shadow: -20px 0 60px rgba(0,0,0,.08) !important; }
 .cart-header {
   background: #fff !important;
   color: var(--el-tinta) !important;
@@ -434,3 +437,102 @@ body.pais-colombia .precio-rango { display: none !important; }
 }
 .cta-box h2 { font-family: var(--el-serif); font-weight: 500 !important; color: var(--el-tinta) !important; }
 .cta-box p { color: var(--el-suave) !important; font-weight: 300; }
+
+/* ── Barra de anuncios por país ───────────────────── */
+/* <html data-pais> lo fija un script en <head> antes de pintar la página. */
+html[data-pais="CO"] #anuncio-bar { display: block !important; }
+html[data-pais="CO"] .anuncio-track-ve,
+html:not([data-pais="CO"]) .anuncio-track-co { display: none !important; }
+
+/* ── Portada: foto inicial ────────────────────────── */
+.hero-img-inicial { opacity: 1; }
+
+/* ── Preguntas frecuentes (solo Colombia) ─────────── */
+html:not([data-pais="CO"]) #faq { display: none !important; }
+.faq-co { padding: 80px 0 40px; }
+.faq-inner { max-width: 760px; }
+.faq-co .section-title {
+  font-family: var(--el-serif); font-weight: 500; color: var(--el-tinta);
+  font-size: 36px; text-align: center; margin-bottom: 32px;
+}
+.faq-co details { border-top: 1px solid var(--el-linea); }
+.faq-co details:last-of-type { border-bottom: 1px solid var(--el-linea); }
+.faq-co summary {
+  list-style: none; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  padding: 20px 2px;
+  font-family: var(--el-serif); font-size: 21px; font-weight: 500; color: var(--el-tinta);
+}
+.faq-co summary::-webkit-details-marker { display: none; }
+.faq-co summary::after { content: '+'; font-family: 'Inter', sans-serif; font-weight: 300; font-size: 22px; color: var(--el-suave); transition: transform .25s; }
+.faq-co details[open] summary::after { transform: rotate(45deg); }
+.faq-co details p { padding: 0 2px 22px; color: var(--el-suave); font-weight: 300; line-height: 1.75; font-size: 15px; }
+.faq-mas { text-align: center; margin-top: 28px; color: var(--el-suave); font-size: 14px; }
+.faq-mas a { color: var(--el-tinta); font-weight: 500; border-bottom: 1px solid var(--el-tinta); text-decoration: none; }
+@media (max-width: 640px) {
+  .faq-co { padding: 56px 0 24px; }
+  .faq-co .section-title { font-size: 30px; }
+  .faq-co summary { font-size: 18px; }
+}
+
+/* Titular de portada: el texto de Colombia es largo, se modera el tamaño. */
+.hero-panel-cn-texto .hero-titulo { font-size: clamp(32px, 3.6vw, 52px) !important; line-height: 1.08 !important; }
+/* Las fotos llevan width/height en el HTML (reserva el espacio y evita saltos);
+   la altura real la manda el aspect-ratio. */
+.producto-img { height: auto !important; }
+
+/* Rendimiento en celular: el desenfoque detrás de la barra superior es costoso
+   y la barra ya es casi opaca. */
+#navbar { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+.footer-logo { height: auto; }
+
+/* ── Pie de página sobre negro ────────────────────── */
+footer .footer-col h4 { color: #f4f1ea !important; font-weight: 500 !important; letter-spacing: .2em !important; font-size: 11px !important; }
+footer .footer-logo { filter: brightness(0) invert(1); opacity: .92; max-width: 190px !important; }
+footer .footer-col a, footer .footer-brand p, footer .footer-bottom p { color: #b9b4ab !important; }
+footer .footer-col a:hover { color: #fff !important; }
+.credits-logo { filter: brightness(0) invert(1); opacity: .75; }
+
+/* ── Barra de categorías bajo el encabezado ───────── */
+.nav-cats {
+  display: flex; justify-content: center; gap: 34px;
+  border-top: 1px solid var(--el-linea);
+  padding: 0 20px;
+  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.nav-cats::-webkit-scrollbar { display: none; }
+.nav-cats a {
+  flex-shrink: 0;
+  padding: 13px 0 11px;
+  font-size: 11px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--el-texto); text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color .2s, border-color .2s;
+}
+.nav-cats a:hover, .nav-cats a.activa { color: var(--el-tinta); border-bottom-color: var(--el-tinta); }
+.nav-cats a.vacia { display: none; }
+/* Antes de saber qué hay en stock, Colombia no muestra las secciones que hoy
+   están vacías allí (evita que aparezcan y desaparezcan). */
+html[data-pais="CO"]:not(.cats-listas) .nav-cats a[data-cat="Perfumes"],
+html[data-pais="CO"]:not(.cats-listas) .nav-cats a[data-cat="Ropa"],
+html[data-pais="CO"]:not(.cats-listas) .nav-cats a[data-cat="Calzado"] { display: none; }
+@media (max-width: 640px) {
+  .nav-cats { justify-content: flex-start; gap: 26px; }
+  .nav-cats a { padding: 11px 0 9px; font-size: 10.5px; letter-spacing: .16em; }
+}
+
+/* Páginas de categoría: el catálogo empieza debajo del encabezado fijo
+   (antes el título y el buscador quedaban tapados). */
+body:not(:has(#hero)) #catalogo { padding-top: calc(var(--nav-total-h, 249px) + 36px) !important; }
+@media (max-width: 640px) {
+  body:not(:has(#hero)) #catalogo { padding-top: calc(var(--nav-total-h, 160px) + 48px) !important; }
+}
+
+/* Títulos de sección en la misma serif del resto. */
+.section-title {
+  font-family: var(--el-serif) !important;
+  font-weight: 500 !important;
+  color: var(--el-tinta) !important;
+  letter-spacing: 0 !important;
+}
+.section-sub { color: var(--el-suave) !important; font-weight: 300 !important; }
