@@ -68,8 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavbar();
   initStars();
   actualizarCarritoUI();
-  initAuth();
   initFirestore();
+  // El inicio de sesión (Firebase Auth) carga un iframe pesado: se arranca
+  // cuando el navegador queda libre, sin frenar la primera pantalla.
+  (window.requestIdleCallback || (fn => setTimeout(fn, 1200)))(() => initAuth(), { timeout: 3000 });
   initBusqueda();
   initCarruselTestimonios();
   initCategoriaPagina();
@@ -206,6 +208,9 @@ function actualizarIndicadorPais() {
 // coherente. Se llama tras aplicarIdioma() para que también se traduzcan.
 const CONTENIDO_PAIS = {
   VE: {
+    'hero-tit-1':            'Fácil, seguro y al mejor precio.',
+    'hero-tit-2':            'Así se compra en Cosa Nova.',
+    'hero-cta':              'Ver productos',
     'hero-badge-envio-tit':  '7 días hábiles',
     'hero-badge-envio-sub':  'Entrega Colombia → Venezuela',
     'hero-sub-txt':          'Perfumes · Belleza · Ropa y más — envío seguro en 7 días hábiles.',
@@ -217,8 +222,11 @@ const CONTENIDO_PAIS = {
   },
   // Colombia: pago contraentrega (Dropi), confirmación por WhatsApp.
   CO: {
-    'hero-badge-envio-tit':  'Pagas al recibir',
-    'hero-badge-envio-sub':  'Contraentrega en toda Colombia',
+    'hero-tit-1':            'Belleza, hogar y tecnología con envío gratis a toda Colombia.',
+    'hero-tit-2':            'Pagas cuando lo recibes.',
+    'hero-cta':              'Ver productos con envío gratis',
+    'hero-badge-envio-tit':  'Envío gratis',
+    'hero-badge-envio-sub':  'Llega en 2 a 5 días hábiles',
     'hero-sub-txt':          'Todo en un solo lugar — pagas en efectivo cuando te llega.',
     'paso1-desc':            'Explora nuestro catálogo y encuentra lo que necesitas.',
     'paso2-desc':            'Pagas en efectivo cuando recibes tu pedido. Antes de enviarlo te confirmamos por WhatsApp.',
@@ -227,6 +235,9 @@ const CONTENIDO_PAIS = {
     'footer-tagline-ruta':   '',
   },
   OTRO: {
+    'hero-tit-1':            'Fácil, seguro y al mejor precio.',
+    'hero-tit-2':            'Así se compra en Cosa Nova.',
+    'hero-cta':              'Ver productos',
     'hero-badge-envio-tit':  'Pago seguro',
     'hero-badge-envio-sub':  'Checkout oficial de Shopify',
     'hero-sub-txt':          'Perfumes, belleza, ropa y más — compra 100% segura.',
@@ -856,10 +867,17 @@ function fmt(n, dec = 2) {
 }
 
 // ─── HELPER IMAGEN ────────────────────────────────────
-function getMainImage(p) {
+function getMainImage(p, ancho = 600) {
   const img = (p.imagenes && p.imagenes.length) ? p.imagenes[0] : (p.imagen || null);
   if (!img) return null;
-  return img.startsWith('http') ? img : `assets/products/${img}`;
+  return img.startsWith('http') ? imgTamano(img, ancho) : `assets/products/${img}`;
+}
+
+// Las fotos de Shopify vienen en tamaño original (a veces 300 KB o más).
+// Su servidor las entrega reducidas y en WebP si se pide un ancho.
+function imgTamano(url, ancho) {
+  if (!url || !/cdn\.shopify\.com/.test(url) || /[?&]width=/.test(url)) return url;
+  return url + (url.includes('?') ? '&' : '?') + 'width=' + ancho;
 }
 
 // ─── FONDO ROTATIVO (paneles tipo hero, fotos reales) ──
@@ -868,11 +886,17 @@ function montarFondoCarrusel(contenedorId, imagenes, retrasoInicialMs) {
   if (!contenedor || imagenes.length === 0) return;
 
   let indice = 0;
-  const imgA = document.createElement('img');
+  // La portada trae una foto fija en el HTML para que se vea al instante;
+  // el carrusel arranca desde ella en lugar de taparla.
+  const inicial = contenedor.querySelector('.hero-img-inicial');
+  if (inicial) imagenes = [inicial.src, ...imagenes];
+  const imgA = inicial || document.createElement('img');
   const imgB = document.createElement('img');
-  imgA.src = imagenes[0];
-  imgA.className = 'visible';
-  contenedor.appendChild(imgA);
+  if (!inicial) {
+    imgA.src = imagenes[0];
+    imgA.className = 'visible';
+    contenedor.appendChild(imgA);
+  }
   contenedor.appendChild(imgB);
   let activa = imgA, inactiva = imgB;
 
@@ -891,7 +915,7 @@ function montarFondoCarrusel(contenedorId, imagenes, retrasoInicialMs) {
 let heroFondoCNIniciado = false;
 function iniciarFondoHeroCN(lista) {
   if (heroFondoCNIniciado) return; // solo se monta una vez, con las fotos ya cargadas
-  const imagenes = lista.map(getMainImage).filter(Boolean);
+  const imagenes = lista.map(p => getMainImage(p, 800)).filter(Boolean);
   if (imagenes.length === 0) return;
   heroFondoCNIniciado = true;
 
@@ -907,8 +931,8 @@ let productosListos = false;
 function loaderLogoHTML() {
   return `<div class="cargando-logo" role="status" aria-label="Cargando productos">
       <div class="cl-logo">
-        <img src="assets/nuevo-logo-sin-trim.png" alt="" class="cl-base">
-        <img src="assets/nuevo-logo-sin-trim.png" alt="" class="cl-lleno">
+        <img src="assets/nuevo-logo-carga.webp" alt="" class="cl-base">
+        <img src="assets/nuevo-logo-carga.webp" alt="" class="cl-lleno">
       </div>
     </div>`;
 }
@@ -967,7 +991,7 @@ function cardHTML(p, mini = false) {
   const imgSrc  = getMainImage(p);
 
   const imgHTML = imgSrc
-    ? `<img src="${imgSrc}" alt="${nombre}" class="producto-img" onerror="this.parentElement.innerHTML='<div class=\\'producto-img-placeholder\\'>${iconoCategoria(p.categoria)}</div>'">`
+    ? `<img src="${imgSrc}" alt="${nombre}" class="producto-img" loading="lazy" decoding="async" width="600" height="600" onerror="this.parentElement.innerHTML='<div class=\\'producto-img-placeholder\\'>${iconoCategoria(p.categoria)}</div>'">`
     : `<div class="producto-img-placeholder">${iconoCategoria(p.categoria)}</div>`;
 
   const tallasHTML = tallas.length > 0 ? `
