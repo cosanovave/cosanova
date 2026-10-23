@@ -94,7 +94,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <link rel="stylesheet" href="css/styles.css?v=16">
   <link rel="stylesheet" href="css/auth.css?v=1">
-  <link rel="stylesheet" href="css/elegante.css?v=5">
+  <link rel="stylesheet" href="css/elegante.css?v=7">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
 </head>
@@ -435,14 +435,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       </div>
 
       <div id="productos-grid" class="productos-grid">
-        <div class="loading-productos">
-          <div class="loader-spin"></div>
-          <p>Cargando productos...</p>
+        <div class="cargando-logo" role="status" aria-label="Cargando productos">
+          <div class="cl-logo">
+            <img src="assets/nuevo-logo-sin-trim.png" alt="" class="cl-base">
+            <img src="assets/nuevo-logo-sin-trim.png" alt="" class="cl-lleno">
+          </div>
         </div>
       </div>
 
       <div id="sin-productos" style="display:none;" class="sin-productos">
-        <p>No hay productos en esta categoría aún.</p>
+        <p>Muy pronto tendremos productos aquí.</p>
       </div>
     </div>
   </section>
