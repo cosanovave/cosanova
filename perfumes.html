@@ -1,23 +1,47 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-KV7J5S33');</script>
-<!-- End Google Tag Manager -->
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-Z0LSTRB4BZ"></script>
+<!-- Google Analytics + Tag Manager: se cargan cuando la página ya se ve
+     (al terminar de cargar o con el primer toque), para no frenar la primera
+     pantalla. Los eventos que ocurran antes quedan en cola y no se pierden. -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-Z0LSTRB4BZ');
+  dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
+  (function () {
+    var hecho = false;
+    function cargar() {
+      if (hecho) return; hecho = true;
+      ['https://www.googletagmanager.com/gtag/js?id=G-Z0LSTRB4BZ',
+       'https://www.googletagmanager.com/gtm.js?id=GTM-KV7J5S33'].forEach(function (src) {
+        var s = document.createElement('script'); s.async = true; s.src = src;
+        document.head.appendChild(s);
+      });
+    }
+    window.addEventListener('load', function () { setTimeout(cargar, 1500); });
+    ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+      window.addEventListener(ev, cargar, { once: true, passive: true });
+    });
+  })();
 </script>
   <meta charset="UTF-8">
+<script>
+  // País desde el primer instante (misma regla que js/app.js), para que la
+  // barra de anuncios y las secciones por país no parpadeen al cargar.
+  (function () {
+    var p = (new URLSearchParams(location.search).get('pais') || '').toUpperCase();
+    try { if (['CO','VE','US'].indexOf(p) < 0) p = sessionStorage.getItem('cn-pais') || ''; } catch (e) {}
+    if (!p) {
+      var z = ''; try { z = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+      var l = (navigator.languages || [navigator.language || '']).join(',').toLowerCase();
+      p = z === 'America/Bogota' ? 'CO' : z === 'America/Caracas' ? 'VE' : l.indexOf('es-ve') >= 0 ? 'VE'
+        : /^(America\/(New_York|Chicago|Denver|Phoenix|Los_Angeles|Anchorage|Detroit|Boise|Indiana|Kentucky|North_Dakota|Menominee|Juneau|Sitka|Nome|Metlakatla|Yakutat|Adak)|Pacific\/Honolulu)/.test(z) ? 'US' : 'CO';
+    }
+    document.documentElement.setAttribute('data-pais', p);
+  })();
+</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- SEO básico -->
@@ -31,6 +55,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <link rel="manifest" href="site.webmanifest">
 
   <!-- DNS prefetch — performance -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://fonts.gstatic.com">
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com">
@@ -94,9 +120,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <link rel="stylesheet" href="css/styles.css?v=16">
   <link rel="stylesheet" href="css/auth.css?v=1">
-  <link rel="stylesheet" href="css/elegante.css?v=7">
+  <link rel="stylesheet" href="css/elegante.css?v=13">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -111,7 +137,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <!-- ══ BANDA DE ANUNCIOS ═════════════════════════════ -->
   <div id="anuncio-bar">
-    <div class="anuncio-track">
+    <div class="anuncio-track anuncio-track-co">
+      <span>Envío gratis a toda Colombia</span>
+      <span class="anuncio-sep">·</span>
+      <span>Pagas al recibir</span>
+      <span class="anuncio-sep">·</span>
+      <span>Entrega en 2 a 5 días hábiles</span>
+      <span class="anuncio-sep">·</span>
+      <span>Te confirmamos por WhatsApp</span>
+      <span class="anuncio-sep">·</span>
+      <span>Envío gratis a toda Colombia</span>
+      <span class="anuncio-sep">·</span>
+      <span>Pagas al recibir</span>
+      <span class="anuncio-sep">·</span>
+      <span>Entrega en 2 a 5 días hábiles</span>
+      <span class="anuncio-sep">·</span>
+      <span>Te confirmamos por WhatsApp</span>
+      <span class="anuncio-sep">·</span>
+    </div>
+    <div class="anuncio-track anuncio-track-ve">
       <span>🚚 Envío Colombia → Venezuela en 7 días hábiles</span>
       <span class="anuncio-sep">·</span>
       <span>💳 Paga en USDT, Bolívares o Zelle</span>
@@ -160,7 +204,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
         </div>
       </div>
-      <a href="index.html" class="nav-logo-link"><img src="assets/nuevo-logo-sin.png" alt="Cosa Nova" class="nav-logo"></a>
+      <a href="index.html" class="nav-logo-link"><img src="assets/nuevo-logo-nav.webp" alt="Cosa Nova" class="nav-logo" width="640" height="320" fetchpriority="high"></a>
       <div class="nav-actions-group">
         <button class="nav-user-btn" id="nav-user-btn" onclick="abrirAuth()">
           <svg class="nav-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -437,8 +481,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <div id="productos-grid" class="productos-grid">
         <div class="cargando-logo" role="status" aria-label="Cargando productos">
           <div class="cl-logo">
-            <img src="assets/nuevo-logo-sin-trim.png" alt="" class="cl-base">
-            <img src="assets/nuevo-logo-sin-trim.png" alt="" class="cl-lleno">
+            <img src="assets/nuevo-logo-carga.webp" alt="" class="cl-base">
+            <img src="assets/nuevo-logo-carga.webp" alt="" class="cl-lleno">
           </div>
         </div>
       </div>
@@ -472,7 +516,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <img src="assets/nuevo-logo-sin-trim.png" alt="Cosa Nova" class="footer-logo">
+          <img src="assets/nuevo-logo-carga.webp" alt="Cosa Nova" class="footer-logo" loading="lazy" decoding="async">
           <p id="footer-tagline">Todo en un solo lugar.<br><span id="footer-tagline-ruta">Colombia → Venezuela</span></p>
           <p class="footer-fiscal">RIF: <strong>J-50399963-2</strong><br>Aragua, Venezuela</p>
         </div>
@@ -581,7 +625,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="credits-bar">
     <span class="credits-label">Diseñado por</span>
     <a href="https://somosnovatech.com" target="_blank" rel="noopener">
-      <img src="assets/novatech_logo.png" alt="NovaTech" class="credits-logo">
+      <img src="assets/novatech-logo-pie.webp" alt="NovaTech" class="credits-logo" width="240" height="127" loading="lazy" decoding="async">
     </a>
   </div>
 
@@ -754,7 +798,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=1"></script>
+  <script type="module" src="js/app.js?v=2"></script>
   <script>
     function abrirModal(id) {
       document.getElementById(id).classList.add('activo');

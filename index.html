@@ -1,23 +1,47 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-KV7J5S33');</script>
-<!-- End Google Tag Manager -->
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-Z0LSTRB4BZ"></script>
+<!-- Google Analytics + Tag Manager: se cargan cuando la página ya se ve
+     (al terminar de cargar o con el primer toque), para no frenar la primera
+     pantalla. Los eventos que ocurran antes quedan en cola y no se pierden. -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-Z0LSTRB4BZ');
+  dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
+  (function () {
+    var hecho = false;
+    function cargar() {
+      if (hecho) return; hecho = true;
+      ['https://www.googletagmanager.com/gtag/js?id=G-Z0LSTRB4BZ',
+       'https://www.googletagmanager.com/gtm.js?id=GTM-KV7J5S33'].forEach(function (src) {
+        var s = document.createElement('script'); s.async = true; s.src = src;
+        document.head.appendChild(s);
+      });
+    }
+    window.addEventListener('load', function () { setTimeout(cargar, 1500); });
+    ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+      window.addEventListener(ev, cargar, { once: true, passive: true });
+    });
+  })();
 </script>
   <meta charset="UTF-8">
+<script>
+  // País desde el primer instante (misma regla que js/app.js), para que la
+  // barra de anuncios y las secciones por país no parpadeen al cargar.
+  (function () {
+    var p = (new URLSearchParams(location.search).get('pais') || '').toUpperCase();
+    try { if (['CO','VE','US'].indexOf(p) < 0) p = sessionStorage.getItem('cn-pais') || ''; } catch (e) {}
+    if (!p) {
+      var z = ''; try { z = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+      var l = (navigator.languages || [navigator.language || '']).join(',').toLowerCase();
+      p = z === 'America/Bogota' ? 'CO' : z === 'America/Caracas' ? 'VE' : l.indexOf('es-ve') >= 0 ? 'VE'
+        : /^(America\/(New_York|Chicago|Denver|Phoenix|Los_Angeles|Anchorage|Detroit|Boise|Indiana|Kentucky|North_Dakota|Menominee|Juneau|Sitka|Nome|Metlakatla|Yakutat|Adak)|Pacific\/Honolulu)/.test(z) ? 'US' : 'CO';
+    }
+    document.documentElement.setAttribute('data-pais', p);
+  })();
+</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- SEO básico -->
@@ -31,6 +55,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <link rel="manifest" href="site.webmanifest">
 
   <!-- DNS prefetch — performance -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://fonts.gstatic.com">
   <link rel="dns-prefetch" href="https://raw.githubusercontent.com">
@@ -94,9 +120,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
   <link rel="stylesheet" href="css/styles.css?v=16">
   <link rel="stylesheet" href="css/auth.css?v=1">
-  <link rel="stylesheet" href="css/elegante.css?v=7">
+  <link rel="stylesheet" href="css/elegante.css?v=13">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
 </head>
 <body>
 <!-- Google Tag Manager (noscript) -->
@@ -111,7 +137,25 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <!-- ══ BANDA DE ANUNCIOS ═════════════════════════════ -->
   <div id="anuncio-bar">
-    <div class="anuncio-track">
+    <div class="anuncio-track anuncio-track-co">
+      <span>Envío gratis a toda Colombia</span>
+      <span class="anuncio-sep">·</span>
+      <span>Pagas al recibir</span>
+      <span class="anuncio-sep">·</span>
+      <span>Entrega en 2 a 5 días hábiles</span>
+      <span class="anuncio-sep">·</span>
+      <span>Te confirmamos por WhatsApp</span>
+      <span class="anuncio-sep">·</span>
+      <span>Envío gratis a toda Colombia</span>
+      <span class="anuncio-sep">·</span>
+      <span>Pagas al recibir</span>
+      <span class="anuncio-sep">·</span>
+      <span>Entrega en 2 a 5 días hábiles</span>
+      <span class="anuncio-sep">·</span>
+      <span>Te confirmamos por WhatsApp</span>
+      <span class="anuncio-sep">·</span>
+    </div>
+    <div class="anuncio-track anuncio-track-ve">
       <span>🚚 Envío Colombia → Venezuela en 7 días hábiles</span>
       <span class="anuncio-sep">·</span>
       <span>💳 Paga en USDT, Bolívares o Zelle</span>
@@ -163,7 +207,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </div>
         </div>
       </div>
-      <a href="index.html" class="nav-logo-link"><img src="assets/nuevo-logo-sin.png" alt="Cosa Nova" class="nav-logo"></a>
+      <a href="index.html" class="nav-logo-link"><img src="assets/nuevo-logo-nav.webp" alt="Cosa Nova" class="nav-logo" width="640" height="320" fetchpriority="high"></a>
       <div class="nav-actions-group">
         <button class="nav-user-btn" id="nav-user-btn" onclick="abrirAuth()">
           <svg class="nav-user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -399,21 +443,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <!-- IZQUIERDA: foto real de producto, rotando aleatoriamente -->
     <a href="perfumes.html" class="hero-panel-cn hero-panel-cn-img">
-      <div class="hero-panel-bg-cn" id="heroBgCN"></div>
+      <div class="hero-panel-bg-cn" id="heroBgCN"><img src="https://cdn.shopify.com/s/files/1/0908/3771/2930/files/1776385683set-brochas-x10-pcs-blanco-1460-2-incluye-estuche-concha-mar.webp?v=1792609460&width=800" alt="" class="visible hero-img-inicial" fetchpriority="high" decoding="async"></div>
     </a>
 
     <!-- DERECHA: información -->
     <div class="hero-panel-cn hero-panel-cn-texto">
       <div class="hero-texto-inner">
         <h1 class="hero-titulo">
-          Fácil, seguro y al mejor precio.<br>
-          <span class="gold">Así se compra en Cosa Nova.</span>
+          <span id="hero-tit-1">Belleza, hogar y tecnología con envío gratis a toda Colombia.</span><br>
+          <span class="gold" id="hero-tit-2">Pagas cuando lo recibes.</span>
         </h1>
 
         <div class="hero-trust-cn">
           <div class="hero-badge">
             <svg class="hero-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="7" width="14" height="10"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></svg>
-            <div><strong id="hero-badge-envio-tit">7 días hábiles</strong><span id="hero-badge-envio-sub">Entrega Colombia → Venezuela</span></div>
+            <div><strong id="hero-badge-envio-tit">Envío gratis</strong><span id="hero-badge-envio-sub">Llega en 2 a 5 días hábiles</span></div>
           </div>
           <div class="hero-badge">
             <svg class="hero-badge-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2 4 5v6c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V5z"/></svg>
@@ -430,13 +474,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
 
         <p class="hero-sub" id="hero-sub-txt">
-          Perfumes · Belleza · Ropa y más — envío seguro en 7 días hábiles.
+          Todo en un solo lugar — pagas en efectivo cuando te llega.
         </p>
         <a href="https://wa.me/573001885210?text=Hola%20Cosa%20Nova!%20Busco%20un%20producto%20que%20no%20veo%20en%20la%20página%20🛍️" target="_blank" class="hero-pedido-custom">
           ¿No encuentras lo que buscas? <strong>Pídelo por WhatsApp →</strong>
         </a>
         <div class="hero-btns">
-          <a href="perfumes.html" class="btn-primary">Ver Productos</a>
+          <a href="belleza.html" class="btn-primary" id="hero-cta">Ver productos con envío gratis</a>
           <a href="https://wa.me/573001885210?text=Hola%20Cosa%20Nova!%20Quiero%20información%20sobre%20sus%20productos%20🛍️" target="_blank" class="btn-wa">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
             Escribir por WhatsApp
@@ -747,6 +791,30 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </section>
 
   <!-- ══ CTA FINAL ══════════════════════════════════════ -->
+  <!-- ══ PREGUNTAS FRECUENTES (Colombia) ══════════════ -->
+  <section id="faq" class="faq-co">
+    <div class="container faq-inner">
+      <h2 class="section-title">Preguntas frecuentes</h2>
+      <details>
+        <summary>¿Cómo pago mi pedido?</summary>
+        <p>En efectivo, cuando lo recibes en la puerta de tu casa (contraentrega). No tienes que pagar nada por adelantado.</p>
+      </details>
+      <details>
+        <summary>¿Cuánto tarda en llegar?</summary>
+        <p>Entre 2 y 5 días hábiles, según tu ciudad. Antes de enviarlo te escribimos por WhatsApp para confirmar tus datos.</p>
+      </details>
+      <details>
+        <summary>¿El envío tiene costo?</summary>
+        <p>No. El envío es gratis a toda Colombia: pagas solo el precio del producto.</p>
+      </details>
+      <details>
+        <summary>¿Y si el producto llega dañado o no es lo que pedí?</summary>
+        <p>Escríbenos dentro de los 5 días hábiles siguientes a la entrega y te lo cambiamos sin costo. Los detalles están en nuestra política de devoluciones.</p>
+      </details>
+      <p class="faq-mas">¿Tienes otra pregunta? <a href="https://wa.me/573001885210?text=Hola%20Cosa%20Nova,%20tengo%20una%20pregunta" target="_blank" rel="noopener">Escríbenos por WhatsApp →</a></p>
+    </div>
+  </section>
+
   <section id="cta-final" class="patron-rombos">
     <div class="container">
       <div class="cta-box reveal">
@@ -765,7 +833,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <img src="assets/nuevo-logo-sin-trim.png" alt="Cosa Nova" class="footer-logo">
+          <img src="assets/nuevo-logo-carga.webp" alt="Cosa Nova" class="footer-logo" loading="lazy" decoding="async">
           <p id="footer-tagline">Todo en un solo lugar.<br><span id="footer-tagline-ruta">Colombia → Venezuela</span></p>
           <p class="footer-fiscal">RIF: <strong>J-50399963-2</strong><br>Aragua, Venezuela</p>
         </div>
@@ -874,7 +942,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <div class="credits-bar">
     <span class="credits-label">Diseñado por</span>
     <a href="https://somosnovatech.com" target="_blank" rel="noopener">
-      <img src="assets/novatech_logo.png" alt="NovaTech" class="credits-logo">
+      <img src="assets/novatech-logo-pie.webp" alt="NovaTech" class="credits-logo" width="240" height="127" loading="lazy" decoding="async">
     </a>
   </div>
 
@@ -1047,7 +1115,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=1"></script>
+  <script type="module" src="js/app.js?v=2"></script>
   <script>
     function abrirModal(id) {
       document.getElementById(id).classList.add('activo');
